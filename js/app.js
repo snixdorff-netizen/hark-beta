@@ -29,6 +29,24 @@ let mentorTimer = null;
 let brandTaps = 0;
 let brandTapTimer = null;
 
+// ── Theme system ──────────────────────────────────────────────────────────
+const THEMES = ['nightwood', 'daylight', 'instrument'];
+const THEME_ICONS = { nightwood: 'moon', daylight: 'sun', instrument: 'wave' };
+const THEME_LABELS = { nightwood: 'Nightwood', daylight: 'Daylight', instrument: 'Instrument' };
+let currentTheme = localStorage.getItem('hark.theme') || 'nightwood';
+
+function applyTheme(t) {
+  currentTheme = t;
+  localStorage.setItem('hark.theme', t);
+  document.documentElement.dataset.theme = t === 'nightwood' ? '' : t;
+}
+
+function cycleTheme() {
+  const next = THEMES[(THEMES.indexOf(currentTheme) + 1) % THEMES.length];
+  applyTheme(next);
+  updateChrome(shell?.nav?.querySelector('.active')?.dataset?.name);
+}
+
 const app = { go, mentor };
 
 function buildShell() {
@@ -61,9 +79,18 @@ function updateChrome(active) {
     brandTapTimer = setTimeout(() => { brandTaps = 0; }, 1500);
   });
   shell.topbar.appendChild(brand);
+  const mid = el('div', { style: 'flex:1' });
+  shell.topbar.appendChild(mid);
   const stats = el('div', { class: 'stats' });
   stats.appendChild(el('div', { class: 'stat', html: `${icon('flame', 16)} <b>${s.streak}</b>` }));
   stats.appendChild(el('div', { class: 'stat', html: `${icon('sparkle', 15)} <b>${s.xp}</b>` }));
+  const themeBtn = el('button', {
+    'aria-label': `Theme: ${THEME_LABELS[currentTheme]}`,
+    style: 'padding:4px 6px;color:var(--muted);border-radius:8px',
+    html: icon(THEME_ICONS[currentTheme], 18),
+  });
+  themeBtn.addEventListener('click', cycleTheme);
+  stats.appendChild(themeBtn);
   shell.topbar.appendChild(stats);
   shell.nav.querySelectorAll('button').forEach((b) => {
     b.classList.toggle('active', b.dataset.name === active);
@@ -101,6 +128,7 @@ function mentor(html, ms = 6500) {
 
 // boot
 async function boot() {
+  applyTheme(currentTheme);
   initAnalytics();
   await loadManifest();
   const s = get();

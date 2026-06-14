@@ -1,3 +1,4 @@
+/* ── Nightwood (default) — cozy dark forest ─────────────────────────────── */
 :root{
   --bg:#0d1110; --panel:#13201c; --panel2:#18241f; --ink:#eef3f0; --muted:#9fb2aa;
   --teal:#3ec99f; --teal-deep:#06291f; --amber:#e0a44d; --amber-deep:#3a2706;
@@ -5,6 +6,40 @@
   --radius:16px; --radius-sm:10px;
   --safe-top:env(safe-area-inset-top,0px); --safe-bot:env(safe-area-inset-bottom,0px);
 }
+
+/* ── Daylight — warm light, field-notebook feel ──────────────────────────── */
+html[data-theme="daylight"]{
+  --bg:#f4efe6; --panel:#faf7f1; --panel2:#ffffff; --ink:#1c2b24; --muted:#5c7268;
+  --teal:#2a7d5c; --teal-deep:#e4f2ec; --amber:#b5670a; --amber-deep:#fff0d9;
+  --line:rgba(0,0,0,.08); --line2:rgba(0,0,0,.13);
+}
+html[data-theme="daylight"] .grove-stage{
+  background:linear-gradient(180deg,#d4ead8 0%,#f4efe6 100%);
+}
+html[data-theme="daylight"] .grove-stage .tree{ color:#4a8a50 }
+html[data-theme="daylight"] .grove-stage .tree.lit{ color:#2d6b33 }
+html[data-theme="daylight"] .nav{
+  background:rgba(244,239,230,.9);
+}
+html[data-theme="daylight"] .card h2,
+html[data-theme="daylight"] .card .sub,
+html[data-theme="daylight"] .card .fact{ color:rgba(28,43,36,.85) }
+html[data-theme="daylight"] .rail button{ color:var(--ink) }
+
+/* ── Instrument — expert dark, Wildlife Acoustics-modeled ────────────────── */
+html[data-theme="instrument"]{
+  --bg:#0b1018; --panel:#121a24; --panel2:#18222e; --ink:#d8e8f0; --muted:#607b8a;
+  --teal:#00c8d4; --teal-deep:#001a20; --amber:#f5a31a; --amber-deep:#241500;
+  --line:rgba(255,255,255,.07); --line2:rgba(255,255,255,.13);
+}
+html[data-theme="instrument"] .brand{
+  font-family:"Courier New",Courier,monospace; letter-spacing:4px; font-size:13px;
+}
+html[data-theme="instrument"] .grove-stage{
+  background:linear-gradient(180deg,#0d1e2a 0%,#0b1018 100%);
+}
+html[data-theme="instrument"] .grove-stage .tree{ color:#1a3a4a }
+html[data-theme="instrument"] .grove-stage .tree.lit{ color:#00c8d4 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
