@@ -1194,5 +1194,70 @@
     "author": "Sandtouch Limited Company",
     "source": "https://commons.wikimedia.org/wiki/File:NorthernMockingbirdSandtouch2.ogg",
     "sourceName": "Wikimedia Commons"
+  },
+  "tuftedtitmouse": {
+    "id": "tuftedtitmouse",
+    "name": "Tufted titmouse",
+    "group": "bird",
+    "region": "E North America",
+    "fact": null,
+    "viral": false,
+    "file": "assets/audio/tuftedtitmouse.mp3",
+    "license": "CC BY-SA 4.0",
+    "author": "steve",
+    "source": "https://xeno-canto.org/884288",
+    "sourceName": "xeno-canto"
+  },
+  "morepork": {
+    "id": "morepork",
+    "name": "Morepork",
+    "group": "bird",
+    "region": "NZ & Australia",
+    "fact": null,
+    "viral": false,
+    "file": "assets/audio/morepork.mp3",
+    "license": "CC BY 4.0",
+    "author": "craig wilson",
+    "source": "https://xeno-canto.org/671231",
+    "sourceName": "xeno-canto"
+  },
+  "redsquirrel": {
+    "id": "redsquirrel",
+    "name": "American red squirrel",
+    "group": "mammal",
+    "region": "N America",
+    "fact": null,
+    "viral": false,
+    "file": "assets/audio/redsquirrel.mp3",
+    "license": "CC BY-SA 4.0",
+    "author": "Doug Hynes",
+    "source": "https://xeno-canto.org/1007951",
+    "sourceName": "xeno-canto"
+  },
+  "coyote": {
+    "id": "coyote",
+    "name": "Coyote",
+    "group": "mammal",
+    "region": "N America",
+    "fact": "A coyote chorus is a family affair — yips and howls that carry for miles across the dark.",
+    "viral": false,
+    "file": "assets/audio/coyote.mp3",
+    "license": "CC BY-SA 4.0",
+    "author": "Doug Hynes",
+    "source": "https://xeno-canto.org/991110",
+    "sourceName": "xeno-canto"
+  },
+  "tui": {
+    "id": "tui",
+    "name": "Tūī",
+    "group": "bird",
+    "region": "New Zealand",
+    "fact": "The tūī has two voice boxes, letting it produce two notes at once — clicks and liquid whistles woven together.",
+    "viral": false,
+    "file": "assets/audio/tui.mp3",
+    "license": "CC BY 4.0",
+    "author": "craig wilson",
+    "source": "https://xeno-canto.org/915121",
+    "sourceName": "xeno-canto"
   }
 }
