@@ -7,8 +7,8 @@
 export const CONFIG = {
   // Supabase collector (preferred). Fill both from your Supabase project settings,
   // run the SQL in SUPABASE_SETUP.md first, then redeploy. Empty = not used.
-  SUPABASE_URL: '',          // e.g. https://abcd.supabase.co
-  SUPABASE_ANON_KEY: '',     // anon public key (safe to ship; insert-only RLS)
+  SUPABASE_URL: 'https://hcngclkjeclgtlhhiftc.supabase.co',
+  SUPABASE_ANON_KEY: 'sb_publishable_WwbJyG0Pz1bcpAV9PQIlBQ_ewRuPSHB',
   // Generic fallback collector (e.g. Google Apps Script). Empty = not used.
   BEACON_URL: '',
   // Where the in-app "Send feedback" link goes.
