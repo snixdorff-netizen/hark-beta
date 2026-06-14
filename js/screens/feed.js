@@ -17,18 +17,22 @@ export function mount(host, app) {
   const cards = list.map((c) => buildCard(c, app));
   cards.forEach((c) => feed.appendChild(c.node));
 
-  // autoplay the centered card (if audio already unlocked), and discover it
+  // Lazy: only render a card's spectrogram (and decode its clip) when it nears
+  // view — so 100+ clips don't all decode at once. Autoplay the centered card.
   const io = new IntersectionObserver((entries) => {
     entries.forEach((e) => {
+      const card = cards.find((c) => c.node === e.target);
+      if (!card) return;
+      if (e.isIntersecting && !card.rendered) {
+        card.rendered = true;
+        mountSpectrogram(card.sg, card.creature, card.sg.clientWidth || 320, 84);
+      }
       if (e.intersectionRatio > 0.6) {
-        const idx = cards.findIndex((c) => c.node === e.target);
-        if (idx >= 0) {
-          discover(cards[idx].creature.id);
-          audio.play(cards[idx].creature).catch(() => {});
-        }
+        discover(card.creature.id);
+        audio.play(card.creature).catch(() => {});
       }
     });
-  }, { threshold: [0, 0.6, 1] });
+  }, { threshold: [0, 0.5, 0.6, 1] });
   cards.forEach((c) => io.observe(c.node));
 
   return () => { io.disconnect(); audio.stopAll(); root.remove(); };
@@ -59,7 +63,6 @@ function buildCard(c, app) {
   node.appendChild(el('div', { class: 'sub', text: prettyGroup(c) }));
   const sg = el('div', { class: 'specwrap' });
   node.appendChild(sg);
-  requestAnimationFrame(() => mountSpectrogram(sg, c, sg.clientWidth || 320, 84));
 
   const line = el('div', { class: 'playline' });
   const play = el('button', { class: 'playbtn', 'aria-label': 'Play', html: icon('play', 22) });
@@ -77,7 +80,7 @@ function buildCard(c, app) {
     node.appendChild(credit);
   }
 
-  return { node, creature: c };
+  return { node, creature: c, sg, rendered: false };
 }
 
 function prettyGroup(c) {

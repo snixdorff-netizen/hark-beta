@@ -165,8 +165,13 @@ export async function loadManifest() {
     if (!res.ok) return;
     const m = await res.json();
     for (const [id, meta] of Object.entries(m)) {
-      const c = CREATURES.find((x) => x.id === id);
-      if (c) { c.clip = true; c.license = meta.license; c.author = meta.author; c.source = meta.source; c.sourceName = meta.sourceName; }
+      let c = CREATURES.find((x) => x.id === id);
+      if (!c) { c = { id, name: meta.name, group: meta.group, region: meta.region, duration: 3 }; CREATURES.push(c); }
+      c.clip = true;
+      c.license = meta.license; c.author = meta.author; c.source = meta.source; c.sourceName = meta.sourceName;
+      if (meta.viral) c.viral = true;
+      const groupLabel = ((GROUPS[c.group] || {}).label || c.group || 'sound').toLowerCase();
+      c.fact = c.fact || meta.fact || `A ${groupLabel} recorded in ${meta.region}. Listen for what makes its voice unmistakable.`;
     }
   } catch (e) {}
 }
