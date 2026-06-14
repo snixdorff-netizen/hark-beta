@@ -2,6 +2,7 @@
 import { el, icon } from '../ui.js';
 import { byId, CREATURES } from '../content.js';
 import { get } from '../state.js';
+import { feedbackLink, shareInvite } from '../probes.js';
 
 export function mount(host, app) {
   const s = get();
@@ -39,6 +40,13 @@ export function mount(host, app) {
   });
   if (!discovered.length) chips.appendChild(el('span', { style: 'font-size:12px;color:var(--muted)', text: 'Play the feed to bring sounds home.' }));
   meta.appendChild(chips);
+
+  const actions = el('div', { style: 'display:flex;justify-content:space-between;align-items:center;margin-top:18px;border-top:.5px solid var(--line);padding-top:10px' });
+  const invite = el('button', { class: 'lnk-row', html: icon('share', 18) + ' Invite a friend', style: 'color:var(--teal)' });
+  invite.addEventListener('click', shareInvite);
+  actions.appendChild(invite);
+  actions.appendChild(feedbackLink());
+  meta.appendChild(actions);
   root.appendChild(meta);
 
   host.appendChild(root);

@@ -124,3 +124,19 @@ button{font-family:inherit;color:inherit;border:none;background:none;cursor:poin
 @keyframes fly{to{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0}}
 
 .center{display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted)}
+
+/* probes: overlay, privacy notice, sheet, dashboard */
+.ovl{position:absolute;inset:0;background:rgba(5,8,7,.6);backdrop-filter:blur(3px);display:flex;align-items:flex-end;justify-content:center;z-index:40;animation:fade .25s ease}
+.sheet{width:100%;max-width:520px;background:var(--panel2);border-top:.5px solid var(--line2);border-radius:20px 20px 0 0;padding:22px 18px calc(var(--safe-bot) + 22px);text-align:center;animation:rise .3s ease}
+.sheet-h{font-size:18px;font-weight:500;margin-bottom:8px}
+.sheet-p{font-size:13px;color:var(--muted);line-height:1.6;margin:0 0 16px}
+.sheet-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sheet-opt{padding:14px;border-radius:14px;background:var(--teal);color:var(--teal-deep);font-weight:500;font-size:14px}
+.sheet-opt.muted{background:var(--panel);color:var(--ink);border:.5px solid var(--line2)}
+.kv{display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:.5px solid var(--line);color:var(--muted)}
+.kv b{color:var(--ink);font-weight:500}
+.privacy{position:absolute;left:12px;right:12px;bottom:calc(var(--safe-bot) + 70px);background:var(--panel2);border:.5px solid var(--line2);border-radius:12px;padding:10px 12px;display:flex;gap:10px;align-items:center;z-index:30;animation:rise .4s ease}
+.privacy .msg{font-size:12px;color:var(--muted);line-height:1.5;flex:1}
+.privacy .lnk{color:var(--teal);font-size:13px;font-weight:500;padding:6px 10px}
+.lnk-row{display:inline-flex;align-items:center;gap:7px;color:var(--muted);font-size:13px;padding:10px 0}
+.lnk-row:active{color:var(--teal)}

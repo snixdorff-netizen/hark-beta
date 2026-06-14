@@ -5,6 +5,8 @@ import { mountSpectrogram } from '../spectrogram.js';
 import * as audio from '../audio.js';
 import { buildRound, sessionTargets } from '../difficulty.js';
 import { get, addXp, adjustSkill, awardCrown, discover, growGrove, touchStreak } from '../state.js';
+import { track } from '../analytics.js';
+import { maybeShowWtp } from '../probes.js';
 
 export function mount(host, app, params = {}) {
   const root = el('div', { class: 'screen' });
@@ -84,13 +86,14 @@ export function mount(host, app, params = {}) {
   function finish() {
     touchStreak();
     growGrove(4);
+    track('snap_complete', { correct: correctCount, total: targets.length });
     clear(pad);
     const wrap = el('div', { class: 'cold', style: 'position:relative' });
     wrap.appendChild(el('span', { class: 'ic', html: icon('trophy', 44), style: 'color:var(--amber)' }));
     wrap.appendChild(el('h1', { html: `Nice ears.<br><span>${correctCount}/${targets.length} this round.</span>` }));
     wrap.appendChild(el('p', { text: 'Each one you name makes the next easier to hear. Your Grove grew a little.' }));
     const again = el('button', { class: 'cta', text: 'Again' });
-    again.addEventListener('click', () => app.go('snap'));
+    again.addEventListener('click', () => { track('one_more', { from: 'snap' }); app.go('snap'); });
     wrap.appendChild(again);
     const home = el('button', { class: 'ghost', text: 'Back to the feed' });
     home.addEventListener('click', () => app.go('feed'));
@@ -98,6 +101,7 @@ export function mount(host, app, params = {}) {
     pad.appendChild(wrap);
     sparkleBurst(wrap);
     app.mentor('<b>Wren:</b> your ear is sharpening. Come morning, your recorder will have a fresh haul waiting.');
+    if (get().xp > 60) setTimeout(() => maybeShowWtp(app, 'snap_finish'), 2600);
   }
 
   return () => { audio.stopAll(); root.remove(); };

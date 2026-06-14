@@ -5,6 +5,8 @@ import { mountSpectrogram } from '../spectrogram.js';
 import * as audio from '../audio.js';
 import { CREATURES, byId, seededShuffle } from '../content.js';
 import { get, save, addXp, growGrove, discover } from '../state.js';
+import { track } from '../analytics.js';
+import { maybeShowWtp } from '../probes.js';
 
 const REDEPLOY_MS = 3 * 60 * 60 * 1000; // 3h real timer on repeat deploys (beta)
 
@@ -43,6 +45,7 @@ export function mount(host, app) {
     s.haul = { readyAt: firstTime ? Date.now() : Date.now() + REDEPLOY_MS, items, sorted: [], unknownSeen: false };
     s.everDeployed = true;
     save();
+    track('haul_deploy', { firstTime, count: items.length });
     if (firstTime) app.mentor('<b>Wren:</b> while you slept, the rig pulled in nine sounds. Eight are easy. One… nobody’s been able to name.');
     render();
   }
@@ -101,6 +104,7 @@ export function mount(host, app) {
         <div><div class="t">67 kHz — unidentified</div><div class="d">ultrasonic · nobody’s named this</div></div>`;
       u.addEventListener('click', () => {
         s.haul.unknownSeen = true; save();
+        track('unknown_seen');
         app.mentor('<b>Wren:</b> 67 kHz is above human hearing — bat territory. But this isn’t a bat. Keep it. We’ll need more ears on this one.');
         haptic(16);
       });
@@ -111,8 +115,9 @@ export function mount(host, app) {
     const sortBtn = el('button', { class: 'btn', text: allSorted ? 'All sorted ✓' : 'Tap clips to sort' });
     const again = el('button', { class: 'btn primary', text: 'Deploy again' });
     again.addEventListener('click', () => {
-      if (allSorted) growGrove(6);
+      if (allSorted) { growGrove(6); track('haul_complete'); }
       get().haul = null; save(); render();
+      if (allSorted && get().xp > 60) setTimeout(() => maybeShowWtp(app, 'haul_complete'), 1800);
     });
     row.appendChild(sortBtn); row.appendChild(again);
     pad.appendChild(row);

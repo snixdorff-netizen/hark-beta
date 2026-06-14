@@ -5,6 +5,7 @@ import { mountSpectrogram } from '../spectrogram.js';
 import * as audio from '../audio.js';
 import { viralFeed, GROUPS } from '../content.js';
 import { discover } from '../state.js';
+import { track, shareUrl } from '../analytics.js';
 
 export function mount(host, app) {
   const root = el('div', { class: 'screen' });
@@ -47,7 +48,7 @@ function buildCard(c, app) {
   // action rail
   const rail = el('div', { class: 'rail' });
   const like = el('button', { 'aria-label': 'Like', html: icon('heart', 26) + '<span>like</span>' });
-  like.addEventListener('click', () => { like.classList.toggle('liked'); haptic(); });
+  like.addEventListener('click', () => { like.classList.toggle('liked'); haptic(); track('feed_like', { id: c.id }); });
   const share = el('button', { 'aria-label': 'Share', html: icon('share', 24) + '<span>share</span>' });
   share.addEventListener('click', () => doShare(c));
   rail.appendChild(like); rail.appendChild(share);
@@ -62,9 +63,9 @@ function buildCard(c, app) {
 
   const line = el('div', { class: 'playline' });
   const play = el('button', { class: 'playbtn', 'aria-label': 'Play', html: icon('play', 22) });
-  play.addEventListener('click', () => { audio.unlock(); haptic(); audio.play(c); });
+  play.addEventListener('click', () => { audio.unlock(); haptic(); audio.play(c); track('feed_play', { id: c.id }); });
   const idb = el('button', { class: 'idbtn', html: icon('ear', 18) + ' Tap to ID' });
-  idb.addEventListener('click', () => app.go('snap', { preferIds: [c.id] }));
+  idb.addEventListener('click', () => { track('feed_tap_id', { id: c.id }); app.go('snap', { preferIds: [c.id] }); });
   line.appendChild(play); line.appendChild(idb);
   node.appendChild(line);
 
@@ -82,9 +83,11 @@ function prettyGroup(c) {
 }
 
 async function doShare(c) {
-  const text = `${c.name} — heard it on Hark 🌿`;
+  track('feed_share', { id: c.id });
+  const url = shareUrl();
+  const text = `${c.name} — heard it on Hark 🌿 ${url}`;
   try {
-    if (navigator.share) await navigator.share({ title: 'Hark', text });
+    if (navigator.share) await navigator.share({ title: 'Hark', text, url });
     else { await navigator.clipboard.writeText(text); }
   } catch (e) {}
   haptic();

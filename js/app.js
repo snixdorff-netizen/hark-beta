@@ -2,6 +2,8 @@
 import { el, clear, icon, iconEl } from './ui.js';
 import { get } from './state.js';
 import * as audio from './audio.js';
+import { init as initAnalytics, track } from './analytics.js';
+import { showPrivacyNotice, showOwnerDashboard } from './probes.js';
 
 import { mount as coldopen } from './screens/coldopen.js';
 import { mount as feed } from './screens/feed.js';
@@ -23,6 +25,8 @@ const appRoot = document.getElementById('app');
 let shell = null;
 let cleanup = null;
 let mentorTimer = null;
+let brandTaps = 0;
+let brandTapTimer = null;
 
 const app = { go, mentor };
 
@@ -48,7 +52,14 @@ function updateChrome(active) {
   if (!shell) return;
   const s = get();
   shell.topbar.innerHTML = '';
-  shell.topbar.appendChild(el('div', { class: 'brand', text: 'HARK' }));
+  const brand = el('div', { class: 'brand', text: 'HARK' });
+  brand.addEventListener('click', () => {
+    brandTaps++;
+    if (brandTaps >= 5) { brandTaps = 0; showOwnerDashboard(); }
+    clearTimeout(brandTapTimer);
+    brandTapTimer = setTimeout(() => { brandTaps = 0; }, 1500);
+  });
+  shell.topbar.appendChild(brand);
   const stats = el('div', { class: 'stats' });
   stats.appendChild(el('div', { class: 'stat', html: `${icon('flame', 16)} <b>${s.streak}</b>` }));
   stats.appendChild(el('div', { class: 'stat', html: `${icon('sparkle', 15)} <b>${s.xp}</b>` }));
@@ -72,6 +83,7 @@ function go(name, params = {}) {
   clear(shell.body);
   cleanup = SCREENS[name](shell.body, app, params);
   updateChrome(name);
+  track('screen_view', { screen: name });
 }
 
 function mentor(html, ms = 6500) {
@@ -88,9 +100,10 @@ function mentor(html, ms = 6500) {
 
 // boot
 function boot() {
+  initAnalytics();
   const s = get();
   if (!s.onboarded) go('coldopen');
-  else go('feed');
+  else { go('feed'); showPrivacyNotice(); }
 }
 boot();
 

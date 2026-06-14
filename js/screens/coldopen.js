@@ -4,6 +4,8 @@ import { mountSpectrogram } from '../spectrogram.js';
 import * as audio from '../audio.js';
 import { byId } from '../content.js';
 import { get, save, discover } from '../state.js';
+import { track } from '../analytics.js';
+import { showPrivacyNotice } from '../probes.js';
 
 export function mount(host, app) {
   const target = byId('barredowl');
@@ -13,6 +15,7 @@ export function mount(host, app) {
   root.appendChild(cold);
   host.appendChild(root);
 
+  track('onboarding_start');
   stepListen();
 
   function stepListen() {
@@ -23,9 +26,9 @@ export function mount(host, app) {
     mountSpectrogram(sg, target, 240, 86);
     cold.appendChild(el('h1', { html: 'Put on headphones.<br><span>Trust your ears.</span>' }));
     const play = el('button', { class: 'bigplay', 'aria-label': 'Play sound', html: icon('play', 30) });
-    play.addEventListener('click', async () => {
+    play.addEventListener('click', () => {
       audio.unlock(); haptic();
-      await audio.play(target);
+      audio.play(target).catch(() => {});
       setTimeout(stepGuess, 900);
     });
     cold.appendChild(play);
@@ -75,8 +78,10 @@ export function mount(host, app) {
     const cta = el('button', { class: 'cta', text: 'Start listening' });
     cta.addEventListener('click', () => {
       const s = get(); s.onboarded = true; save();
+      track('onboarding_complete');
       root.remove();
       app.go('feed');
+      showPrivacyNotice();
     });
     cold.appendChild(cta);
   }
