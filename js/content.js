@@ -19,19 +19,6 @@ export const GROUPS = {
 // f in Hz, t/dur in seconds, gain 0..1
 export const CREATURES = [
   {
-    id: 'koala', name: 'Southern koala', group: 'mammal', region: 'South Australia', viral: true,
-    fact: 'A koala’s bellow sounds 20x bigger than it is — a special extra pair of vocal folds drops the pitch into territory you’d expect from an elephant.',
-    duration: 2.6,
-    events: [
-      { t: 0.0, dur: 0.5, type: 'tone', f0: 90, gain: 0.5, wave: 'sawtooth', harm: 6 },
-      { t: 0.45, dur: 0.18, type: 'pulse', f0: 70, gain: 0.6, wave: 'square', harm: 4 },
-      { t: 0.7, dur: 0.5, type: 'tone', f0: 110, gain: 0.55, wave: 'sawtooth', harm: 6 },
-      { t: 1.15, dur: 0.2, type: 'pulse', f0: 65, gain: 0.6, wave: 'square', harm: 4 },
-      { t: 1.4, dur: 0.7, type: 'tone', f0: 95, gain: 0.5, wave: 'sawtooth', harm: 7 },
-      { t: 2.0, dur: 0.5, type: 'noise', f0: 200, f1: 1400, gain: 0.25 },
-    ],
-  },
-  {
     id: 'lyrebird', name: 'Superb lyrebird', group: 'bird', region: 'SE Australia', viral: true,
     fact: 'The superb lyrebird mimics anything — other birds, camera shutters, even chainsaws. It is one of the most accurate vocal mimics on Earth.',
     duration: 3.0,

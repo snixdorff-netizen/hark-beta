@@ -1,17 +1,4 @@
 {
-  "koala": {
-    "id": "koala",
-    "name": "Koala",
-    "group": "mammal",
-    "region": "Australia",
-    "fact": "A koala’s bellow sounds 20x bigger than it is — an extra pair of vocal folds drops the pitch into elephant territory.",
-    "viral": true,
-    "file": "assets/audio/koala.mp3",
-    "license": "CC BY-SA 4.0",
-    "author": "Waithera Were",
-    "source": "https://commons.wikimedia.org/wiki/File:Sw-ke-koala.flac",
-    "sourceName": "Wikimedia Commons"
-  },
   "lyrebird": {
     "id": "lyrebird",
     "name": "Superb lyrebird",
@@ -90,19 +77,6 @@
     "source": "https://commons.wikimedia.org/wiki/File:Cuculus_canorus_-_Common_Cuckoo_XC542432.mp3",
     "sourceName": "Wikimedia Commons"
   },
-  "orca": {
-    "id": "orca",
-    "name": "Orca",
-    "group": "marine",
-    "region": "Worldwide",
-    "fact": "Orca pods have distinct dialects — calls passed down for generations like family languages.",
-    "viral": true,
-    "file": "assets/audio/orca.mp3",
-    "license": "CC BY-SA 4.0",
-    "author": "Frederic.wang",
-    "source": "https://commons.wikimedia.org/wiki/File:Orca-mathml-example-1.wav",
-    "sourceName": "Wikimedia Commons"
-  },
   "whippoorwill": {
     "id": "whippoorwill",
     "name": "Eastern whip-poor-will",
@@ -114,19 +88,6 @@
     "license": "CC BY-SA 3.0",
     "author": "Jonathon Jongsma",
     "source": "https://commons.wikimedia.org/wiki/File:Antrostomus_vociferus_-_Eastern_Whip-poor-will_XC103418.mp3",
-    "sourceName": "Wikimedia Commons"
-  },
-  "chimpanzee": {
-    "id": "chimpanzee",
-    "name": "Common chimpanzee",
-    "group": "mammal",
-    "region": "Africa",
-    "fact": null,
-    "viral": false,
-    "file": "assets/audio/chimpanzee.mp3",
-    "license": "Public domain",
-    "author": "J. M. Barrie",
-    "source": "https://commons.wikimedia.org/wiki/File:Peter_Pan_Kensington-1.flac",
     "sourceName": "Wikimedia Commons"
   },
   "barredowl": {
@@ -844,19 +805,6 @@
     "source": "https://commons.wikimedia.org/wiki/File:Sonus_naturalis_-_Soundscape_XC441594.mp3",
     "sourceName": "Wikimedia Commons"
   },
-  "howlermonkey": {
-    "id": "howlermonkey",
-    "name": "Howler monkey",
-    "group": "mammal",
-    "region": "C & S America",
-    "fact": null,
-    "viral": false,
-    "file": "assets/audio/howlermonkey.mp3",
-    "license": "CC BY-SA 4.0",
-    "author": "Oliver Komar",
-    "source": "https://commons.wikimedia.org/wiki/File:Elaenia_frantzii_-_Mountain_Elaenia_XC544037.mp3",
-    "sourceName": "Wikimedia Commons"
-  },
   "reddeer": {
     "id": "reddeer",
     "name": "Red deer",
@@ -868,19 +816,6 @@
     "license": "CC BY-SA 4.0",
     "author": "32-Fuß-Freak",
     "source": "https://commons.wikimedia.org/wiki/File:Hirschbrunft_Gaggafeld.flac",
-    "sourceName": "Wikimedia Commons"
-  },
-  "africanelephant": {
-    "id": "africanelephant",
-    "name": "African elephant",
-    "group": "mammal",
-    "region": "Africa",
-    "fact": null,
-    "viral": false,
-    "file": "assets/audio/africanelephant.mp3",
-    "license": "CC BY-SA 4.0",
-    "author": "Robert EA Harvey",
-    "source": "https://commons.wikimedia.org/wiki/File:Bourne_Woods_2020-05-29_0758.mp3",
     "sourceName": "Wikimedia Commons"
   },
   "treefrog": {
@@ -907,19 +842,6 @@
     "license": "CC BY-SA 4.0",
     "author": "Ryan Hodnett",
     "source": "https://commons.wikimedia.org/wiki/File:Spring_Peepers_(Pseudacris_crucifer)_-_Great_Swamp_National_Wildlife_Refuge,_New_Jersey_2023-03-21_(01).mp3",
-    "sourceName": "Wikimedia Commons"
-  },
-  "bullfrog": {
-    "id": "bullfrog",
-    "name": "American bullfrog",
-    "group": "amphibian",
-    "region": "N America",
-    "fact": null,
-    "viral": false,
-    "file": "assets/audio/bullfrog.mp3",
-    "license": "Public domain",
-    "author": "Six Brown Brothers",
-    "source": "https://commons.wikimedia.org/wiki/File:%22Bull_Frog_Blues_(In_Fox_Trot_Time)%22,_by_the_Six_Brown_Brothers.mp3",
     "sourceName": "Wikimedia Commons"
   },
   "greenfrog": {
@@ -1117,19 +1039,6 @@
     "source": "https://commons.wikimedia.org/wiki/File:Nosferatu_thunderclap_-_Richard_Humphries.wav",
     "sourceName": "Wikimedia Commons"
   },
-  "rain": {
-    "id": "rain",
-    "name": "Rain",
-    "group": "geophony",
-    "region": "Anywhere",
-    "fact": null,
-    "viral": false,
-    "file": "assets/audio/rain.mp3",
-    "license": "CC BY 3.0",
-    "author": "Kevin MacLeod",
-    "source": "https://commons.wikimedia.org/wiki/File:Dewdrop_Fantasy_(ISRC_USUAN1700001).mp3",
-    "sourceName": "Wikimedia Commons"
-  },
   "oceanwaves": {
     "id": "oceanwaves",
     "name": "Ocean waves",
@@ -1285,6 +1194,19 @@
     "license": "CC BY 4.0",
     "author": "Wojciech Walkusz (WWS)",
     "source": "https://commons.wikimedia.org/wiki/File:WWS_Perkuncombustionengine.ogg",
+    "sourceName": "Wikimedia Commons"
+  },
+  "rain": {
+    "id": "rain",
+    "name": "Summer rain",
+    "group": "geophony",
+    "region": "Anywhere",
+    "fact": "Rain is geophony — the percussion of weather. A trained ear can estimate rainfall intensity just from the acoustic texture.",
+    "viral": false,
+    "file": "assets/audio/rain.mp3",
+    "license": "CC BY-SA 4.0",
+    "author": "Robert EA Harvey",
+    "source": "https://commons.wikimedia.org/wiki/File%3ABourne%20woods%20rain%202020-05-10%200804.mp3",
     "sourceName": "Wikimedia Commons"
   }
 }
