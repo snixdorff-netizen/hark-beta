@@ -39,6 +39,7 @@ const ICONS = {
   trophy: '<path d="M7 4h10v3a5 5 0 01-10 0zM5 4H3v2a3 3 0 003 3M19 4h2v2a3 3 0 01-3 3M9 14h6l-1 5h-4z"/>',
   help: '<path d="M9 9a3 3 0 114 2.8c-1 .5-1 1.2-1 2.2M12 17h.01"/>',
   back: '<path d="M15 6l-6 6 6 6"/>',
+  mail: '<path d="M4 4h16a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2z"/><path d="M22 6l-10 7L2 6"/>',
 };
 
 export function icon(name, size = 22, stroke = false) {

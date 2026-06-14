@@ -35,10 +35,14 @@ const THEME_ICONS = { nightwood: 'moon', daylight: 'sun', instrument: 'wave' };
 const THEME_LABELS = { nightwood: 'Nightwood', daylight: 'Daylight', instrument: 'Instrument' };
 let currentTheme = localStorage.getItem('hark.theme') || 'nightwood';
 
+const THEME_COLORS = { nightwood: '#0d1110', daylight: '#f4efe6', instrument: '#0b1018' };
+
 function applyTheme(t) {
   currentTheme = t;
   localStorage.setItem('hark.theme', t);
   document.documentElement.dataset.theme = t === 'nightwood' ? '' : t;
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.content = THEME_COLORS[t] || '#0d1110';
 }
 
 function cycleTheme() {
