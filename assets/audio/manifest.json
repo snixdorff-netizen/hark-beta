@@ -1259,5 +1259,32 @@
     "author": "craig wilson",
     "source": "https://xeno-canto.org/915121",
     "sourceName": "xeno-canto"
+  },
+  "mourningdove": {
+    "id": "mourningdove",
+    "name": "Mourning dove",
+    "group": "bird",
+    "region": "N America",
+    "fact": "The mourning dove's soft coo is one of the most familiar sounds of N American suburbs — often mistaken for an owl.",
+    "viral": false,
+    "file": "assets/audio/mourningdove.mp3",
+    "license": "CC BY-SA 3.0",
+    "author": "Jonathon Jongsma",
+    "source": "https://commons.wikimedia.org/wiki/File:Zenaida_macroura_-_Mourning_Dove_XC128006.ogg",
+    "sourceName": "Wikimedia Commons"
+  },
+  "engine": {
+    "id": "engine",
+    "name": "Distant engine",
+    "group": "geophony",
+    "region": "Anthrophony",
+    "fact": "Engine drone is anthrophony — human noise. Telling it from biophony is a core field skill.",
+    "viral": false,
+    "file": "assets/audio/engine.mp3",
+    "isNoise": true,
+    "license": "CC BY 4.0",
+    "author": "Wojciech Walkusz (WWS)",
+    "source": "https://commons.wikimedia.org/wiki/File:WWS_Perkuncombustionengine.ogg",
+    "sourceName": "Wikimedia Commons"
   }
 }

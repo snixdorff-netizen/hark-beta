@@ -82,16 +82,6 @@ export const CREATURES = [
     ],
   },
   {
-    id: 'humpback', name: 'Humpback whale', group: 'marine', region: 'Open ocean', viral: true,
-    fact: 'Humpback songs are structured in repeating phrases and themes, and whole populations slowly change the “hit song” together over a season.',
-    duration: 3.4,
-    events: [
-      { t: 0.0, dur: 0.9, type: 'sweep', f0: 220, f1: 600, gain: 0.5, wave: 'sine' },
-      { t: 1.0, dur: 1.1, type: 'sweep', f0: 700, f1: 180, gain: 0.5, wave: 'sine' },
-      { t: 2.2, dur: 1.1, type: 'sweep', f0: 300, f1: 520, gain: 0.45, wave: 'sine' },
-    ],
-  },
-  {
     id: 'foxscream', name: 'Red fox', group: 'mammal', region: 'N hemisphere', viral: true,
     fact: 'The red fox’s night “scream” is a contact and mating call — unsettling if you don’t know it, ordinary conversation if you do.',
     duration: 2.0,
