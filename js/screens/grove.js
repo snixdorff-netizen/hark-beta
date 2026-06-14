@@ -2,7 +2,7 @@
 import { el, icon } from '../ui.js';
 import { byId, CREATURES } from '../content.js';
 import { get } from '../state.js';
-import { feedbackLink, shareInvite } from '../probes.js';
+import { feedbackLink, shareInvite, showCredits } from '../probes.js';
 
 export function mount(host, app) {
   const s = get();
@@ -47,6 +47,12 @@ export function mount(host, app) {
   actions.appendChild(invite);
   actions.appendChild(feedbackLink());
   meta.appendChild(actions);
+
+  const creditsRow = el('div', { style: 'text-align:center;padding-top:6px' });
+  const creditsBtn = el('button', { style: 'font-size:11px;color:var(--muted);padding:6px 12px', text: 'Sound credits & licenses' });
+  creditsBtn.addEventListener('click', showCredits);
+  creditsRow.appendChild(creditsBtn);
+  meta.appendChild(creditsRow);
   root.appendChild(meta);
 
   host.appendChild(root);

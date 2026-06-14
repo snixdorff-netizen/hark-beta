@@ -1,6 +1,7 @@
-// Hark — beta probes: privacy notice, priced WTP probe, feedback link, owner dashboard.
+// Hark — beta probes: privacy notice, priced WTP probe, feedback link, owner dashboard, credits.
 import { el, icon, haptic } from './ui.js';
 import { track, recordWtp, wtpAnswered, exportData, shareUrl, CONFIG, noticeSeen, markNotice } from './analytics.js';
+import { CREATURES } from './content.js';
 
 function overlay(child, { dismissable = true } = {}) {
   const host = document.getElementById('app');
@@ -70,6 +71,53 @@ export function shareInvite() {
   track('invite_share');
   if (navigator.share) navigator.share({ title: 'Hark', text, url }).catch(() => {});
   else navigator.clipboard?.writeText(url).catch(() => {});
+}
+
+export function showCredits() {
+  track('credits_view');
+  const clips = CREATURES.filter((c) => c.clip && c.author != null).slice().sort((a, b) => a.name.localeCompare(b.name));
+
+  const card = el('div', { class: 'sheet', style: 'text-align:left;max-height:80vh;overflow-y:auto;padding-bottom:32px' });
+  card.appendChild(el('div', { class: 'sheet-h', text: 'Sound credits' }));
+  card.appendChild(el('p', { class: 'sheet-p', text: `${clips.length} real field recordings — licensed CC BY / CC BY-SA / Public Domain. Authors retain copyright; Hark provides attribution per license terms.` }));
+
+  const LIC_URLS = {
+    'CC BY 3.0': 'https://creativecommons.org/licenses/by/3.0/',
+    'CC BY 4.0': 'https://creativecommons.org/licenses/by/4.0/',
+    'CC BY-SA 3.0': 'https://creativecommons.org/licenses/by-sa/3.0/',
+    'CC BY-SA 4.0': 'https://creativecommons.org/licenses/by-sa/4.0/',
+    'CC0': 'https://creativecommons.org/publicdomain/zero/1.0/',
+    'Public domain': 'https://creativecommons.org/publicdomain/mark/1.0/',
+  };
+
+  clips.forEach((c) => {
+    const row = el('div', { style: 'padding:9px 0;border-bottom:.5px solid var(--line)' });
+    const top = el('div', { style: 'display:flex;justify-content:space-between;align-items:baseline;gap:8px' });
+    top.appendChild(el('span', { style: 'font-size:13px;font-weight:500', text: c.name }));
+    const licUrl = LIC_URLS[c.license] || '#';
+    top.appendChild(el('a', {
+      href: licUrl, target: '_blank', rel: 'noopener',
+      style: 'font-size:10px;color:var(--teal);text-decoration:none;white-space:nowrap',
+      text: c.license || 'Public domain',
+    }));
+    row.appendChild(top);
+    const bot = el('div', { style: 'display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:2px' });
+    bot.appendChild(el('span', { style: 'font-size:11px;color:var(--muted)', text: c.author || '' }));
+    if (c.source) {
+      bot.appendChild(el('a', {
+        href: c.source, target: '_blank', rel: 'noopener',
+        style: 'font-size:10px;color:var(--muted);text-decoration:none',
+        text: c.sourceName || 'source',
+      }));
+    }
+    row.appendChild(bot);
+    card.appendChild(row);
+  });
+
+  const close = el('button', { class: 'sheet-opt', style: 'width:100%;margin-top:18px', text: 'Close' });
+  close.addEventListener('click', () => back.remove());
+  card.appendChild(close);
+  const back = overlay(card, { dismissable: true });
 }
 
 export function showOwnerDashboard() {
