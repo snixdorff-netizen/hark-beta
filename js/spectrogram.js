@@ -14,20 +14,29 @@ function freqToY(f, h) {
   return h * (1 - c);
 }
 
-// soft teal heat ramp on dark panel
-function paint(ctx, x, y, w, h, a) {
-  ctx.fillStyle = `rgba(62,201,159,${Math.min(0.95, a)})`;
+function spectrogramColors() {
+  const t = document.documentElement.dataset.theme || '';
+  if (t === 'daylight') return { bg: '#d8ede3', sig: [42, 125, 92] };
+  if (t === 'instrument') return { bg: '#001a20', sig: [0, 200, 212] };
+  return { bg: '#0d1f1b', sig: [62, 201, 159] };
+}
+
+function currentThemeKey() { return document.documentElement.dataset.theme || 'nightwood'; }
+
+function paint(ctx, x, y, w, h, a, sig) {
+  ctx.fillStyle = `rgba(${sig[0]},${sig[1]},${sig[2]},${Math.min(0.95, a)})`;
   ctx.fillRect(x, y, w, h);
 }
 
 export function renderSpectrogram(creature, w, h) {
+  const { bg, sig } = spectrogramColors();
   const canvas = document.createElement('canvas');
   const dpr = Math.min(2, window.devicePixelRatio || 1);
   canvas.width = w * dpr; canvas.height = h * dpr;
   canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
   const ctx = canvas.getContext('2d');
   ctx.scale(dpr, dpr);
-  ctx.fillStyle = '#0d1f1b';
+  ctx.fillStyle = bg;
   ctx.fillRect(0, 0, w, h);
 
   const dur = creature.duration || 2.5;
@@ -39,20 +48,19 @@ export function renderSpectrogram(creature, w, h) {
     const x1 = ((ev.t + ev.dur) / dur) * w;
     const gain = (ev.gain ?? 0.4);
     for (let cx = Math.floor(x0); cx < x1; cx++) {
-      const frac = (cx / w * dur - ev.t) / ev.dur; // 0..1 within event
+      const frac = (cx / w * dur - ev.t) / ev.dur;
       if (frac < 0 || frac > 1) continue;
-      const fade = Math.sin(Math.min(1, Math.max(0, frac)) * Math.PI); // soft attack/decay
+      const fade = Math.sin(Math.min(1, Math.max(0, frac)) * Math.PI);
       const a = gain * (0.35 + 0.65 * fade);
 
       if (ev.type === 'noise') {
         const yTop = freqToY(ev.f1 || 2000, h);
         const yBot = freqToY(ev.f0 || 300, h);
-        // speckled broadband
         let s = (cx * 2654435761) >>> 0;
         for (let y = yTop; y < yBot; y += 2) {
           s = (s * 1664525 + 1013904223) >>> 0;
           const jitter = (s % 100) / 100;
-          if (jitter > 0.45) paint(ctx, cx, y, colW + 0.6, 2, a * 0.5 * jitter);
+          if (jitter > 0.45) paint(ctx, cx, y, colW + 0.6, 2, a * 0.5 * jitter, sig);
         }
       } else {
         let f;
@@ -64,9 +72,9 @@ export function renderSpectrogram(creature, w, h) {
         const drawBand = (freq, intensity) => {
           const y = freqToY(freq, h);
           const band = 3.5;
-          paint(ctx, cx, y - band, colW + 0.8, band * 2, intensity);
-          paint(ctx, cx, y - band * 2, colW + 0.8, band, intensity * 0.4);
-          paint(ctx, cx, y + band, colW + 0.8, band, intensity * 0.4);
+          paint(ctx, cx, y - band, colW + 0.8, band * 2, intensity, sig);
+          paint(ctx, cx, y - band * 2, colW + 0.8, band, intensity * 0.4, sig);
+          paint(ctx, cx, y + band, colW + 0.8, band, intensity * 0.4, sig);
         };
         drawBand(f, a);
         const harm = ev.harm || 0;
@@ -78,7 +86,7 @@ export function renderSpectrogram(creature, w, h) {
 }
 
 // ---- real-audio spectrogram (STFT) -----------------------------------------
-const clipCache = new Map(); // id@WxH -> source canvas
+const clipCache = new Map(); // id@WxH@theme -> source canvas
 
 // in-place iterative radix-2 FFT
 function fft(re, im) {
@@ -106,6 +114,7 @@ function fft(re, im) {
 }
 
 function computeSpectrogramCanvas(buffer, w, h) {
+  const { bg, sig } = spectrogramColors();
   const data = buffer.getChannelData(0);
   const sr = buffer.sampleRate;
   const N = 1024, half = N / 2;
@@ -131,7 +140,7 @@ function computeSpectrogramCanvas(buffer, w, h) {
   canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
   const ctx = canvas.getContext('2d');
   ctx.scale(dpr, dpr);
-  ctx.fillStyle = '#0d1f1b'; ctx.fillRect(0, 0, w, h);
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, w, h);
 
   const colW = w / cols;
   const logPeak = Math.log(peak + 1e-9);
@@ -140,13 +149,13 @@ function computeSpectrogramCanvas(buffer, w, h) {
     for (let k = 1; k < half; k++) {
       const f = k * sr / N;
       if (f < FMIN || f > FMAX) continue;
-      const db = (Math.log(col[k] + 1e-9) - logPeak); // <=0
-      const a = Math.max(0, 1 + db / 6.5); // ~ -6.5 log-units dynamic range
+      const db = (Math.log(col[k] + 1e-9) - logPeak);
+      const a = Math.max(0, 1 + db / 6.5);
       if (a < 0.04) continue;
       const y = freqToY(f, h);
       const yNext = freqToY((k + 1) * sr / N, h);
       const bh = Math.max(1, Math.abs(y - yNext) + 0.6);
-      ctx.fillStyle = `rgba(62,201,159,${Math.min(0.95, a)})`;
+      ctx.fillStyle = `rgba(${sig[0]},${sig[1]},${sig[2]},${Math.min(0.95, a)})`;
       ctx.fillRect(c * colW, y - bh, colW + 0.6, bh);
     }
   }
@@ -163,7 +172,7 @@ function drawnCopy(src, w, h) {
 }
 
 async function renderClipSpectrogram(creature, w, h) {
-  const key = `${creature.id}@${w}x${h}`;
+  const key = `${creature.id}@${w}x${h}@${currentThemeKey()}`;
   if (clipCache.has(key)) return drawnCopy(clipCache.get(key), w, h);
   const buffer = await audio.decode(creature);
   const src = computeSpectrogramCanvas(buffer, w, h);
@@ -178,7 +187,7 @@ export function mountSpectrogram(container, creature, w, h) {
   if (creature.clip) {
     const placeholder = creature.events
       ? renderSpectrogram(creature, w, h)
-      : (() => { const cv = document.createElement('canvas'); cv.width = w; cv.height = h; cv.style.width = w + 'px'; cv.style.height = h + 'px'; const cx = cv.getContext('2d'); cx.fillStyle = '#0d1f1b'; cx.fillRect(0, 0, w, h); return cv; })();
+      : (() => { const cv = document.createElement('canvas'); cv.width = w; cv.height = h; cv.style.width = w + 'px'; cv.style.height = h + 'px'; const cx = cv.getContext('2d'); cx.fillStyle = spectrogramColors().bg; cx.fillRect(0, 0, w, h); return cv; })();
     container.appendChild(placeholder);
     renderClipSpectrogram(creature, w, h)
       .then((cv) => { container.innerHTML = ''; container.appendChild(cv); })
