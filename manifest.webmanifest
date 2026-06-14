@@ -1,0 +1,16 @@
+{
+  "name": "Hark — hear what you've been missing",
+  "short_name": "Hark",
+  "description": "A calm little game that teaches your ears the secret language of the wild.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0d1110",
+  "theme_color": "#0d1f1b",
+  "categories": ["games", "education", "lifestyle"],
+  "icons": [
+    { "src": "assets/img/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "assets/img/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
