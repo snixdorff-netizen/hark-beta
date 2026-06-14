@@ -131,6 +131,12 @@ async function loadClip(creature) {
   return buf;
 }
 
+// Decode a clip to an AudioBuffer (for spectrogram analysis) without playing it.
+export async function decode(creature) {
+  ensure();
+  return loadClip(creature);
+}
+
 // Returns the duration scheduled (seconds).
 export async function play(creature) {
   ensure();

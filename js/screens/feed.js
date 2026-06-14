@@ -70,6 +70,12 @@ function buildCard(c, app) {
   node.appendChild(line);
 
   node.appendChild(el('div', { class: 'fact', text: c.fact }));
+  if (c.author) {
+    const credit = el('a', { class: 'fact', href: c.source || '#', target: '_blank', rel: 'noopener',
+      style: 'opacity:.55;font-size:10.5px;margin-top:4px;color:inherit;text-decoration:underline;display:block',
+      text: `rec ${String(c.author).replace(/\s+/g, ' ').trim()} · ${c.license} · ${c.sourceName || ''} (trimmed)` });
+    node.appendChild(credit);
+  }
 
   return { node, creature: c };
 }

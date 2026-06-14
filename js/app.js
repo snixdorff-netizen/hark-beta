@@ -1,6 +1,7 @@
 // Hark — app shell, router, persistent chrome.
 import { el, clear, icon, iconEl } from './ui.js';
 import { get } from './state.js';
+import { loadManifest } from './content.js';
 import * as audio from './audio.js';
 import { init as initAnalytics, track } from './analytics.js';
 import { showPrivacyNotice, showOwnerDashboard } from './probes.js';
@@ -99,8 +100,9 @@ function mentor(html, ms = 6500) {
 }
 
 // boot
-function boot() {
+async function boot() {
   initAnalytics();
+  await loadManifest();
   const s = get();
   if (!s.onboarded) go('coldopen');
   else { go('feed'); showPrivacyNotice(); }

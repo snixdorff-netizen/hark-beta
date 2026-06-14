@@ -1,0 +1,101 @@
+{
+  "barredowl": {
+    "id": "barredowl",
+    "name": "Barred owl",
+    "group": "bird",
+    "region": "E North America",
+    "file": "assets/audio/barredowl.mp3",
+    "license": "CC BY-SA 4.0",
+    "author": "Rob Porter",
+    "source": "https://commons.wikimedia.org/wiki/File:Strix_varia_-_Barred_Owl_XC457078.mp3",
+    "sourceName": "Wikimedia Commons"
+  },
+  "springpeeper": {
+    "id": "springpeeper",
+    "name": "Spring peeper",
+    "group": "amphibian",
+    "region": "E North America",
+    "file": "assets/audio/springpeeper.mp3",
+    "license": "CC BY-SA 4.0",
+    "author": "Ryan Hodnett",
+    "source": "https://commons.wikimedia.org/wiki/File:Spring_Peepers_(Pseudacris_crucifer)_-_Great_Swamp_National_Wildlife_Refuge,_New_Jersey_2023-03-21_(01).mp3",
+    "sourceName": "Wikimedia Commons"
+  },
+  "wren": {
+    "id": "wren",
+    "name": "Winter wren",
+    "group": "bird",
+    "region": "Holarctic",
+    "file": "assets/audio/wren.mp3",
+    "license": "CC BY-SA 4.0",
+    "author": "GESHORS Yann",
+    "source": "https://commons.wikimedia.org/wiki/File:Troglodytes_troglodytes_-_Eurasian_Wren_XC513761.mp3",
+    "sourceName": "Wikimedia Commons"
+  },
+  "treefrog": {
+    "id": "treefrog",
+    "name": "Pacific tree frog",
+    "group": "amphibian",
+    "region": "W North America",
+    "file": "assets/audio/treefrog.mp3",
+    "license": "CC BY-SA 4.0",
+    "author": "James Ray",
+    "source": "https://commons.wikimedia.org/wiki/File:Sonus_naturalis_-_Soundscape_XC446158.mp3",
+    "sourceName": "Wikimedia Commons"
+  },
+  "cicada": {
+    "id": "cicada",
+    "name": "Cicada",
+    "group": "insect",
+    "region": "Worldwide",
+    "file": "assets/audio/cicada.mp3",
+    "license": "CC BY-SA 4.0",
+    "author": "Subhashish Panigrahi",
+    "source": "https://commons.wikimedia.org/wiki/File:Sound_of_Cicada_on_Eucalyptus_trees.flac",
+    "sourceName": "Wikimedia Commons"
+  },
+  "nighthawk": {
+    "id": "nighthawk",
+    "name": "Common nighthawk",
+    "group": "bird",
+    "region": "Americas",
+    "file": "assets/audio/nighthawk.mp3",
+    "license": "CC BY-SA 4.0",
+    "author": "Oliver Komar",
+    "source": "https://commons.wikimedia.org/wiki/File:Chordeiles_minor_-_Common_Nighthawk_XC484751.mp3",
+    "sourceName": "Wikimedia Commons"
+  },
+  "foxscream": {
+    "id": "foxscream",
+    "name": "Red fox",
+    "group": "mammal",
+    "region": "N hemisphere",
+    "file": "assets/audio/foxscream.mp3",
+    "license": "CC BY-SA 4.0",
+    "author": "Alexander Kurthy",
+    "source": "https://commons.wikimedia.org/wiki/File:Vulpes_vulpes,_at_Henclov%C3%A1,_Slovakia_XC108315.mp3",
+    "sourceName": "Wikimedia Commons"
+  },
+  "lyrebird": {
+    "id": "lyrebird",
+    "name": "Superb lyrebird",
+    "group": "bird",
+    "region": "SE Australia",
+    "file": "assets/audio/lyrebird.mp3",
+    "license": "CC BY-SA 4.0",
+    "author": "James Ray",
+    "source": "https://commons.wikimedia.org/wiki/File:Menura_novaehollandiae_-_Superb_Lyrebird_XC442964.mp3",
+    "sourceName": "Wikimedia Commons"
+  },
+  "koala": {
+    "id": "koala",
+    "name": "Southern koala",
+    "group": "mammal",
+    "region": "Australia",
+    "file": "assets/audio/koala.mp3",
+    "license": "CC0",
+    "author": "Speaker: Shareculture\nRecorder: Shareculture",
+    "source": "https://commons.wikimedia.org/wiki/File:LL-Q150_(fra)-Shareculture-Koala.wav",
+    "sourceName": "Wikimedia Commons"
+  }
+}

@@ -156,6 +156,21 @@ export const CREATURES = [
   },
 ];
 
+// Patch in real licensed clips from the ingestion manifest (assets/audio/manifest.json).
+// Sets clip:true so the audio engine plays the real recording and the spectrogram
+// renderer computes a true STFT image. Carries license + attribution for credits.
+export async function loadManifest() {
+  try {
+    const res = await fetch('assets/audio/manifest.json', { cache: 'no-cache' });
+    if (!res.ok) return;
+    const m = await res.json();
+    for (const [id, meta] of Object.entries(m)) {
+      const c = CREATURES.find((x) => x.id === id);
+      if (c) { c.clip = true; c.license = meta.license; c.author = meta.author; c.source = meta.source; c.sourceName = meta.sourceName; }
+    }
+  } catch (e) {}
+}
+
 export const byId = (id) => CREATURES.find((c) => c.id === id);
 export const inGroup = (g) => CREATURES.filter((c) => c.group === g);
 export const viralFeed = () => CREATURES.filter((c) => c.viral).concat(CREATURES.filter((c) => !c.viral));
