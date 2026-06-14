@@ -5,8 +5,11 @@
 
 // ---- CONFIG (edit these, then redeploy) -------------------------------------
 export const CONFIG = {
-  // Paste your collector URL here (see COLLECTOR_SETUP.md for a 5-min Google
-  // Apps Script recipe). Empty = local-only (events still recorded on-device).
+  // Supabase collector (preferred). Fill both from your Supabase project settings,
+  // run the SQL in SUPABASE_SETUP.md first, then redeploy. Empty = not used.
+  SUPABASE_URL: '',          // e.g. https://abcd.supabase.co
+  SUPABASE_ANON_KEY: '',     // anon public key (safe to ship; insert-only RLS)
+  // Generic fallback collector (e.g. Google Apps Script). Empty = not used.
   BEACON_URL: '',
   // Where the in-app "Send feedback" link goes.
   FEEDBACK_URL: 'mailto:stuart@intervals.ai?subject=Hark%20beta%20feedback',
@@ -73,13 +76,24 @@ function storeLocal(ev) {
 }
 
 function beacon(ev) {
-  if (!CONFIG.BEACON_URL) return;
   try {
-    const body = JSON.stringify(ev);
-    if (navigator.sendBeacon) {
-      navigator.sendBeacon(CONFIG.BEACON_URL, new Blob([body], { type: 'text/plain' }));
-    } else {
-      fetch(CONFIG.BEACON_URL, { method: 'POST', mode: 'no-cors', keepalive: true, headers: { 'content-type': 'text/plain' }, body });
+    if (CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY) {
+      fetch(`${CONFIG.SUPABASE_URL}/rest/v1/events`, {
+        method: 'POST', keepalive: true,
+        headers: {
+          apikey: CONFIG.SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${CONFIG.SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=minimal',
+        },
+        body: JSON.stringify({ name: ev.name, did: ev.did, event: ev }),
+      }).catch(() => {});
+      return;
+    }
+    if (CONFIG.BEACON_URL) {
+      const body = JSON.stringify(ev);
+      if (navigator.sendBeacon) navigator.sendBeacon(CONFIG.BEACON_URL, new Blob([body], { type: 'text/plain' }));
+      else fetch(CONFIG.BEACON_URL, { method: 'POST', mode: 'no-cors', keepalive: true, headers: { 'content-type': 'text/plain' }, body });
     }
   } catch (e) {}
 }
