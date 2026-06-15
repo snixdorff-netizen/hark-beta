@@ -125,19 +125,7 @@ button{font-family:inherit;color:inherit;border:none;background:none;cursor:poin
 .swipecard{flex:1;border:.5px solid var(--line2);border-radius:16px;padding:14px;background:var(--panel);touch-action:pan-y}
 .swipecard .ask{text-align:center;color:var(--muted);font-size:13px;margin-top:10px}
 
-/* haul */
-.haul-list{display:flex;flex-direction:column;gap:2px;overflow-y:auto;flex:1}
-.haul-row{display:flex;align-items:center;justify-content:space-between;padding:11px 4px;border-bottom:.5px solid var(--line);font-size:14px}
-.haul-row .chk{color:var(--teal)}
-.unknown{margin-top:8px;border:1px solid var(--amber);background:rgba(224,164,77,.12);border-radius:12px;padding:12px;display:flex;gap:10px;align-items:center;animation:glow 2.4s ease-in-out infinite}
-@keyframes glow{0%,100%{box-shadow:0 0 0 0 rgba(224,164,77,.0)}50%{box-shadow:0 0 16px 1px rgba(224,164,77,.35)}}
-.unknown .t{font-size:13px;font-weight:500;color:var(--amber)}
-.unknown .d{font-size:11px;color:#caa56a}
-.deploy{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;flex:1;text-align:center;padding:24px}
-.ring{width:120px;height:120px;border-radius:50%;border:3px solid var(--line2);display:flex;align-items:center;justify-content:center;color:var(--teal);font-size:22px;font-weight:500}
-.btn-row{display:flex;gap:10px;margin-top:auto}
-.btn{flex:1;padding:14px;border-radius:26px;font-size:14px;font-weight:500;text-align:center;border:.5px solid var(--line2);color:var(--ink)}
-.btn.primary{background:var(--teal);color:var(--teal-deep);border-color:var(--teal)}
+/* haul (styles moved to Sprint 2 section below) */
 
 /* grove */
 .grove-stage{flex:1;position:relative;background:linear-gradient(180deg,#10211c 0%,#0d1110 100%);display:flex;align-items:flex-end;justify-content:center;gap:6px;padding-bottom:30px;overflow:hidden}
@@ -212,3 +200,82 @@ button{font-family:inherit;color:inherit;border:none;background:none;cursor:poin
   flex:1; gap:16px; text-align:center; padding:40px;
   animation: fade .25s ease both;
 }
+
+/* ── Sprint 2: rank, daily challenge, rare, share ───────────────────────── */
+
+/* Rank badge in topbar */
+.rank-badge {
+  font-size:18px; line-height:1; padding:2px 4px;
+  border-radius:8px; cursor:default;
+  transition:transform .2s;
+}
+.rank-badge:hover { transform:scale(1.2); }
+
+/* Daily challenge badge on feed card */
+.daily-badge {
+  position:absolute;
+  top:calc(var(--safe-top) + 52px);
+  left:16px;
+  font-size:11px; font-weight:600;
+  padding:3px 10px; border-radius:20px;
+  background:var(--amber); color:var(--amber-deep);
+  letter-spacing:.04em;
+  animation:pulse-glow 2s ease-in-out infinite;
+}
+.daily-badge.done {
+  background:rgba(62,201,159,.2); color:var(--teal);
+  animation:none;
+}
+@keyframes pulse-glow {
+  0%,100%{box-shadow:0 0 0 0 rgba(224,164,77,.4)}
+  50%{box-shadow:0 0 0 6px rgba(224,164,77,0)}
+}
+
+/* Rare badge */
+.rare-badge {
+  position:absolute;
+  top:calc(var(--safe-top) + 52px);
+  right:16px;
+  font-size:11px; font-weight:600;
+  padding:3px 10px; border-radius:20px;
+  background:rgba(111,139,255,.2); color:#6f8bff;
+  letter-spacing:.04em;
+}
+
+/* Haul list rows with emoji */
+.haul-list { display:flex; flex-direction:column; gap:8px; width:100%; padding:0 0 12px; }
+.haul-row {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 16px; border-radius:12px;
+  background:var(--panel); border:.5px solid var(--line2);
+  font-size:14px; color:var(--ink); text-align:left;
+  width:100%;
+}
+.haul-row .chk { color:var(--teal); }
+
+/* 67kHz unknown panel */
+.unknown {
+  display:flex; align-items:center; gap:14px;
+  padding:14px 16px; border-radius:12px; margin-top:8px;
+  background:rgba(224,164,77,.08); border:.5px solid rgba(224,164,77,.3);
+  cursor:pointer;
+}
+.unknown .t { font-size:14px; font-weight:500; color:var(--amber); }
+.unknown .d { font-size:11px; color:#caa56a; }
+
+/* Deploy / recording ring */
+.deploy { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; flex:1; text-align:center; padding:24px; }
+.ring {
+  width:120px; height:120px; border-radius:50%;
+  border:3px solid var(--line2);
+  display:flex; align-items:center; justify-content:center;
+  color:var(--teal); font-size:22px; font-weight:500;
+  animation:ring-pulse 2s ease-in-out infinite;
+}
+@keyframes ring-pulse {
+  0%,100%{border-color:var(--line2)}
+  50%{border-color:rgba(62,201,159,.5)}
+}
+.btn-row { display:flex; gap:10px; margin-top:auto; }
+.btn { flex:1; padding:14px; border-radius:26px; font-size:14px; font-weight:500; text-align:center; border:.5px solid var(--line2); color:var(--ink); }
+.btn.primary { background:var(--teal); color:var(--teal-deep); border-color:var(--teal); }

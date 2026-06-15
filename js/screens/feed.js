@@ -4,8 +4,9 @@ import { el, clear, icon, haptic } from '../ui.js';
 import { mountSpectrogram } from '../spectrogram.js';
 import * as audio from '../audio.js';
 import { viralFeed, GROUPS, creatureEmoji } from '../content.js';
-import { discover } from '../state.js';
+import { get, discover, addXp, save, today } from '../state.js';
 import { track, shareUrl } from '../analytics.js';
+import { shareCreature } from '../sharecard.js';
 
 export function mount(host, app) {
   const root = el('div', { class: 'screen' });
@@ -14,7 +15,9 @@ export function mount(host, app) {
   host.appendChild(root);
 
   const list = viralFeed();
-  const cards = list.map((c, i) => buildCard(c, app, i === 0));
+  const s = get();
+  const dailyDone = s.challengeDay === today();
+  const cards = list.map((c, i) => buildCard(c, app, i === 0, dailyDone));
   cards.forEach((c) => feed.appendChild(c.node));
 
   // Lazy: only render a card's spectrogram (and decode its clip) when it nears
@@ -38,21 +41,28 @@ export function mount(host, app) {
   return () => { io.disconnect(); audio.stopAll(); root.remove(); };
 }
 
-function buildCard(c, app, isDaily) {
+function buildCard(c, app, isDaily, dailyDone) {
   const g = GROUPS[c.group];
   const node = el('div', { class: 'card', style: `background:radial-gradient(120% 80% at 50% 35%, ${hex(g.color, .22)} 0%, #0d1110 70%)` });
 
   node.appendChild(el('div', { class: 'grp', html: `<span style="width:8px;height:8px;border-radius:50%;background:${g.color};display:inline-block"></span> ${g.label} · ${c.region}` }));
 
-  // soft stage halo
   const stage = el('div', { class: 'stage' });
-      const emoEl = el('div', { style: 'font-size:92px;line-height:1;user-select:none;filter:drop-shadow(0 2px 16px rgba(0,0,0,.4))' });
-      emoEl.textContent = creatureEmoji(c);
-      stage.appendChild(emoEl);
+  const emoEl = el('div', { style: 'font-size:92px;line-height:1;user-select:none;filter:drop-shadow(0 2px 16px rgba(0,0,0,.4))' });
+  emoEl.textContent = creatureEmoji(c);
+  stage.appendChild(emoEl);
   node.appendChild(stage);
   if (isDaily) {
-    const badge = el('div', { style: 'position:absolute;top:calc(var(--safe-top) + 52px);left:16px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:var(--amber);color:var(--amber-deep);letter-spacing:.04em', text: '⭐ Sound of the Day' });
+    const badgeText = dailyDone ? '✅ Sound of the Day — done' : '⭐ Sound of the Day';
+    const badge = el('div', {
+      class: 'daily-badge' + (dailyDone ? ' done' : ''),
+      text: badgeText,
+    });
     node.appendChild(badge);
+  }
+  if (c.rare) {
+    const rareBadge = el('div', { class: 'rare-badge', text: '✨ Rare find' });
+    node.appendChild(rareBadge);
   }
 
   // action rail
@@ -60,7 +70,17 @@ function buildCard(c, app, isDaily) {
   const like = el('button', { 'aria-label': 'Like', html: icon('heart', 26) + '<span>like</span>' });
   like.addEventListener('click', () => { like.classList.toggle('liked'); haptic(); track('feed_like', { id: c.id }); });
   const share = el('button', { 'aria-label': 'Share', html: icon('share', 24) + '<span>share</span>' });
-  share.addEventListener('click', () => doShare(c));
+  share.addEventListener('click', () => {
+    if (isDaily && !dailyDone) {
+      const s = get();
+      s.challengeDay = today(); save();
+      addXp(25);
+      app.mentor('<b>Daily Challenge!</b> +25 XP for sharing today\'s Sound of the Day 🌿', 6000);
+      track('daily_challenge_complete', { id: c.id });
+    }
+    shareCreature(c, app);
+    track('feed_share', { id: c.id });
+  });
   rail.appendChild(like); rail.appendChild(share);
   node.appendChild(rail);
 
@@ -97,16 +117,6 @@ function prettyGroup(c) {
   return map[c.id] || 'wild sound';
 }
 
-async function doShare(c) {
-  track('feed_share', { id: c.id });
-  const url = shareUrl();
-  const text = `${c.name} — heard it on Hark 🌿 ${url}`;
-  try {
-    if (navigator.share) await navigator.share({ title: 'Hark', text, url });
-    else { await navigator.clipboard.writeText(text); }
-  } catch (e) {}
-  haptic();
-}
 
 function hex(h, a) {
   const n = parseInt(h.slice(1), 16);

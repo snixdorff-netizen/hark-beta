@@ -19,7 +19,7 @@ export const GROUPS = {
 // f in Hz, t/dur in seconds, gain 0..1
 export const CREATURES = [
   {
-    id: 'lyrebird', name: 'Superb lyrebird', group: 'bird', region: 'SE Australia', viral: true,
+    id: 'lyrebird', name: 'Superb lyrebird', group: 'bird', region: 'SE Australia', viral: true, rare: true,
     fact: 'The superb lyrebird mimics anything — other birds, camera shutters, even chainsaws. It is one of the most accurate vocal mimics on Earth.',
     duration: 3.0,
     events: [
@@ -69,7 +69,7 @@ export const CREATURES = [
     ],
   },
   {
-    id: 'foxscream', name: 'Red fox', group: 'mammal', region: 'N hemisphere', viral: true,
+    id: 'foxscream', name: 'Red fox', group: 'mammal', region: 'N hemisphere', viral: true, rare: true,
     fact: 'The red fox’s night “scream” is a contact and mating call — unsettling if you don’t know it, ordinary conversation if you do.',
     duration: 2.0,
     events: [
@@ -98,7 +98,7 @@ export const CREATURES = [
     ],
   },
   {
-    id: 'wren', name: 'Winter wren', group: 'bird', region: 'Holarctic', viral: false,
+    id: 'wren', name: 'Winter wren', group: 'bird', region: 'Holarctic', viral: false, rare: true,
     fact: 'A bird the size of a ping-pong ball delivers a torrent of 100+ notes — a song so dense it sounds sped up. Hark’s mentor takes her name from it.',
     duration: 3.0,
     events: [
@@ -114,7 +114,7 @@ export const CREATURES = [
     ],
   },
   {
-    id: 'nighthawk', name: 'Common nighthawk', group: 'bird', region: 'Americas', viral: false,
+    id: 'nighthawk', name: 'Common nighthawk', group: 'bird', region: 'Americas', viral: false, rare: true,
     fact: 'Beyond its nasal “peent,” the nighthawk makes a booming “wing-rush” with air over its feathers as it dives — sound made without a voice.',
     duration: 2.2,
     events: [
@@ -147,6 +147,7 @@ export async function loadManifest() {
       c.clip = true;
       c.license = meta.license; c.author = meta.author; c.source = meta.source; c.sourceName = meta.sourceName;
       if (meta.viral) c.viral = true;
+      if (meta.rare) c.rare = true;
       const groupLabel = ((GROUPS[c.group] || {}).label || c.group || 'sound').toLowerCase();
       c.fact = c.fact || meta.fact || `A ${groupLabel} recorded in ${meta.region}. Listen for what makes its voice unmistakable.`;
     }

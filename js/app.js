@@ -1,7 +1,8 @@
 // Hark — app shell, router, persistent chrome.
 import { el, clear, icon, iconEl } from './ui.js';
-import { get } from './state.js';
+import { get, touchStreak, today } from './state.js';
 import { loadManifest } from './content.js';
+import { rankProgress } from './rank.js';
 import * as audio from './audio.js';
 import { init as initAnalytics, track } from './analytics.js';
 import { showPrivacyNotice, showOwnerDashboard } from './probes.js';
@@ -86,6 +87,10 @@ function updateChrome(active) {
   const mid = el('div', { style: 'flex:1' });
   shell.topbar.appendChild(mid);
   const stats = el('div', { class: 'stats' });
+  const rp = rankProgress(Object.keys(s.discovered).length);
+  const rankBadge = el('div', { class: 'rank-badge', title: rp.rank.title });
+  rankBadge.textContent = rp.rank.emoji;
+  stats.appendChild(rankBadge);
   stats.appendChild(el('div', { class: 'stat', html: `${icon('flame', 16)} <b>${s.streak}</b>` }));
   stats.appendChild(el('div', { class: 'stat', html: `${icon('sparkle', 15)} <b>${s.xp}</b>` }));
   const themeBtn = el('button', {
@@ -101,6 +106,16 @@ function updateChrome(active) {
   });
 }
 
+let _lastRankTitle = null;
+
+function checkRankUp(s) {
+  const rp = rankProgress(Object.keys(s.discovered).length);
+  if (_lastRankTitle && _lastRankTitle !== rp.rank.title) {
+    setTimeout(() => mentor(`<b>Rank up!</b> You're now a ${rp.rank.emoji} <b>${rp.rank.title}</b>. Your ears are sharpening.`, 8000), 600);
+  }
+  _lastRankTitle = rp.rank.title;
+}
+
 function go(name, params = {}) {
   if (cleanup) { try { cleanup(); } catch (e) {} cleanup = null; }
   audio.stopAll();
@@ -113,9 +128,21 @@ function go(name, params = {}) {
   }
   buildShell();
   clear(shell.body);
+  const s = get();
   cleanup = SCREENS[name](shell.body, app, params);
   updateChrome(name);
   track('screen_view', { screen: name });
+  checkRankUp(s);
+  // Welcome-back message for streak players
+  if (name === 'feed' && s.streak >= 3 && s.lastPlayed === today()) {
+    const msgs = [
+      `<b>Day ${s.streak}.</b> The forest is glad you're back.`,
+      `<b>Wren:</b> ${s.streak} days straight. Most people don't make it this far.`,
+      `<b>Wren:</b> Back again. Your ear remembers more than you think.`,
+    ];
+    const idx = s.streak % msgs.length;
+    setTimeout(() => mentor(msgs[idx], 5000), 900);
+  }
 }
 
 function mentor(html, ms = 6500) {

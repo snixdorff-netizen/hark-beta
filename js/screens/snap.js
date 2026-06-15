@@ -8,6 +8,7 @@ import { get, addXp, adjustSkill, awardCrown, discover, growGrove, touchStreak }
 import { track } from '../analytics.js';
 import { maybeShowWtp } from '../probes.js';
 import { creatureEmoji } from '../content.js';
+import { shareCreature } from '../sharecard.js';
 
 export function mount(host, app, params = {}) {
   const root = el('div', { class: 'screen' });
@@ -107,7 +108,15 @@ export function mount(host, app, params = {}) {
     }
     wrap.appendChild(el('h1', { html: `Nice ears.<br><span>${correctCount}/${targets.length} this round.</span>` }));
     wrap.appendChild(el('p', { text: 'Each one you name makes the next easier to hear. Your Grove grew a little.' }));
-    const again = el('button', { class: 'cta', text: 'Again' });
+    if (gotRight.length) {
+      const shareBtn = el('button', { class: 'cta', text: '📤 Share your catch' });
+      shareBtn.addEventListener('click', () => {
+        track('snap_share', { count: gotRight.length });
+        shareCreature(gotRight[gotRight.length - 1], app);
+      });
+      wrap.appendChild(shareBtn);
+    }
+    const again = el('button', { class: 'ghost', text: 'Another round' });
     again.addEventListener('click', () => { track('one_more', { from: 'snap' }); app.go('snap'); });
     wrap.appendChild(again);
     const home = el('button', { class: 'ghost', text: 'Back to the feed' });

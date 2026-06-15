@@ -3,7 +3,8 @@
 import { el, clear, icon, sparkleBurst, haptic } from '../ui.js';
 import { mountSpectrogram } from '../spectrogram.js';
 import * as audio from '../audio.js';
-import { CREATURES, byId, seededShuffle } from '../content.js';
+import { CREATURES, byId, seededShuffle, creatureEmoji } from '../content.js';
+import { shareCreature } from '../sharecard.js';
 import { get, save, addXp, growGrove, discover } from '../state.js';
 import { track } from '../analytics.js';
 import { maybeShowWtp } from '../probes.js';
@@ -82,7 +83,10 @@ export function mount(host, app) {
       const c = byId(id); if (!c) return;
       const sorted = s.haul.sorted.includes(id);
       const row = el('button', { class: 'haul-row' });
-      row.appendChild(el('span', { text: sorted ? c.name : 'Unsorted clip' }));
+      const label = el('span', { style: 'display:flex;align-items:center;gap:8px' });
+      if (sorted) { const emo = el('span', { style: 'font-size:20px;line-height:1' }); emo.textContent = creatureEmoji(c); label.appendChild(emo); }
+      label.appendChild(el('span', { text: sorted ? c.name : 'Unsorted clip' }));
+      row.appendChild(label);
       const right = el('span', { class: 'ic' });
       right.innerHTML = sorted ? `<span class="chk">${icon('check', 18)}</span>` : icon('play', 18);
       row.appendChild(right);
@@ -102,13 +106,21 @@ export function mount(host, app) {
       const u = el('div', { class: 'unknown' });
       u.innerHTML = `<span class="ic" style="color:var(--amber)">${icon('help', 22)}</span>
         <div><div class="t">67 kHz — unidentified</div><div class="d">ultrasonic · nobody’s named this</div></div>`;
-      u.addEventListener('click', () => {
+      u.addEventListener(‘click’, () => {
         s.haul.unknownSeen = true; save();
-        track('unknown_seen');
-        app.mentor('<b>Wren:</b> 67 kHz is above human hearing — bat territory. But this isn’t a bat. Keep it. We’ll need more ears on this one.');
+        track(‘unknown_seen’);
+        app.mentor(‘<b>Wren:</b> 67 kHz is above human hearing — bat territory. But this isn\’t a bat. Keep it. We\’ll need more ears on this one.’);
         haptic(16);
       });
+      const shareUnknown = el(‘button’, { class: ‘btn’, style: ‘margin-top:10px;background:rgba(224,164,77,.12);border-color:var(--amber);color:var(--amber);font-size:13px’, text: ‘📤 Tell someone about 67kHz’ });
+      shareUnknown.addEventListener(‘click’, async () => {
+        track(‘unknown_share’);
+        const url = (await import(‘../analytics.js’)).shareUrl();
+        const text = ‘We found an unidentified 67 kHz signal on Hark. Nobody knows what it is. 👀 ‘ + url;
+        try { if (navigator.share) await navigator.share({ title: ‘Hark — 67 kHz mystery’, text, url }); else await navigator.clipboard.writeText(text); } catch (e) {}
+      });
       pad.appendChild(u);
+      pad.appendChild(shareUnknown);
     }
 
     const row = el('div', { class: 'btn-row' });
