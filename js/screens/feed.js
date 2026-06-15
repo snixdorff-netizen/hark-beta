@@ -14,10 +14,27 @@ export function mount(host, app) {
   root.appendChild(feed);
   host.appendChild(root);
 
+  const DAILY_TIPS = [
+    'Listen for the silence between notes — that\'s where the field recordist earns their keep.',
+    'If you can name a sound in 3 seconds, you\'ve truly learned it. Time yourself.',
+    'Lyrebirds have been recorded imitating flute music heard once, decades prior.',
+    'The 67 kHz signal is still unidentified. No one has named it. Keep it.',
+    'A wolf pack harmonizes deliberately — each shifts pitch to avoid matching another.',
+    'Spring peepers are louder, pound-for-pound, than any power tool ever made.',
+    'The barn owl has no vocal apparatus for hooting — its screech is entirely its own.',
+    'Real field recordists say the ear trains faster than the eye. Keep going.',
+    'Nighthawks make sound with air over their feathers — no syrinx involved at all.',
+    'The cuckoo\'s two-note call is one of the most recognized sounds on Earth. Why?',
+  ];
+
+  // Day-seeded tip so users see a different one each day
+  const dayN = Math.floor(Date.now() / 86400000);
+  const dailyTip = DAILY_TIPS[dayN % DAILY_TIPS.length];
+
   const list = viralFeed();
   const s = get();
   const dailyDone = s.challengeDay === today();
-  const cards = list.map((c, i) => buildCard(c, app, i === 0, dailyDone));
+  const cards = list.map((c, i) => buildCard(c, app, i === 0, dailyDone, i === 0 ? dailyTip : null));
   cards.forEach((c) => feed.appendChild(c.node));
 
   // Lazy: only render a card's spectrogram (and decode its clip) when it nears
@@ -41,7 +58,7 @@ export function mount(host, app) {
   return () => { io.disconnect(); audio.stopAll(); root.remove(); };
 }
 
-function buildCard(c, app, isDaily, dailyDone) {
+function buildCard(c, app, isDaily, dailyDone, dailyTip) {
   const g = GROUPS[c.group];
   const node = el('div', { class: 'card', style: `background:radial-gradient(120% 80% at 50% 35%, ${hex(g.color, .22)} 0%, #0d1110 70%)` });
 
@@ -98,6 +115,10 @@ function buildCard(c, app, isDaily, dailyDone) {
   line.appendChild(play); line.appendChild(idb);
   node.appendChild(line);
 
+  if (isDaily && dailyTip) {
+    const tipEl = el('div', { style: 'font-size:11px;color:rgba(62,201,159,.7);font-style:italic;margin:4px 0;padding:6px 10px;border-left:2px solid rgba(62,201,159,.3)', text: 'Wren: ' + dailyTip });
+    node.appendChild(tipEl);
+  }
   node.appendChild(el('div', { class: 'fact', text: c.fact }));
   if (c.author) {
     const credit = el('a', { class: 'fact', href: c.source || '#', target: '_blank', rel: 'noopener',

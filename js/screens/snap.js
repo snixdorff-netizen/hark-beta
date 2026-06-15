@@ -72,7 +72,9 @@ export function mount(host, app, params = {}) {
       card.classList.add('correct'); haptic(14); sparkleBurst(card);
       correctCount++;
       gotRight.push(target);
-      adjustSkill(true); awardCrown(target.id); discover(target.id); addXp(10);
+      adjustSkill(true);
+      const { level: crownLevel, isNew: crownUp } = awardCrown(target.id);
+      discover(target.id); addXp(10);
       const reveal = el('div', { style: 'position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:var(--panel);border-radius:13px;pointer-events:none;animation:fade .2s ease' });
       const rEmo = el('div', { style: 'font-size:38px;line-height:1' });
       rEmo.textContent = creatureEmoji(target);
@@ -84,10 +86,15 @@ export function mount(host, app, params = {}) {
           track('rare_found', { id: target.id });
           shareCreature(target, app);
         }, 1200);
+      } else if (crownUp && crownLevel === 3) {
+        reveal.appendChild(el('div', { style: 'font-size:10px;color:var(--amber);font-weight:600;letter-spacing:.04em;margin-top:2px', text: '👑 MASTERED' }));
+        setTimeout(() => {
+          app.mentor('<b>Mastered!</b> ' + target.name + ' — you know this one cold. ' + rarityPct(target) + '% of listeners ever get here.', 7000);
+        }, 800);
       }
       card.style.position = 'relative';
       card.appendChild(reveal);
-      setTimeout(next, target.rare ? 1800 : 950);
+      setTimeout(next, (target.rare || (crownUp && crownLevel === 3)) ? 1800 : 950);
     } else {
       card.classList.add('wrong'); haptic(20); adjustSkill(false);
       audio.play(target);

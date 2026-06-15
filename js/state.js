@@ -63,11 +63,11 @@ export function discover(id) {
   }
 }
 
-// Bump mastery toward gold. Calm: only ever goes up.
+// Bump mastery toward gold. Returns { level, isNew } — isNew when crossing a threshold.
 export function awardCrown(id) {
   const cur = state.crowns[id] || 0;
-  if (cur < 3) { state.crowns[id] = cur + 1; save(); }
-  return state.crowns[id];
+  if (cur < 3) { state.crowns[id] = cur + 1; save(); return { level: state.crowns[id], isNew: true }; }
+  return { level: state.crowns[id], isNew: false };
 }
 
 export function growGrove(pct) {
