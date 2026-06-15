@@ -279,3 +279,17 @@ button{font-family:inherit;color:inherit;border:none;background:none;cursor:poin
 .btn-row { display:flex; gap:10px; margin-top:auto; }
 .btn { flex:1; padding:14px; border-radius:26px; font-size:14px; font-weight:500; text-align:center; border:.5px solid var(--line2); color:var(--ink); }
 .btn.primary { background:var(--teal); color:var(--teal-deep); border-color:var(--teal); }
+
+/* PWA install banner */
+.install-banner {
+  position:absolute;
+  left:12px; right:12px;
+  bottom:calc(var(--safe-bot) + 70px);
+  background:var(--panel2);
+  border:.5px solid var(--line2);
+  border-radius:12px;
+  padding:10px 14px;
+  display:flex; gap:10px; align-items:center;
+  z-index:30; animation:rise .4s ease;
+  box-shadow:0 4px 20px rgba(0,0,0,.3);
+}

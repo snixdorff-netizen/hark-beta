@@ -157,6 +157,46 @@ function mentor(html, ms = 6500) {
   mentorTimer = setTimeout(() => m.remove(), ms);
 }
 
+// PWA install prompt — stored and shown once after 2nd play
+let _deferredInstall = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  _deferredInstall = e;
+  const s = get();
+  if (s.xp >= 20 && !localStorage.getItem('hark.installed')) {
+    showInstallBanner();
+  }
+});
+window.addEventListener('appinstalled', () => {
+  localStorage.setItem('hark.installed', '1');
+  track('pwa_installed');
+  const banner = appRoot.querySelector('.install-banner');
+  if (banner) banner.remove();
+});
+
+function showInstallBanner() {
+  if (localStorage.getItem('hark.installed') || appRoot.querySelector('.install-banner')) return;
+  const banner = el('div', { class: 'install-banner' });
+  banner.innerHTML = '';
+  const msg = el('div', { style: 'flex:1;font-size:13px;color:var(--ink)' });
+  msg.innerHTML = '🌿 <b>Add Hark to your home screen</b> — plays offline, feels native';
+  const addBtn = el('button', { class: 'lnk', style: 'color:var(--teal);font-weight:600;font-size:13px;white-space:nowrap', text: 'Add' });
+  addBtn.addEventListener('click', async () => {
+    banner.remove();
+    if (_deferredInstall) {
+      await _deferredInstall.prompt();
+      const { outcome } = await _deferredInstall.userChoice;
+      track('pwa_prompt', { outcome });
+      _deferredInstall = null;
+    }
+  });
+  const dismiss = el('button', { class: 'lnk', style: 'color:var(--muted);font-size:12px', text: '✕' });
+  dismiss.addEventListener('click', () => { banner.remove(); localStorage.setItem('hark.installed', 'dismissed'); });
+  banner.appendChild(msg); banner.appendChild(addBtn); banner.appendChild(dismiss);
+  appRoot.appendChild(banner);
+  track('pwa_banner_shown');
+}
+
 // boot
 async function boot() {
   applyTheme(currentTheme);

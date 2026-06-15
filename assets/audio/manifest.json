@@ -4,98 +4,105 @@
     "name": "Superb lyrebird",
     "group": "bird",
     "region": "SE Australia",
-    "fact": "The superb lyrebird mimics anything \u2014 other birds, camera shutters, even chainsaws.",
+    "fact": "The superb lyrebird mimics anything — other birds, camera shutters, even chainsaws.",
     "viral": true,
     "file": "assets/audio/lyrebird.mp3",
     "license": "CC BY-SA 4.0",
     "author": "James Ray",
     "source": "https://commons.wikimedia.org/wiki/File:Menura_novaehollandiae_-_Superb_Lyrebird_XC442964.mp3",
-    "sourceName": "Wikimedia Commons"
+    "sourceName": "Wikimedia Commons",
+    "rare": true
   },
   "foxscream": {
     "id": "foxscream",
     "name": "Red fox",
     "group": "mammal",
     "region": "N hemisphere",
-    "fact": "The red fox\u2019s night \u201cscream\u201d is a contact and mating call \u2014 unsettling until you know it.",
+    "fact": "The red fox’s night “scream” is a contact and mating call — unsettling until you know it.",
     "viral": true,
     "file": "assets/audio/foxscream.mp3",
     "license": "CC BY-SA 4.0",
     "author": "Alexander Kurthy",
     "source": "https://commons.wikimedia.org/wiki/File:Vulpes_vulpes,_at_Henclov%C3%A1,_Slovakia_XC108315.mp3",
-    "sourceName": "Wikimedia Commons"
+    "sourceName": "Wikimedia Commons",
+    "rare": true
   },
   "graywolf": {
     "id": "graywolf",
     "name": "Gray wolf",
     "group": "mammal",
     "region": "Holarctic",
-    "fact": "A wolf pack harmonizes deliberately \u2014 each wolf shifts pitch to avoid matching another, making the pack sound larger.",
+    "fact": "A wolf pack harmonizes deliberately — each wolf shifts pitch to avoid matching another, making the pack sound larger.",
     "viral": true,
     "file": "assets/audio/graywolf.mp3",
     "license": "CC BY 4.0",
     "author": "Data Clock",
     "source": "https://commons.wikimedia.org/wiki/File:11wolf.wav",
-    "sourceName": "Wikimedia Commons"
+    "sourceName": "Wikimedia Commons",
+    "rare": true
   },
   "commonloon": {
     "id": "commonloon",
     "name": "Common loon",
     "group": "bird",
     "region": "N America",
-    "fact": "The loon\u2019s tremolo \u2014 the \u201claughing\u201d call \u2014 carries for miles across northern lakes.",
+    "fact": "The loon’s tremolo — the “laughing” call — carries for miles across northern lakes.",
     "viral": true,
     "file": "assets/audio/commonloon.mp3",
     "license": "Public domain",
     "author": "NPS &amp; MSU Acoustic Atlas/Jennifer Jerrett",
     "source": "https://commons.wikimedia.org/wiki/File:Yellowstone_sound_library_-_Common_Loon_-_001.mp3",
-    "sourceName": "Wikimedia Commons"
+    "sourceName": "Wikimedia Commons",
+    "rare": true
   },
   "barnowl": {
     "id": "barnowl",
     "name": "Barn owl",
     "group": "bird",
     "region": "Worldwide",
-    "fact": "The barn owl doesn\u2019t hoot \u2014 it screeches, a raspy shriek that earned it the name \u201cdemon owl\u201d.",
+    "fact": "The barn owl doesn’t hoot — it screeches, a raspy shriek that earned it the name “demon owl”.",
     "viral": true,
     "file": "assets/audio/barnowl.mp3",
     "license": "CC BY-SA 4.0",
     "author": "Luis Alvarez Menendez",
     "source": "https://commons.wikimedia.org/wiki/File:Tyto_alba_-_Western_Barn_Owl_XC540358.mp3",
-    "sourceName": "Wikimedia Commons"
+    "sourceName": "Wikimedia Commons",
+    "rare": true
   },
   "cuckoo": {
     "id": "cuckoo",
     "name": "Common cuckoo",
     "group": "bird",
     "region": "Eurasia",
-    "fact": "That two-note \u201ccuck-oo\u201d is the male; it\u2019s also a brood parasite that never raises its own young.",
+    "fact": "That two-note “cuck-oo” is the male; it’s also a brood parasite that never raises its own young.",
     "viral": true,
     "file": "assets/audio/cuckoo.mp3",
     "license": "CC BY-SA 4.0",
-    "author": "Beno\u00eet Van Hecke",
+    "author": "Benoît Van Hecke",
     "source": "https://commons.wikimedia.org/wiki/File:Cuculus_canorus_-_Common_Cuckoo_XC542432.mp3",
-    "sourceName": "Wikimedia Commons"
+    "sourceName": "Wikimedia Commons",
+    "rare": true
   },
   "whippoorwill": {
     "id": "whippoorwill",
     "name": "Eastern whip-poor-will",
     "group": "bird",
     "region": "E North America",
-    "fact": "It repeats its name into the night \u2014 sometimes hundreds of times without a pause.",
+    "fact": "It repeats its name into the night — sometimes hundreds of times without a pause.",
     "viral": true,
     "file": "assets/audio/whippoorwill.mp3",
     "license": "CC BY-SA 3.0",
     "author": "Jonathon Jongsma",
     "source": "https://commons.wikimedia.org/wiki/File:Antrostomus_vociferus_-_Eastern_Whip-poor-will_XC103418.mp3",
-    "sourceName": "Wikimedia Commons"
+    "sourceName": "Wikimedia Commons",
+    "rare": true
   },
   "barredowl": {
     "id": "barredowl",
     "name": "Barred owl",
     "group": "bird",
     "region": "E North America",
-    "fact": "Often written \u201cwho cooks for you, who cooks for you-all?\u201d",
+    "fact": "Often written “who cooks for you, who cooks for you-all?”",
     "viral": false,
     "file": "assets/audio/barredowl.mp3",
     "license": "CC BY-SA 4.0",
@@ -112,7 +119,7 @@
     "viral": false,
     "file": "assets/audio/tawnyowl.mp3",
     "license": "CC BY-SA 4.0",
-    "author": "Beno\u00eet Van Hecke",
+    "author": "Benoît Van Hecke",
     "source": "https://commons.wikimedia.org/wiki/File:Strix_aluco_-_Tawny_Owl_XC603209.mp3",
     "sourceName": "Wikimedia Commons"
   },
@@ -125,7 +132,8 @@
     "source": "https://commons.wikimedia.org/wiki/File:Bubo_virginianus_-_Great_Horned_Owl_XC428421.mp3",
     "sourceName": "Wikimedia Commons",
     "viral": false,
-    "fact": "The great horned owl's deep double-hoot \u2014 hoo-h'HOO-hoo-hoo \u2014 is the archetypal North American night sound, often mistaken for other owls."
+    "fact": "The great horned owl's deep double-hoot — hoo-h'HOO-hoo-hoo — is the archetypal North American night sound, often mistaken for other owls.",
+    "rare": true
   },
   "nighthawk": {
     "id": "nighthawk",
@@ -138,20 +146,22 @@
     "license": "CC BY-SA 4.0",
     "author": "Oliver Komar",
     "source": "https://commons.wikimedia.org/wiki/File:Chordeiles_minor_-_Common_Nighthawk_XC484751.mp3",
-    "sourceName": "Wikimedia Commons"
+    "sourceName": "Wikimedia Commons",
+    "rare": true
   },
   "nightingale": {
     "id": "nightingale",
     "name": "Common nightingale",
     "group": "bird",
     "region": "Europe & Africa",
-    "fact": "The nightingale sings at night and by day \u2014 a benchmark of birdsong for centuries.",
+    "fact": "The nightingale sings at night and by day — a benchmark of birdsong for centuries.",
     "viral": false,
     "file": "assets/audio/nightingale.mp3",
     "license": "CC BY-SA 4.0",
     "author": "GESHORS Yann",
     "source": "https://commons.wikimedia.org/wiki/File:Luscinia_megarhynchos_-_Common_Nightingale_XC546355.mp3",
-    "sourceName": "Wikimedia Commons"
+    "sourceName": "Wikimedia Commons",
+    "rare": true
   },
   "blackbird": {
     "id": "blackbird",
@@ -162,7 +172,7 @@
     "viral": false,
     "file": "assets/audio/blackbird.mp3",
     "license": "CC BY-SA 4.0",
-    "author": "Beno\u00eet Van Hecke",
+    "author": "Benoît Van Hecke",
     "source": "https://commons.wikimedia.org/wiki/File:Turdus_merula_-_Common_Blackbird_XC550669.mp3",
     "sourceName": "Wikimedia Commons"
   },
@@ -197,13 +207,14 @@
     "name": "Eurasian wren",
     "group": "bird",
     "region": "Holarctic",
-    "fact": "A bird the size of a ping-pong ball delivers 100+ notes in seconds. Hark\u2019s mentor takes her name from it.",
+    "fact": "A bird the size of a ping-pong ball delivers 100+ notes in seconds. Hark’s mentor takes her name from it.",
     "viral": false,
     "file": "assets/audio/wren.mp3",
     "license": "CC BY-SA 4.0",
     "author": "GESHORS Yann",
     "source": "https://commons.wikimedia.org/wiki/File:Troglodytes_troglodytes_-_Eurasian_Wren_XC513761.mp3",
-    "sourceName": "Wikimedia Commons"
+    "sourceName": "Wikimedia Commons",
+    "rare": true
   },
   "greattit": {
     "id": "greattit",
@@ -214,7 +225,7 @@
     "viral": false,
     "file": "assets/audio/greattit.mp3",
     "license": "CC BY-SA 4.0",
-    "author": "Beno\u00eet Van Hecke",
+    "author": "Benoît Van Hecke",
     "source": "https://commons.wikimedia.org/wiki/File:Parus_major_-_Great_Tit_XC538934.mp3",
     "sourceName": "Wikimedia Commons"
   },
@@ -227,7 +238,7 @@
     "viral": false,
     "file": "assets/audio/bluetit.mp3",
     "license": "CC BY-SA 4.0",
-    "author": "Beno\u00eet Van Hecke",
+    "author": "Benoît Van Hecke",
     "source": "https://commons.wikimedia.org/wiki/File:Cyanistes_caeruleus_-_Eurasian_Blue_Tit_XC538220.mp3",
     "sourceName": "Wikimedia Commons"
   },
@@ -240,7 +251,7 @@
     "viral": false,
     "file": "assets/audio/chaffinch.mp3",
     "license": "CC BY-SA 4.0",
-    "author": "Beno\u00eet Van Hecke",
+    "author": "Benoît Van Hecke",
     "source": "https://commons.wikimedia.org/wiki/File:Fringilla_coelebs_-_Common_Chaffinch_XC582029.mp3",
     "sourceName": "Wikimedia Commons"
   },
@@ -292,7 +303,7 @@
     "viral": false,
     "file": "assets/audio/blackcap.mp3",
     "license": "CC BY-SA 4.0",
-    "author": "Beno\u00eet Van Hecke",
+    "author": "Benoît Van Hecke",
     "source": "https://commons.wikimedia.org/wiki/File:Sylvia_atricapilla_-_Eurasian_Blackcap_XC543236.mp3",
     "sourceName": "Wikimedia Commons"
   },
@@ -327,7 +338,7 @@
     "name": "Common starling",
     "group": "bird",
     "region": "Worldwide",
-    "fact": "Starlings mimic too \u2014 phones, car alarms, other birds \u2014 woven into a whirring, clicking jumble.",
+    "fact": "Starlings mimic too — phones, car alarms, other birds — woven into a whirring, clicking jumble.",
     "viral": false,
     "file": "assets/audio/starling.mp3",
     "license": "CC BY-SA 4.0",
@@ -396,7 +407,7 @@
     "viral": false,
     "file": "assets/audio/commoncrane.mp3",
     "license": "CC BY-SA 4.0",
-    "author": "P\u00e1los L\u0151rinc",
+    "author": "Pálos Lőrinc",
     "source": "https://commons.wikimedia.org/wiki/File:Grus_grus_-_Common_Crane_XC594758.mp3",
     "sourceName": "Wikimedia Commons"
   },
@@ -617,7 +628,7 @@
     "source": "https://commons.wikimedia.org/wiki/File:Icterus_galbula_-_Baltimore_Oriole_XC178046.mp3",
     "sourceName": "Wikimedia Commons",
     "viral": false,
-    "fact": "The Baltimore oriole's rich, whistled phrases are loud enough to announce spring across entire neighbourhoods \u2014 a brilliant orange flash among leaves."
+    "fact": "The Baltimore oriole's rich, whistled phrases are loud enough to announce spring across entire neighbourhoods — a brilliant orange flash among leaves."
   },
   "easternmeadowlark": {
     "id": "easternmeadowlark",
@@ -799,7 +810,8 @@
     "license": "CC BY-SA 4.0",
     "author": "James Ray",
     "source": "https://commons.wikimedia.org/wiki/File:Sonus_naturalis_-_Soundscape_XC441594.mp3",
-    "sourceName": "Wikimedia Commons"
+    "sourceName": "Wikimedia Commons",
+    "rare": true
   },
   "reddeer": {
     "id": "reddeer",
@@ -810,7 +822,7 @@
     "viral": false,
     "file": "assets/audio/reddeer.mp3",
     "license": "CC BY-SA 4.0",
-    "author": "32-Fu\u00df-Freak",
+    "author": "32-Fuß-Freak",
     "source": "https://commons.wikimedia.org/wiki/File:Hirschbrunft_Gaggafeld.flac",
     "sourceName": "Wikimedia Commons"
   },
@@ -819,7 +831,7 @@
     "name": "Pacific tree frog",
     "group": "amphibian",
     "region": "W North America",
-    "fact": "The classic \u201cmovie frog\u201d \u2014 Hollywood used its two-part call everywhere.",
+    "fact": "The classic “movie frog” — Hollywood used its two-part call everywhere.",
     "viral": false,
     "file": "assets/audio/treefrog.mp3",
     "license": "CC BY-SA 4.0",
@@ -838,7 +850,8 @@
     "license": "CC BY-SA 4.0",
     "author": "Ryan Hodnett",
     "source": "https://commons.wikimedia.org/wiki/File:Spring_Peepers_(Pseudacris_crucifer)_-_Great_Swamp_National_Wildlife_Refuge,_New_Jersey_2023-03-21_(01).mp3",
-    "sourceName": "Wikimedia Commons"
+    "sourceName": "Wikimedia Commons",
+    "rare": true
   },
   "greenfrog": {
     "id": "greenfrog",
@@ -901,7 +914,7 @@
     "viral": false,
     "file": "assets/audio/commonfrog.mp3",
     "license": "CC BY-SA 4.0",
-    "author": "Baudewijn Od\u00e9",
+    "author": "Baudewijn Odé",
     "source": "https://commons.wikimedia.org/wiki/File:15_bruine_kikker_koor_Rana_temporaria_choir.wav",
     "sourceName": "Wikimedia Commons"
   },
@@ -936,7 +949,7 @@
     "name": "Cicada",
     "group": "insect",
     "region": "Worldwide",
-    "fact": "A cicada drums with tymbals \u2014 ribbed membranes it buckles hundreds of times a second.",
+    "fact": "A cicada drums with tymbals — ribbed membranes it buckles hundreds of times a second.",
     "viral": false,
     "file": "assets/audio/cicada.mp3",
     "license": "CC BY-SA 4.0",
@@ -962,7 +975,7 @@
     "name": "Snowy tree cricket",
     "group": "insect",
     "region": "N America",
-    "fact": "Count its chirps in 13 seconds, add 40, and you get the temperature in \u00b0F.",
+    "fact": "Count its chirps in 13 seconds, add 40, and you get the temperature in °F.",
     "viral": false,
     "file": "assets/audio/treecricket.mp3",
     "license": "CC BY-SA 4.0",
@@ -1079,13 +1092,14 @@
     "name": "Laughing kookaburra",
     "group": "bird",
     "region": "Australia",
-    "fact": "The kookaburra\u2019s \u201claugh\u201d is a territorial chorus, loudest at dawn and dusk.",
+    "fact": "The kookaburra’s “laugh” is a territorial chorus, loudest at dawn and dusk.",
     "viral": true,
     "file": "assets/audio/kookaburra.mp3",
     "license": "CC BY-SA 4.0",
     "author": "James Ray",
     "source": "https://commons.wikimedia.org/wiki/File:Eudynamys_orientalis_-_Pacific_Koel_XC446858.mp3",
-    "sourceName": "Wikimedia Commons"
+    "sourceName": "Wikimedia Commons",
+    "rare": true
   },
   "mockingbird": {
     "id": "mockingbird",
@@ -1098,7 +1112,8 @@
     "license": "CC BY 3.0",
     "author": "Sandtouch Limited Company",
     "source": "https://commons.wikimedia.org/wiki/File:NorthernMockingbirdSandtouch2.ogg",
-    "sourceName": "Wikimedia Commons"
+    "sourceName": "Wikimedia Commons",
+    "rare": true
   },
   "tuftedtitmouse": {
     "id": "tuftedtitmouse",
@@ -1144,7 +1159,7 @@
     "name": "Coyote",
     "group": "mammal",
     "region": "N America",
-    "fact": "A coyote chorus is a family affair \u2014 yips and howls that carry for miles across the dark.",
+    "fact": "A coyote chorus is a family affair — yips and howls that carry for miles across the dark.",
     "viral": false,
     "file": "assets/audio/coyote.mp3",
     "license": "CC BY-SA 4.0",
@@ -1154,10 +1169,10 @@
   },
   "tui": {
     "id": "tui",
-    "name": "T\u016b\u012b",
+    "name": "Tūī",
     "group": "bird",
     "region": "New Zealand",
-    "fact": "The t\u016b\u012b has two voice boxes, letting it produce two notes at once \u2014 clicks and liquid whistles woven together.",
+    "fact": "The tūī has two voice boxes, letting it produce two notes at once — clicks and liquid whistles woven together.",
     "viral": false,
     "file": "assets/audio/tui.mp3",
     "license": "CC BY 4.0",
@@ -1170,7 +1185,7 @@
     "name": "Mourning dove",
     "group": "bird",
     "region": "N America",
-    "fact": "The mourning dove's soft coo is one of the most familiar sounds of N American suburbs \u2014 often mistaken for an owl.",
+    "fact": "The mourning dove's soft coo is one of the most familiar sounds of N American suburbs — often mistaken for an owl.",
     "viral": false,
     "file": "assets/audio/mourningdove.mp3",
     "license": "CC BY-SA 3.0",
@@ -1183,7 +1198,7 @@
     "name": "Distant engine",
     "group": "geophony",
     "region": "Anthrophony",
-    "fact": "Engine drone is anthrophony \u2014 human noise. Telling it from biophony is a core field skill.",
+    "fact": "Engine drone is anthrophony — human noise. Telling it from biophony is a core field skill.",
     "viral": false,
     "file": "assets/audio/engine.mp3",
     "isNoise": true,
@@ -1197,7 +1212,7 @@
     "name": "Summer rain",
     "group": "geophony",
     "region": "Anywhere",
-    "fact": "Rain is geophony \u2014 the percussion of weather. A trained ear can estimate rainfall intensity just from the acoustic texture.",
+    "fact": "Rain is geophony — the percussion of weather. A trained ear can estimate rainfall intensity just from the acoustic texture.",
     "viral": false,
     "file": "assets/audio/rain.mp3",
     "license": "CC BY-SA 4.0",

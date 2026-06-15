@@ -152,8 +152,18 @@ export function mount(host, app, params = {}) {
     wrap.appendChild(home);
     pad.appendChild(wrap);
     sparkleBurst(wrap);
-    app.mentor('<b>Wren:</b> your ear is sharpening. Come morning, your recorder will have a fresh haul waiting.');
-    if (get().xp > 60) setTimeout(() => maybeShowWtp(app, 'snap_finish'), 2600);
+    const s2 = get();
+    const discovered2 = Object.keys(s2.discovered).length;
+    const total = 93;
+    const pctFound = Math.round((discovered2 / total) * 100);
+    const comebackMsgs = [
+      `<b>Wren:</b> ${pctFound}% of wild sounds found. The rarest ones only show up in the haul. Come back tonight.`,
+      `<b>Wren:</b> your recorder is listening right now. Deploy a haul and something unexpected might show up.`,
+      `<b>Wren:</b> ${total - discovered2} sounds still out there. Some only come at dawn. Check back tomorrow.`,
+    ];
+    const msgIdx = s2.xp % comebackMsgs.length;
+    setTimeout(() => app.mentor(comebackMsgs[msgIdx], 8000), 1200);
+    if (s2.xp > 60) setTimeout(() => maybeShowWtp(app, 'snap_finish'), 2600);
   }
 
   return () => { audio.stopAll(); root.remove(); };
