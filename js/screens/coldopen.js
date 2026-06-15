@@ -9,8 +9,8 @@ import { showPrivacyNotice } from '../probes.js';
 import { shareCreature } from '../sharecard.js';
 
 export function mount(host, app) {
-  const target = byId('barredowl');
-  const decoy  = byId('treefrog');
+  const target = byId('lyrebird');
+  const decoy  = byId('barredowl');
   const root   = el('div', { class: 'screen' });
   const cold   = el('div', { class: 'cold' });
   root.appendChild(cold);
@@ -26,7 +26,7 @@ export function mount(host, app) {
     const hero = el('div', { class: 'creature-hero', text: creatureEmoji(target) });
     cold.appendChild(hero);
 
-    cold.appendChild(el('h1', { text: 'Something is out there.' }));
+    cold.appendChild(el('h1', { text: 'Listen. What is that?' }));
 
     const play = el('button', {
       class: 'bigplay',

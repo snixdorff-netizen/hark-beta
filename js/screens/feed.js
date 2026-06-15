@@ -3,7 +3,7 @@
 import { el, clear, icon, haptic } from '../ui.js';
 import { mountSpectrogram } from '../spectrogram.js';
 import * as audio from '../audio.js';
-import { viralFeed, GROUPS, creatureEmoji } from '../content.js';
+import { viralFeed, GROUPS, creatureEmoji, seededShuffle } from '../content.js';
 import { get, discover, addXp, save, today } from '../state.js';
 import { track, shareUrl } from '../analytics.js';
 import { shareCreature } from '../sharecard.js';
@@ -31,16 +31,34 @@ export function mount(host, app) {
   const dayN = Math.floor(Date.now() / 86400000);
   const dailyTip = DAILY_TIPS[dayN % DAILY_TIPS.length];
 
-  const list = viralFeed();
+  const baseList = viralFeed();
   const s = get();
   const dailyDone = s.challengeDay === today();
-  const cards = list.map((c, i) => buildCard(c, app, i === 0, dailyDone, i === 0 ? dailyTip : null));
+  let cards = baseList.map((c, i) => buildCard(c, app, i === 0, dailyDone, i === 0 ? dailyTip : null));
   cards.forEach((c) => feed.appendChild(c.node));
+
+  // Sentinal sentinel div at the bottom — when it enters view, append another loop pass
+  let loopPass = 0;
+  const sentinel = el('div', { style: 'height:1px' });
+  feed.appendChild(sentinel);
+
+  function appendLoop() {
+    loopPass++;
+    const sep = el('div', { style: 'text-align:center;padding:32px 0 16px;font-size:12px;color:rgba(159,178,170,0.45);letter-spacing:.08em' });
+    sep.textContent = '— back at the top —';
+    feed.insertBefore(sep, sentinel);
+    const seed = loopPass * 7919;
+    const shuffled = seededShuffle(baseList.filter((c) => !c.isNoise), seed);
+    const newCards = shuffled.map((c) => buildCard(c, app, false, dailyDone, null));
+    newCards.forEach((c) => { feed.insertBefore(c.node, sentinel); io.observe(c.node); });
+    cards = cards.concat(newCards);
+  }
 
   // Lazy: only render a card's spectrogram (and decode its clip) when it nears
   // view — so 100+ clips don't all decode at once. Autoplay the centered card.
   const io = new IntersectionObserver((entries) => {
     entries.forEach((e) => {
+      if (e.target === sentinel && e.isIntersecting) { appendLoop(); return; }
       const card = cards.find((c) => c.node === e.target);
       if (!card) return;
       if (e.isIntersecting && !card.rendered) {
@@ -54,6 +72,7 @@ export function mount(host, app) {
     });
   }, { threshold: [0, 0.5, 0.6, 1] });
   cards.forEach((c) => io.observe(c.node));
+  io.observe(sentinel);
 
   return () => { io.disconnect(); audio.stopAll(); root.remove(); };
 }

@@ -188,7 +188,27 @@ export function rarityPct(c) {
 
 export const byId = (id) => CREATURES.find((c) => c.id === id);
 export const inGroup = (g) => CREATURES.filter((c) => c.group === g);
-export const viralFeed = () => CREATURES.filter((c) => c.viral).concat(CREATURES.filter((c) => !c.viral));
+
+// Feed order: viral first, then rare, then interleaved by group for variety.
+// Goal: first 15 cards should be jaw-dropping; no two consecutive from same group.
+export function viralFeed() {
+  const viral = CREATURES.filter((c) => c.viral && !c.isNoise);
+  const rare = CREATURES.filter((c) => c.rare && !c.viral && !c.isNoise);
+  const common = CREATURES.filter((c) => !c.viral && !c.rare && !c.isNoise);
+  const noise = CREATURES.filter((c) => c.isNoise);
+  // Interleave for group variety after the viral block
+  const interleaved = [];
+  const pools = {};
+  [...rare, ...common].forEach((c) => { (pools[c.group] = pools[c.group] || []).push(c); });
+  const groups = Object.keys(pools);
+  let gi = 0;
+  while (groups.some((g) => pools[g].length)) {
+    const g = groups[gi % groups.length];
+    if (pools[g] && pools[g].length) interleaved.push(pools[g].shift());
+    gi++;
+  }
+  return [...viral, ...interleaved, ...noise];
+}
 
 // deterministic shuffle (seeded) so we never call Math.random in a way that breaks replays
 export function seededShuffle(arr, seed) {

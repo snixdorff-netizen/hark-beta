@@ -47,7 +47,7 @@ export function mount(host, app) {
     s.everDeployed = true;
     save();
     track('haul_deploy', { firstTime, count: items.length });
-    if (firstTime) app.mentor('<b>Wren:</b> while you slept, the rig pulled in nine sounds. Eight are easy. One… nobody’s been able to name.');
+    if (firstTime) app.mentor('<b>Wren:</b> while you slept, the rig pulled in nine sounds. Eight are easy. One… nobody\'s been able to name.');
     render();
   }
 
@@ -75,7 +75,7 @@ export function mount(host, app) {
 
   function haulView() {
     const s = get();
-    pad.appendChild(el('div', { class: 'q-head', html: `<div class="q-title">${icon('moon', 18)} Last night’s haul</div>` }));
+    pad.appendChild(el('div', { class: 'q-head', html: `<div class="q-title">${icon('moon', 18)} Last night's haul</div>` }));
     pad.appendChild(el('div', { style: 'font-size:12px;color:var(--muted);margin-top:-6px', text: `ForestMote · ${s.haul.items.length} caught` }));
 
     const listWrap = el('div', { class: 'haul-list' });
@@ -105,19 +105,19 @@ export function mount(host, app) {
     if (allSorted) {
       const u = el('div', { class: 'unknown' });
       u.innerHTML = `<span class="ic" style="color:var(--amber)">${icon('help', 22)}</span>
-        <div><div class="t">67 kHz — unidentified</div><div class="d">ultrasonic · nobody’s named this</div></div>`;
-      u.addEventListener(‘click’, () => {
+        <div><div class="t">67 kHz — unidentified</div><div class="d">ultrasonic · nobody's named this</div></div>`;
+      u.addEventListener('click', () => {
         s.haul.unknownSeen = true; save();
-        track(‘unknown_seen’);
-        app.mentor(‘<b>Wren:</b> 67 kHz is above human hearing — bat territory. But this isn\’t a bat. Keep it. We\’ll need more ears on this one.’);
+        track('unknown_seen');
+        app.mentor('<b>Wren:</b> 67 kHz is above human hearing — bat territory. But this isn\'t a bat. Keep it. We\'ll need more ears on this one.');
         haptic(16);
       });
-      const shareUnknown = el(‘button’, { class: ‘btn’, style: ‘margin-top:10px;background:rgba(224,164,77,.12);border-color:var(--amber);color:var(--amber);font-size:13px’, text: ‘📤 Tell someone about 67kHz’ });
-      shareUnknown.addEventListener(‘click’, async () => {
-        track(‘unknown_share’);
-        const url = (await import(‘../analytics.js’)).shareUrl();
-        const text = ‘We found an unidentified 67 kHz signal on Hark. Nobody knows what it is. 👀 ‘ + url;
-        try { if (navigator.share) await navigator.share({ title: ‘Hark — 67 kHz mystery’, text, url }); else await navigator.clipboard.writeText(text); } catch (e) {}
+      const shareUnknown = el('button', { class: 'btn', style: 'margin-top:10px;background:rgba(224,164,77,.12);border-color:var(--amber);color:var(--amber);font-size:13px', text: '📤 Tell someone about 67kHz' });
+      shareUnknown.addEventListener('click', async () => {
+        track('unknown_share');
+        const url = (await import('../analytics.js')).shareUrl();
+        const text = 'We found an unidentified 67 kHz signal on Hark. Nobody knows what it is. 👀 ' + url;
+        try { if (navigator.share) await navigator.share({ title: 'Hark — 67 kHz mystery', text, url }); else await navigator.clipboard.writeText(text); } catch (e) {}
       });
       pad.appendChild(u);
       pad.appendChild(shareUnknown);
