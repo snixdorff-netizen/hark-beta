@@ -93,6 +93,75 @@ export async function shareCreature(creature, app) {
   }
 }
 
+export async function shareStreak(streak, app) {
+  const s = get();
+  const discovered = Object.keys(s.discovered).length;
+  const rank = getRank(discovered);
+
+  const size = 480;
+  const canvas = document.createElement('canvas');
+  canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext('2d');
+
+  const grad = ctx.createLinearGradient(0, 0, 0, size);
+  grad.addColorStop(0, '#0d1f1b'); grad.addColorStop(1, '#060e0b');
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, size, size);
+
+  // Flame grid pattern
+  ctx.strokeStyle = 'rgba(224,164,77,0.04)';
+  ctx.lineWidth = 1;
+  for (let y = 40; y < size; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(size, y); ctx.stroke(); }
+
+  ctx.font = '500 13px -apple-system, Helvetica, Arial, sans-serif';
+  ctx.fillStyle = '#3ec99f'; ctx.textAlign = 'left';
+  ctx.fillText('HARK', 28, 44);
+
+  ctx.textAlign = 'right'; ctx.font = '12px -apple-system, Helvetica, Arial, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.45)';
+  ctx.fillText(rank.emoji + ' ' + rank.title, size - 28, 44);
+
+  ctx.textAlign = 'center';
+  ctx.font = '96px serif';
+  ctx.fillText('🔥', size / 2, 210);
+
+  ctx.font = '700 52px -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif';
+  ctx.fillStyle = '#e0a44d';
+  ctx.fillText(streak + ' days', size / 2, 282);
+
+  ctx.font = '500 18px -apple-system, Helvetica, Arial, sans-serif';
+  ctx.fillStyle = 'rgba(238,243,240,0.75)';
+  ctx.fillText('in the wild', size / 2, 316);
+
+  ctx.beginPath();
+  ctx.moveTo(size / 2 - 44, 344); ctx.lineTo(size / 2 + 44, 344);
+  ctx.strokeStyle = '#e0a44d'; ctx.lineWidth = 1.5; ctx.stroke();
+
+  ctx.font = '13px -apple-system, Helvetica, Arial, sans-serif';
+  ctx.fillStyle = 'rgba(159,178,170,0.7)';
+  ctx.fillText(discovered + ' creatures heard · ' + discovered + ' rehomed', size / 2, 378);
+
+  ctx.fillStyle = 'rgba(159,178,170,0.5)'; ctx.font = '12px -apple-system, Helvetica, Arial, sans-serif';
+  ctx.fillText('Join the wild — snixdorff-netizen.github.io/hark-beta/', size / 2, 420);
+
+  track('streak_share', { streak, discovered });
+
+  try {
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+    const file = new File([blob], 'hark-streak-' + streak + '.png', { type: 'image/png' });
+    const url = shareUrl();
+    const text = '🔥 ' + streak + ' days straight in the wild on Hark. Can you keep up? ' + url;
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ title: 'Hark — ' + streak + ' day streak', text, files: [file] });
+    } else if (navigator.share) {
+      await navigator.share({ title: 'Hark', text, url });
+    } else {
+      showShareOverlay(canvas, url);
+    }
+  } catch (e) {
+    if (e.name !== 'AbortError') showShareOverlay(canvas, shareUrl());
+  }
+}
+
 function showShareOverlay(canvas, url) {
   const host = document.getElementById('app');
   const ovl = document.createElement('div');

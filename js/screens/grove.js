@@ -1,9 +1,9 @@
 // Hark — the Grove. Completion you can see. Every sound you learn is rehomed here.
 import { el, icon } from '../ui.js';
-import { byId, CREATURES } from '../content.js';
-import { creatureEmoji } from '../content.js';
+import { byId, CREATURES, creatureEmoji } from '../content.js';
 import { get } from '../state.js';
-import { feedbackLink, shareInvite, showCredits } from '../probes.js';
+import { feedbackLink, showCredits } from '../probes.js';
+import { shareStreak } from '../sharecard.js';
 
 export function mount(host, app) {
   const s = get();
@@ -42,10 +42,17 @@ export function mount(host, app) {
   if (!discovered.length) chips.appendChild(el('span', { style: 'font-size:12px;color:var(--muted)', text: 'Play the feed to bring sounds home.' }));
   meta.appendChild(chips);
 
+  if (s.streak >= 1) {
+    const shareGroveBtn = el('button', {
+      class: 'btn primary',
+      style: 'width:100%;margin-top:14px;font-size:14px',
+      text: '📤 Share your grove (' + s.streak + '-day streak)',
+    });
+    shareGroveBtn.addEventListener('click', () => shareStreak(s.streak, null));
+    meta.appendChild(shareGroveBtn);
+  }
+
   const actions = el('div', { style: 'display:flex;justify-content:space-between;align-items:center;margin-top:18px;border-top:.5px solid var(--line);padding-top:10px' });
-  const invite = el('button', { class: 'lnk-row', html: icon('share', 18) + ' Invite a friend', style: 'color:var(--teal)' });
-  invite.addEventListener('click', shareInvite);
-  actions.appendChild(invite);
   actions.appendChild(feedbackLink());
   meta.appendChild(actions);
 

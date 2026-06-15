@@ -8,7 +8,7 @@ import { get, addXp, adjustSkill, awardCrown, discover, growGrove, touchStreak }
 import { track } from '../analytics.js';
 import { maybeShowWtp } from '../probes.js';
 import { creatureEmoji } from '../content.js';
-import { shareCreature } from '../sharecard.js';
+import { shareCreature, shareStreak } from '../sharecard.js';
 
 export function mount(host, app, params = {}) {
   const root = el('div', { class: 'screen' });
@@ -78,9 +78,16 @@ export function mount(host, app, params = {}) {
       rEmo.textContent = creatureEmoji(target);
       reveal.appendChild(rEmo);
       reveal.appendChild(el('div', { style: 'font-size:11px;color:var(--teal);font-weight:600;letter-spacing:.03em', text: target.name }));
+      if (target.rare) {
+        reveal.appendChild(el('div', { style: 'font-size:10px;color:#6f8bff;font-weight:600;letter-spacing:.04em;margin-top:2px', text: '✨ RARE' }));
+        setTimeout(() => {
+          track('rare_found', { id: target.id });
+          shareCreature(target, app);
+        }, 1200);
+      }
       card.style.position = 'relative';
       card.appendChild(reveal);
-      setTimeout(next, 950);
+      setTimeout(next, target.rare ? 1800 : 950);
     } else {
       card.classList.add('wrong'); haptic(20); adjustSkill(false);
       audio.play(target);
@@ -94,10 +101,13 @@ export function mount(host, app, params = {}) {
     else finish();
   }
 
+  const STREAK_MILESTONES = [3, 7, 14, 30];
+
   function finish() {
-    touchStreak();
+    const newStreak = touchStreak();
     growGrove(4);
     track('snap_complete', { correct: correctCount, total: targets.length });
+    const isMilestone = STREAK_MILESTONES.includes(newStreak);
     clear(pad);
     const wrap = el('div', { class: 'cold', style: 'position:relative' });
     wrap.appendChild(el('span', { class: 'ic', html: icon('trophy', 44), style: 'color:var(--amber)' }));
@@ -108,7 +118,16 @@ export function mount(host, app, params = {}) {
     }
     wrap.appendChild(el('h1', { html: `Nice ears.<br><span>${correctCount}/${targets.length} this round.</span>` }));
     wrap.appendChild(el('p', { text: 'Each one you name makes the next easier to hear. Your Grove grew a little.' }));
-    if (gotRight.length) {
+    if (isMilestone) {
+      const milestoneDiv = el('div', { style: 'background:rgba(224,164,77,.12);border:.5px solid rgba(224,164,77,.4);border-radius:14px;padding:14px 18px;text-align:center;width:100%' });
+      milestoneDiv.appendChild(el('div', { style: 'font-size:28px;margin-bottom:4px', text: '🔥' }));
+      milestoneDiv.appendChild(el('div', { style: 'font-size:15px;font-weight:600;color:var(--amber)', text: newStreak + '-day streak!' }));
+      milestoneDiv.appendChild(el('div', { style: 'font-size:12px;color:var(--muted);margin-top:4px', text: 'Most people don\'t make it this far.' }));
+      const streakShareBtn = el('button', { class: 'cta', style: 'margin-top:10px', text: '📤 Share your streak' });
+      streakShareBtn.addEventListener('click', () => shareStreak(newStreak, app));
+      milestoneDiv.appendChild(streakShareBtn);
+      wrap.appendChild(milestoneDiv);
+    } else if (gotRight.length) {
       const shareBtn = el('button', { class: 'cta', text: '📤 Share your catch' });
       shareBtn.addEventListener('click', () => {
         track('snap_share', { count: gotRight.length });
