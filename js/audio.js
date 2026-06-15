@@ -154,6 +154,7 @@ export async function play(creature) {
       return buf.duration;
     } catch (e) { /* fall through to synth */ }
   }
+  if (!creature.events?.length) return 0;
   const t0 = ctx.currentTime + 0.06;
   creature.events.forEach((ev) => scheduleEvent(ev, t0));
   return creature.duration;

@@ -144,6 +144,7 @@ function computeSpectrogramCanvas(buffer, w, h) {
 
   const colW = w / cols;
   const logPeak = Math.log(peak + 1e-9);
+  const sigBase = `rgba(${sig[0]},${sig[1]},${sig[2]},`;
   for (let c = 0; c < cols; c++) {
     const col = mags[c];
     for (let k = 1; k < half; k++) {
@@ -155,7 +156,7 @@ function computeSpectrogramCanvas(buffer, w, h) {
       const y = freqToY(f, h);
       const yNext = freqToY((k + 1) * sr / N, h);
       const bh = Math.max(1, Math.abs(y - yNext) + 0.6);
-      ctx.fillStyle = `rgba(${sig[0]},${sig[1]},${sig[2]},${Math.min(0.95, a)})`;
+      ctx.fillStyle = sigBase + Math.min(0.95, a) + ')';
       ctx.fillRect(c * colW, y - bh, colW + 0.6, bh);
     }
   }
@@ -171,12 +172,21 @@ function drawnCopy(src, w, h) {
   return canvas;
 }
 
+const CACHE_MAX = 30;
+function cacheSet(key, canvas) {
+  if (clipCache.size >= CACHE_MAX) clipCache.delete(clipCache.keys().next().value);
+  clipCache.set(key, canvas);
+}
+
 async function renderClipSpectrogram(creature, w, h) {
+  const preKey = `${creature.id}@${w}x${h}@${currentThemeKey()}`;
+  if (clipCache.has(preKey)) return drawnCopy(clipCache.get(preKey), w, h);
+  const buffer = await audio.decode(creature);
+  // Re-read theme after async decode — user may have switched themes during the wait
   const key = `${creature.id}@${w}x${h}@${currentThemeKey()}`;
   if (clipCache.has(key)) return drawnCopy(clipCache.get(key), w, h);
-  const buffer = await audio.decode(creature);
   const src = computeSpectrogramCanvas(buffer, w, h);
-  clipCache.set(key, src);
+  cacheSet(key, src);
   return drawnCopy(src, w, h);
 }
 
