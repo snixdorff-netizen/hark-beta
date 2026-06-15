@@ -5,9 +5,9 @@ import { mountSpectrogram } from '../spectrogram.js';
 import * as audio from '../audio.js';
 import { buildRound, sessionTargets } from '../difficulty.js';
 import { get, addXp, adjustSkill, awardCrown, discover, growGrove, touchStreak } from '../state.js';
-import { track } from '../analytics.js';
+import { track, challengeUrl } from '../analytics.js';
 import { maybeShowWtp } from '../probes.js';
-import { creatureEmoji, rarityPct } from '../content.js';
+import { creatureEmoji, rarityPct, byId } from '../content.js';
 import { shareCreature, shareStreak } from '../sharecard.js';
 
 export function mount(host, app, params = {}) {
@@ -16,11 +16,27 @@ export function mount(host, app, params = {}) {
   root.appendChild(pad); host.appendChild(root);
 
   let seed = (get().xp * 131 + 17) >>> 0;
-  const targets = sessionTargets(seed, params.preferIds);
+  const challengeCreature = params.challenge ? byId(params.challenge) : null;
+  const targets = challengeCreature ? [challengeCreature] : sessionTargets(seed, params.preferIds);
   let i = 0, correctCount = 0;
   let gotRight = [];
 
-  renderRound();
+  if (challengeCreature) showChallengeIntro();
+  else renderRound();
+
+  function showChallengeIntro() {
+    clear(pad);
+    const v = el('div', { class: 'cold' });
+    const emoDiv = el('div', { style: 'font-size:64px;line-height:1;margin-bottom:12px' });
+    emoDiv.textContent = '🎧';
+    v.appendChild(emoDiv);
+    v.appendChild(el('h1', { text: 'Someone challenged you.', style: 'font-size:22px;text-align:center' }));
+    v.appendChild(el('p', { text: 'Listen to this sound and name it. No clock. Trust your ears.', style: 'text-align:center;color:var(--muted);max-width:260px' }));
+    const btn = el('button', { class: 'cta', text: 'Accept the challenge' });
+    btn.addEventListener('click', () => renderRound());
+    v.appendChild(btn);
+    pad.appendChild(v);
+  }
 
   function renderRound() {
     clear(pad);
@@ -132,9 +148,24 @@ export function mount(host, app, params = {}) {
       });
       wrap.appendChild(emoRow);
     }
-    wrap.appendChild(el('h1', { html: `Nice ears.<br><span>${correctCount}/${targets.length} this round.</span>` }));
-    wrap.appendChild(el('p', { text: 'Each one you name makes the next easier to hear. Your Grove grew a little.' }));
-    if (isMilestone) {
+    const headline = challengeCreature && correctCount > 0
+      ? `<span style="color:var(--teal)">${creatureEmoji(challengeCreature)} ${challengeCreature.name}.</span><br>You got it.`
+      : `Nice ears.<br><span>${correctCount}/${targets.length} this round.</span>`;
+    wrap.appendChild(el('h1', { html: headline }));
+    wrap.appendChild(el('p', { text: challengeCreature ? 'Challenge someone else — see if they can do it.' : 'Each one you name makes the next easier to hear. Your Grove grew a little.' }));
+    if (challengeCreature) {
+      const challengeBack = el('button', { class: 'cta', text: '🎧 Challenge someone back' });
+      challengeBack.addEventListener('click', async () => {
+        const url = challengeUrl(challengeCreature.id);
+        const text = 'I named this sound. Can you? 🎧 ' + url;
+        try {
+          if (navigator.share) await navigator.share({ title: 'Hark sound challenge', text, url });
+          else await navigator.clipboard.writeText(text);
+          track('challenge_back', { id: challengeCreature.id });
+        } catch (e) {}
+      });
+      wrap.appendChild(challengeBack);
+    } else if (isMilestone) {
       const milestoneDiv = el('div', { style: 'background:rgba(224,164,77,.12);border:.5px solid rgba(224,164,77,.4);border-radius:14px;padding:14px 18px;text-align:center;width:100%' });
       milestoneDiv.appendChild(el('div', { style: 'font-size:28px;margin-bottom:4px', text: '🔥' }));
       milestoneDiv.appendChild(el('div', { style: 'font-size:15px;font-weight:600;color:var(--amber)', text: newStreak + '-day streak!' }));

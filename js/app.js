@@ -1,6 +1,6 @@
 // Hark — app shell, router, persistent chrome.
 import { el, clear, icon, iconEl } from './ui.js';
-import { get, touchStreak, today } from './state.js';
+import { get, save, touchStreak, today } from './state.js';
 import { loadManifest } from './content.js';
 import { rankProgress } from './rank.js';
 import * as audio from './audio.js';
@@ -202,6 +202,17 @@ async function boot() {
   applyTheme(currentTheme);
   initAnalytics();
   await loadManifest();
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const challengeId = urlParams.get('challenge');
+  if (challengeId) {
+    track('challenge_accepted', { id: challengeId });
+    const s = get();
+    if (!s.onboarded) { s.onboarded = true; save(); }
+    go('snap', { challenge: challengeId });
+    return;
+  }
+
   const s = get();
   if (!s.onboarded) go('coldopen');
   else { go('feed'); showPrivacyNotice(); }

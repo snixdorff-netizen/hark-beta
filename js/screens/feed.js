@@ -5,7 +5,7 @@ import { mountSpectrogram } from '../spectrogram.js';
 import * as audio from '../audio.js';
 import { viralFeed, GROUPS, creatureEmoji, seededShuffle } from '../content.js';
 import { get, discover, addXp, save, today } from '../state.js';
-import { track, shareUrl } from '../analytics.js';
+import { track, challengeUrl } from '../analytics.js';
 import { shareCreature } from '../sharecard.js';
 
 export function mount(host, app) {
@@ -106,7 +106,7 @@ function buildCard(c, app, isDaily, dailyDone, dailyTip) {
   const like = el('button', { 'aria-label': 'Like', html: icon('heart', 26) + '<span>like</span>' });
   like.addEventListener('click', () => { like.classList.toggle('liked'); haptic(); track('feed_like', { id: c.id }); });
   const share = el('button', { 'aria-label': 'Share', html: icon('share', 24) + '<span>share</span>' });
-  share.addEventListener('click', () => {
+  share.addEventListener('click', async () => {
     if (isDaily && !dailyDone) {
       const s = get();
       s.challengeDay = today(); save();
@@ -114,8 +114,15 @@ function buildCard(c, app, isDaily, dailyDone, dailyTip) {
       app.mentor('<b>Daily Challenge!</b> +25 XP for sharing today\'s Sound of the Day 🌿', 6000);
       track('daily_challenge_complete', { id: c.id });
     }
-    shareCreature(c, app);
-    track('feed_share', { id: c.id });
+    const url = challengeUrl(c.id);
+    const text = 'Can you name this sound? 🎧 ' + url;
+    try {
+      if (navigator.share) await navigator.share({ title: 'Hark — name this sound', text, url });
+      else await navigator.clipboard.writeText(text);
+      track('feed_challenge_share', { id: c.id });
+    } catch (e) {
+      if (e.name !== 'AbortError') shareCreature(c, app);
+    }
   });
   rail.appendChild(like); rail.appendChild(share);
   node.appendChild(rail);

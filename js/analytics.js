@@ -136,6 +136,10 @@ export function shareUrl() {
   return `${location.origin}${location.pathname}?ref=${encodeURIComponent(deviceId())}`;
 }
 
+export function challengeUrl(id) {
+  return `${location.origin}${location.pathname}?challenge=${encodeURIComponent(id)}&ref=${encodeURIComponent(deviceId())}`;
+}
+
 export function exportData() {
   return {
     did: deviceId(), cohort: cohortDay(),
