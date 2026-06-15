@@ -1,6 +1,6 @@
 // Hark — app shell, router, persistent chrome.
 import { el, clear, icon, iconEl } from './ui.js';
-import { get, save, touchStreak, today } from './state.js';
+import { get, save, touchStreak, today, getQuest } from './state.js';
 import { loadManifest } from './content.js';
 import { rankProgress } from './rank.js';
 import * as audio from './audio.js';
@@ -106,6 +106,26 @@ function updateChrome(active) {
   shell.nav.querySelectorAll('button').forEach((b) => {
     b.classList.toggle('active', b.dataset.name === active);
   });
+
+  // Quest strip — thin progress bar below topbar, visible on feed only
+  const existingStrip = appRoot.querySelector('.quest-strip');
+  if (existingStrip) existingStrip.remove();
+  if (active === 'feed') {
+    const q = getQuest();
+    const pct = Math.min(1, q.progress / q.goal);
+    const LABELS = { snap: `Play Snap ${q.goal}×`, discover: `Discover ${q.goal} sounds`, challenge: 'Challenge a friend' };
+    const strip = el('div', { class: 'quest-strip' });
+    strip.style.cssText = 'position:absolute;top:var(--topbar-h,52px);left:0;right:0;z-index:9;padding:4px 16px 5px;background:linear-gradient(var(--bg) 70%,transparent)';
+    const inner = el('div', { style: 'display:flex;align-items:center;gap:8px' });
+    inner.appendChild(el('div', { style: 'font-size:10px;color:var(--teal);font-weight:600;letter-spacing:.05em;white-space:nowrap', text: q.done ? '✓ Mission done' : 'MISSION' }));
+    const bar = el('div', { style: 'flex:1;height:3px;background:rgba(62,201,159,.15);border-radius:2px;overflow:hidden' });
+    const fill = el('div', { style: `height:100%;width:${Math.round(pct*100)}%;background:${q.done ? 'var(--teal)' : 'rgba(62,201,159,.6)'};border-radius:2px` });
+    bar.appendChild(fill);
+    inner.appendChild(bar);
+    inner.appendChild(el('div', { style: 'font-size:10px;color:var(--muted);white-space:nowrap', text: q.done ? '' : `${q.progress}/${q.goal} · ${LABELS[q.type]}` }));
+    strip.appendChild(inner);
+    appRoot.appendChild(strip);
+  }
 }
 
 let _lastRankTitle = null;

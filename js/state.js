@@ -15,6 +15,10 @@ const DEFAULT = {
   haul: null,              // { deployedAt, readyAt, sorted, items:[ids], unknownSeen }
   skill: 1.0,              // adaptive flow difficulty (0.5 easy .. 3 hard)
   challengeDay: null,      // last Daily Field Challenge date completed
+  questDate: null,         // date of current daily quest
+  questSnap: 0,            // snap rounds completed today (for snap quest)
+  questDiscover: 0,        // new creatures discovered today (for discover quest)
+  questDone: false,        // daily quest completed
   settings: { sound: true, captions: true, highContrast: false },
 };
 
@@ -81,6 +85,48 @@ export function adjustSkill(correct) {
   if (correct) state.skill = Math.min(3, state.skill + 0.12);
   else state.skill = Math.max(0.5, state.skill - 0.18);
   save();
+}
+
+// Reset daily quest counters if it's a new day
+function ensureQuestDay() {
+  const t = today();
+  if (state.questDate !== t) {
+    state.questDate = t;
+    state.questSnap = 0;
+    state.questDiscover = 0;
+    state.questDone = false;
+    save();
+  }
+}
+
+export function bumpQuestSnap() {
+  ensureQuestDay();
+  state.questSnap += 1;
+  save();
+  return state.questSnap;
+}
+
+export function bumpQuestDiscover() {
+  ensureQuestDay();
+  state.questDiscover += 1;
+  save();
+  return state.questDiscover;
+}
+
+export function markQuestDone() {
+  ensureQuestDay();
+  state.questDone = true;
+  save();
+}
+
+export function getQuest() {
+  ensureQuestDay();
+  const dayN = Math.floor(Date.now() / 86400000);
+  const types = ['snap', 'discover', 'challenge'];
+  const type = types[dayN % types.length];
+  const goal = type === 'snap' ? 3 : type === 'discover' ? 5 : 1;
+  const progress = type === 'snap' ? state.questSnap : type === 'discover' ? state.questDiscover : (state.challengeDay === today() ? 1 : 0);
+  return { type, goal, progress, done: state.questDone };
 }
 
 export function reset() {

@@ -4,7 +4,7 @@ import { el, clear, icon, sparkleBurst, haptic } from '../ui.js';
 import { mountSpectrogram } from '../spectrogram.js';
 import * as audio from '../audio.js';
 import { buildRound, sessionTargets } from '../difficulty.js';
-import { get, addXp, adjustSkill, awardCrown, discover, growGrove, touchStreak } from '../state.js';
+import { get, addXp, adjustSkill, awardCrown, discover, growGrove, touchStreak, getQuest, bumpQuestSnap, markQuestDone } from '../state.js';
 import { track, challengeUrl } from '../analytics.js';
 import { maybeShowWtp } from '../probes.js';
 import { creatureEmoji, rarityPct, byId } from '../content.js';
@@ -130,6 +130,13 @@ export function mount(host, app, params = {}) {
     const newStreak = touchStreak();
     growGrove(4);
     track('snap_complete', { correct: correctCount, total: targets.length });
+    if (!challengeCreature) {
+      const q = getQuest();
+      if (q.type === 'snap' && !q.done) {
+        const n = bumpQuestSnap();
+        if (n >= q.goal) { markQuestDone(); addXp(75); setTimeout(() => app.mentor('<b>Quest complete!</b> +75 XP. Three rounds down. The wild is starting to sound familiar. 🌿', 7000), 600); track('quest_complete', { type: 'snap' }); }
+      }
+    }
     const isMilestone = STREAK_MILESTONES.includes(newStreak);
     clear(pad);
     const wrap = el('div', { class: 'cold', style: 'position:relative' });
