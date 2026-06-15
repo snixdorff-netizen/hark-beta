@@ -91,6 +91,8 @@ function updateChrome(active) {
   const rankBadge = el('div', { class: 'rank-badge', title: rp.rank.title });
   rankBadge.textContent = rp.rank.emoji;
   stats.appendChild(rankBadge);
+  const discovered = Object.keys(s.discovered).length;
+  if (discovered > 0) stats.appendChild(el('div', { class: 'stat', style: 'color:var(--teal);font-size:11px;letter-spacing:.03em', html: `<b>${discovered}</b><span style="opacity:.55">/93</span>` }));
   stats.appendChild(el('div', { class: 'stat', html: `${icon('flame', 16)} <b>${s.streak}</b>` }));
   stats.appendChild(el('div', { class: 'stat', html: `${icon('sparkle', 15)} <b>${s.xp}</b>` }));
   const themeBtn = el('button', {

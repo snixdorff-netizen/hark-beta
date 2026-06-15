@@ -35,7 +35,10 @@ export function mount(host, app) {
   const s = get();
   const dailyDone = s.challengeDay === today();
   let cards = baseList.map((c, i) => buildCard(c, app, i === 0, dailyDone, i === 0 ? dailyTip : null));
-  cards.forEach((c) => feed.appendChild(c.node));
+  cards.forEach((c, i) => {
+    feed.appendChild(c.node);
+    if (i === 3) feed.appendChild(buildSnapPullCard(app));
+  });
 
   // Sentinal sentinel div at the bottom — when it enters view, append another loop pass
   let loopPass = 0;
@@ -154,6 +157,19 @@ function buildCard(c, app, isDaily, dailyDone, dailyTip) {
   }
 
   return { node, creature: c, sg, rendered: false };
+}
+
+function buildSnapPullCard(app) {
+  const node = el('div', { class: 'card', style: 'background:radial-gradient(120% 80% at 50% 35%, rgba(62,201,159,.08) 0%, #0d1110 70%);border:.5px solid rgba(62,201,159,.2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:40px 24px;min-height:220px' });
+  const emo = el('div', { style: 'font-size:52px;line-height:1' });
+  emo.textContent = '👂';
+  node.appendChild(emo);
+  node.appendChild(el('h2', { text: 'Can you name them?', style: 'font-size:19px;font-weight:600;text-align:center;margin:0' }));
+  node.appendChild(el('p', { text: 'You\'ve heard these sounds. Spectrogram Snap tests if you\'ve learned them.', style: 'font-size:13px;color:var(--muted);text-align:center;max-width:260px;margin:0' }));
+  const btn = el('button', { class: 'cta', text: 'Play Snap →', style: 'margin-top:4px' });
+  btn.addEventListener('click', () => { track('feed_snap_pull'); app.go('snap'); });
+  node.appendChild(btn);
+  return node;
 }
 
 function prettyGroup(c) {
