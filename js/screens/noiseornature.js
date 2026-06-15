@@ -4,6 +4,7 @@ import { mountSpectrogram } from '../spectrogram.js';
 import * as audio from '../audio.js';
 import { CREATURES, seededShuffle, creatureEmoji } from '../content.js';
 import { get, addXp, growGrove, touchStreak } from '../state.js';
+import { track as analyticsTrack, shareUrl } from '../analytics.js';
 
 const NOISE = [
   { id: 'static', name: 'Radio static', group: 'geophony', isNoise: true, duration: 2.4, fact: '', events: [{ t: 0, dur: 2.4, type: 'noise', f0: 300, f1: 9000, gain: 0.3 }] },
@@ -97,12 +98,27 @@ export function mount(host, app) {
 
   function finish() {
     touchStreak(); growGrove(3);
+    analyticsTrack('noise_complete', { right, total: deck.length });
     clear(pad);
     const wrap = el('div', { class: 'cold' });
     wrap.appendChild(el('span', { class: 'ic', html: icon('leaf', 42), style: 'color:var(--teal)' }));
     wrap.appendChild(el('h1', { html: `${right}/${deck.length}<br><span>good ears.</span>` }));
     wrap.appendChild(el('p', { text: 'Telling life from interference is the first skill every field recordist builds.' }));
-    const again = el('button', { class: 'cta', text: 'Again' });
+    if (right >= Math.ceil(deck.length * 0.7)) {
+      const scoreShare = el('button', { class: 'cta', text: '📤 Share your score' });
+      scoreShare.addEventListener('click', async () => {
+        analyticsTrack('noise_share', { right, total: deck.length });
+        const url = shareUrl();
+        const pct = Math.round((right / deck.length) * 100);
+        const text = 'I scored ' + right + '/' + deck.length + ' (' + pct + '%) on Hark\'s Noise or Nature challenge 🌿 Can you beat it? ' + url;
+        try {
+          if (navigator.share) await navigator.share({ title: 'Hark — Noise or Nature', text, url });
+          else await navigator.clipboard.writeText(text);
+        } catch (e) {}
+      });
+      wrap.appendChild(scoreShare);
+    }
+    const again = el('button', { class: right >= Math.ceil(deck.length * 0.7) ? 'ghost' : 'cta', text: 'Again' });
     again.addEventListener('click', () => app.go('noise'));
     wrap.appendChild(again);
     const home = el('button', { class: 'ghost', text: 'Back to the feed' });

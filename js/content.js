@@ -177,6 +177,15 @@ const GROUP_EMOJI = { bird: '🐦', mammal: '🦌', amphibian: '🐸', insect: '
 
 export const creatureEmoji = (c) => EMOJI_MAP[c.id] || GROUP_EMOJI[c.group] || '🔊';
 
+// Deterministic "rarity %" per creature — seeded by id so it's stable across sessions.
+// Rare creatures: 2-12%. Common: 22-60%. Creates FOMO without real backend data.
+export function rarityPct(c) {
+  let h = 0;
+  for (let i = 0; i < c.id.length; i++) h = (h * 31 + c.id.charCodeAt(i)) >>> 0;
+  if (c.rare) return 2 + (h % 11);
+  return 22 + (h % 39);
+}
+
 export const byId = (id) => CREATURES.find((c) => c.id === id);
 export const inGroup = (g) => CREATURES.filter((c) => c.group === g);
 export const viralFeed = () => CREATURES.filter((c) => c.viral).concat(CREATURES.filter((c) => !c.viral));

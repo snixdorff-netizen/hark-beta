@@ -7,7 +7,7 @@ import { buildRound, sessionTargets } from '../difficulty.js';
 import { get, addXp, adjustSkill, awardCrown, discover, growGrove, touchStreak } from '../state.js';
 import { track } from '../analytics.js';
 import { maybeShowWtp } from '../probes.js';
-import { creatureEmoji } from '../content.js';
+import { creatureEmoji, rarityPct } from '../content.js';
 import { shareCreature, shareStreak } from '../sharecard.js';
 
 export function mount(host, app, params = {}) {
@@ -112,8 +112,17 @@ export function mount(host, app, params = {}) {
     const wrap = el('div', { class: 'cold', style: 'position:relative' });
     wrap.appendChild(el('span', { class: 'ic', html: icon('trophy', 44), style: 'color:var(--amber)' }));
     if (gotRight.length) {
-      const emoRow = el('div', { style: 'display:flex;gap:6px;justify-content:center;flex-wrap:wrap;font-size:26px' });
-      gotRight.forEach(c => { const s = el('span'); s.textContent = creatureEmoji(c); emoRow.appendChild(s); });
+      const emoRow = el('div', { style: 'display:flex;gap:8px;justify-content:center;flex-wrap:wrap' });
+      gotRight.forEach(c => {
+        const chip = el('div', { style: 'display:flex;flex-direction:column;align-items:center;gap:2px' });
+        const emo = el('span', { style: 'font-size:28px;line-height:1' });
+        emo.textContent = creatureEmoji(c);
+        chip.appendChild(emo);
+        const pct = el('div', { style: 'font-size:9px;color:var(--muted)' });
+        pct.textContent = rarityPct(c) + '% find this';
+        chip.appendChild(pct);
+        emoRow.appendChild(chip);
+      });
       wrap.appendChild(emoRow);
     }
     wrap.appendChild(el('h1', { html: `Nice ears.<br><span>${correctCount}/${targets.length} this round.</span>` }));

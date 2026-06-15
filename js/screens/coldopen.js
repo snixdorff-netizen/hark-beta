@@ -4,8 +4,9 @@ import { mountSpectrogram } from '../spectrogram.js';
 import * as audio from '../audio.js';
 import { byId, creatureEmoji } from '../content.js';
 import { get, save, discover } from '../state.js';
-import { track } from '../analytics.js';
+import { track, shareUrl } from '../analytics.js';
 import { showPrivacyNotice } from '../probes.js';
+import { shareCreature } from '../sharecard.js';
 
 export function mount(host, app) {
   const target = byId('barredowl');
@@ -105,6 +106,13 @@ export function mount(host, app) {
     mountSpectrogram(sg, target, 240, 60);
 
     cold.appendChild(el('p', { text: target.fact }));
+
+    const shareBtn = el('button', { class: 'ghost', style: 'color:var(--teal);font-size:14px', text: '📤 Tell a friend about Hark' });
+    shareBtn.addEventListener('click', () => {
+      track('onboarding_share');
+      shareCreature(target, app);
+    });
+    cold.appendChild(shareBtn);
 
     const cta = el('button', { class: 'cta', text: 'Start listening' });
     cta.addEventListener('click', () => {

@@ -1,6 +1,6 @@
 // Hark — the Grove. Completion you can see. Every sound you learn is rehomed here.
 import { el, icon } from '../ui.js';
-import { byId, CREATURES, creatureEmoji } from '../content.js';
+import { byId, CREATURES, creatureEmoji, rarityPct } from '../content.js';
 import { get } from '../state.js';
 import { feedbackLink, showCredits } from '../probes.js';
 import { shareStreak } from '../sharecard.js';
@@ -34,9 +34,12 @@ export function mount(host, app) {
   const chips = el('div', { style: 'display:flex;flex-wrap:wrap;gap:6px' });
   discovered.forEach((c) => {
     const crowns = s.crowns[c.id] || 0;
+    const pct = rarityPct(c);
+    const borderCol = c.rare ? 'rgba(111,139,255,.4)' : 'var(--line2)';
     chips.appendChild(el('span', {
-      style: 'font-size:11px;padding:5px 10px;border-radius:20px;background:var(--panel);border:.5px solid var(--line2)',
-      html: `<span style="margin-right:3px">${creatureEmoji(c)}</span>${c.name}${crowns ? ' ' + '★'.repeat(crowns) : ''}`
+      title: pct + '% of listeners have found this',
+      style: `font-size:11px;padding:5px 10px;border-radius:20px;background:var(--panel);border:.5px solid ${borderCol};display:inline-flex;align-items:center;gap:3px`,
+      html: `<span>${creatureEmoji(c)}</span><span>${c.name}${crowns ? ' ' + '★'.repeat(crowns) : ''}</span><span style="color:var(--muted);font-size:9px;margin-left:2px">${pct}%</span>`
     }));
   });
   if (!discovered.length) chips.appendChild(el('span', { style: 'font-size:12px;color:var(--muted)', text: 'Play the feed to bring sounds home.' }));
