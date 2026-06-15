@@ -1,83 +1,116 @@
-// Hark — cold open. Silent-playable onboarding. The sound IS the tutorial.
+// Hark — cold open. Lead with the creature, earn the spectrogram.
 import { el, clear, icon, iconEl, sparkleBurst, haptic } from '../ui.js';
 import { mountSpectrogram } from '../spectrogram.js';
 import * as audio from '../audio.js';
-import { byId } from '../content.js';
+import { byId, creatureEmoji } from '../content.js';
 import { get, save, discover } from '../state.js';
 import { track } from '../analytics.js';
 import { showPrivacyNotice } from '../probes.js';
 
 export function mount(host, app) {
   const target = byId('barredowl');
-  const decoy = byId('treefrog');
-  const root = el('div', { class: 'screen' });
-  const cold = el('div', { class: 'cold' });
+  const decoy  = byId('treefrog');
+  const root   = el('div', { class: 'screen' });
+  const cold   = el('div', { class: 'cold' });
   root.appendChild(cold);
   host.appendChild(root);
 
   track('onboarding_start');
   stepListen();
 
+  // ── STEP 1: LISTEN ──────────────────────────────────────────────────────────
   function stepListen() {
     clear(cold);
-    cold.appendChild(el('div', { class: 'wm', text: 'HARK' }));
-    const sg = el('div', { class: 'specwrap', style: 'width:240px' });
-    cold.appendChild(sg);
-    mountSpectrogram(sg, target, 240, 86);
-    cold.appendChild(el('h1', { html: 'Put on headphones.<br><span>Trust your ears.</span>' }));
-    const play = el('button', { class: 'bigplay', 'aria-label': 'Play sound', html: icon('play', 30) });
+
+    const hero = el('div', { class: 'creature-hero', text: creatureEmoji(target) });
+    cold.appendChild(hero);
+
+    cold.appendChild(el('h1', { text: 'Something is out there.' }));
+
+    const play = el('button', {
+      class: 'bigplay',
+      'aria-label': 'Play sound',
+      html: icon('play', 30),
+    });
     play.addEventListener('click', () => {
-      audio.unlock(); haptic();
+      audio.unlock();
       audio.play(target).catch(() => {});
       setTimeout(stepGuess, 900);
     });
     cold.appendChild(play);
-    cold.appendChild(el('p', { text: 'Tap to hear a sound from the forest.' }));
+
+    cold.appendChild(el('p', { text: 'Tap to hear it' }));
   }
 
+  // ── STEP 2: GUESS ───────────────────────────────────────────────────────────
   function stepGuess() {
     clear(cold);
-    cold.appendChild(el('div', { class: 'wm', text: 'HARK' }));
+
     cold.appendChild(el('h1', { text: 'Which one did you just hear?' }));
+
     const replay = el('button', { class: 'ghost', html: icon('play', 16) + ' replay' });
-    replay.addEventListener('click', () => audio.play(target));
+    replay.addEventListener('click', () => audio.play(target).catch(() => {}));
     cold.appendChild(replay);
 
-    const opts = el('div', { class: 'opts', style: 'width:100%;max-width:340px' });
-    [target, decoy].sort(() => 0).forEach((c, i) => {
-      // keep target first slot deterministic-easy on the very first try
-      const card = el('button', { class: 'opt' });
-      const sg = el('div', { class: 'specwrap', style: 'width:100%' });
-      card.appendChild(sg);
-      card.appendChild(el('div', { class: 'lab', text: i === 0 ? 'A' : 'B' }));
-      requestAnimationFrame(() => mountSpectrogram(sg, c, sg.clientWidth || 150, 70));
+    const row = el('div', { class: 'emo-opt-row' });
+    [target, decoy].forEach(c => {
+      const card = el('button', { class: 'emo-opt' });
+
+      const emoDiv = el('div', { text: creatureEmoji(c) });
+      emoDiv.style.fontSize = '40px';
+      card.appendChild(emoDiv);
+
+      card.appendChild(el('span', { text: c.name }));
+
       card.addEventListener('click', () => choose(c, card));
-      opts.appendChild(card);
+      row.appendChild(card);
     });
-    cold.appendChild(opts);
+    cold.appendChild(row);
   }
 
   function choose(c, card) {
     if (c.id === target.id) {
-      card.classList.add('correct'); haptic(14); sparkleBurst(card);
+      card.classList.add('correct');
+      haptic(14);
+      sparkleBurst(card);
       discover(target.id);
-      setTimeout(win, 650);
+      setTimeout(win, 700);
     } else {
-      card.classList.add('wrong'); haptic(20);
+      card.classList.add('wrong');
+      haptic(20);
+      audio.play(target).catch(() => {});
       setTimeout(() => card.classList.remove('wrong'), 500);
-      audio.play(target);
     }
   }
 
+  // ── STEP 3: WIN ─────────────────────────────────────────────────────────────
   function win() {
     clear(cold);
-    cold.appendChild(el('div', { class: 'wm', text: 'HARK' }));
-    cold.appendChild(el('span', { class: 'ic', html: icon('ear', 44), style: 'color:var(--teal)' }));
-    cold.appendChild(el('h1', { html: 'You just read your<br><span>first spectrogram.</span>' }));
-    cold.appendChild(el('p', { text: 'A picture of sound — time goes left to right, pitch bottom to top. Your eyes already started learning it.' }));
+
+    const hero = el('div', { class: 'creature-hero', text: creatureEmoji(target) });
+    hero.style.fontSize = '64px';
+    cold.appendChild(hero);
+
+    cold.appendChild(el('h1', { text: 'You found your first creature.' }));
+
+    const nameSpan = el('span', { text: target.name });
+    nameSpan.style.color = 'var(--teal)';
+    cold.appendChild(nameSpan);
+
+    const sgLabel = el('div', { text: 'This is what it looks like as sound:' });
+    cold.appendChild(sgLabel);
+
+    const sg = el('div', { class: 'specwrap', style: 'width:240px' });
+    cold.appendChild(sg);
+    mountSpectrogram(sg, target, 240, 60);
+
+    cold.appendChild(el('p', { text: target.fact }));
+
     const cta = el('button', { class: 'cta', text: 'Start listening' });
     cta.addEventListener('click', () => {
-      const s = get(); s.onboarded = true; save();
+      const s = get();
+      s.onboarded = true;
+      save();
       track('onboarding_complete');
       root.remove();
       app.go('feed');

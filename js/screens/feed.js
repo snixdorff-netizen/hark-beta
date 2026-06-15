@@ -3,7 +3,7 @@
 import { el, clear, icon, haptic } from '../ui.js';
 import { mountSpectrogram } from '../spectrogram.js';
 import * as audio from '../audio.js';
-import { viralFeed, GROUPS } from '../content.js';
+import { viralFeed, GROUPS, creatureEmoji } from '../content.js';
 import { discover } from '../state.js';
 import { track, shareUrl } from '../analytics.js';
 
@@ -14,7 +14,7 @@ export function mount(host, app) {
   host.appendChild(root);
 
   const list = viralFeed();
-  const cards = list.map((c) => buildCard(c, app));
+  const cards = list.map((c, i) => buildCard(c, app, i === 0));
   cards.forEach((c) => feed.appendChild(c.node));
 
   // Lazy: only render a card's spectrogram (and decode its clip) when it nears
@@ -38,7 +38,7 @@ export function mount(host, app) {
   return () => { io.disconnect(); audio.stopAll(); root.remove(); };
 }
 
-function buildCard(c, app) {
+function buildCard(c, app, isDaily) {
   const g = GROUPS[c.group];
   const node = el('div', { class: 'card', style: `background:radial-gradient(120% 80% at 50% 35%, ${hex(g.color, .22)} 0%, #0d1110 70%)` });
 
@@ -46,8 +46,14 @@ function buildCard(c, app) {
 
   // soft stage halo
   const stage = el('div', { class: 'stage' });
-  stage.appendChild(el('div', { style: `width:200px;height:200px;border-radius:50%;background:${hex(g.color,.10)};filter:blur(6px)` }));
+      const emoEl = el('div', { style: 'font-size:92px;line-height:1;user-select:none;filter:drop-shadow(0 2px 16px rgba(0,0,0,.4))' });
+      emoEl.textContent = creatureEmoji(c);
+      stage.appendChild(emoEl);
   node.appendChild(stage);
+  if (isDaily) {
+    const badge = el('div', { style: 'position:absolute;top:calc(var(--safe-top) + 52px);left:16px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:var(--amber);color:var(--amber-deep);letter-spacing:.04em', text: '⭐ Sound of the Day' });
+    node.appendChild(badge);
+  }
 
   // action rail
   const rail = el('div', { class: 'rail' });

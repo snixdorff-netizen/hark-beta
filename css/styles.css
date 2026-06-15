@@ -175,3 +175,40 @@ button{font-family:inherit;color:inherit;border:none;background:none;cursor:poin
 .privacy .lnk{color:var(--teal);font-size:13px;font-weight:500;padding:6px 10px}
 .lnk-row{display:inline-flex;align-items:center;gap:7px;color:var(--muted);font-size:13px;padding:10px 0}
 .lnk-row:active{color:var(--teal)}
+
+/* ── Tiger sprint ────────────────────────────────────────────────────── */
+
+/* Feed: creature emoji floats gently */
+.card .stage { align-items: center; justify-content: center; }
+
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+.card .stage div { animation: float 5s ease-in-out infinite; }
+
+/* Cold open: creature hero emoji */
+.creature-hero {
+  font-size: 72px;
+  line-height: 1;
+  animation: hero-in .45s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes hero-in { from{transform:scale(.5);opacity:0} to{transform:scale(1);opacity:1} }
+
+/* Cold open: emoji option buttons */
+.emo-opt-row { display:flex; gap:12px; width:100%; max-width:320px; }
+.emo-opt {
+  flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:8px; padding:18px 12px;
+  border:1.5px solid var(--line2); border-radius:16px;
+  background:var(--panel); font-size:13px; font-family:inherit;
+  color:var(--ink); cursor:pointer;
+  transition:transform .12s, border-color .15s;
+}
+.emo-opt:active { transform:scale(.96); }
+.emo-opt.correct { border-color:var(--teal); background:rgba(62,201,159,.08); }
+.emo-opt.wrong { border-color:#c0524f; }
+
+/* NorN reveal card */
+.reveal-card {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  flex:1; gap:16px; text-align:center; padding:40px;
+  animation: fade .25s ease both;
+}

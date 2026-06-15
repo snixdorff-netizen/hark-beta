@@ -7,6 +7,7 @@ import { buildRound, sessionTargets } from '../difficulty.js';
 import { get, addXp, adjustSkill, awardCrown, discover, growGrove, touchStreak } from '../state.js';
 import { track } from '../analytics.js';
 import { maybeShowWtp } from '../probes.js';
+import { creatureEmoji } from '../content.js';
 
 export function mount(host, app, params = {}) {
   const root = el('div', { class: 'screen' });
@@ -16,6 +17,7 @@ export function mount(host, app, params = {}) {
   let seed = (get().xp * 131 + 17) >>> 0;
   const targets = sessionTargets(seed, params.preferIds);
   let i = 0, correctCount = 0;
+  let gotRight = [];
 
   renderRound();
 
@@ -68,8 +70,16 @@ export function mount(host, app, params = {}) {
       card.dataset.done = '1';
       card.classList.add('correct'); haptic(14); sparkleBurst(card);
       correctCount++;
+      gotRight.push(target);
       adjustSkill(true); awardCrown(target.id); discover(target.id); addXp(10);
-      setTimeout(next, 700);
+      const reveal = el('div', { style: 'position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:var(--panel);border-radius:13px;pointer-events:none;animation:fade .2s ease' });
+      const rEmo = el('div', { style: 'font-size:38px;line-height:1' });
+      rEmo.textContent = creatureEmoji(target);
+      reveal.appendChild(rEmo);
+      reveal.appendChild(el('div', { style: 'font-size:11px;color:var(--teal);font-weight:600;letter-spacing:.03em', text: target.name }));
+      card.style.position = 'relative';
+      card.appendChild(reveal);
+      setTimeout(next, 950);
     } else {
       card.classList.add('wrong'); haptic(20); adjustSkill(false);
       audio.play(target);
@@ -90,6 +100,11 @@ export function mount(host, app, params = {}) {
     clear(pad);
     const wrap = el('div', { class: 'cold', style: 'position:relative' });
     wrap.appendChild(el('span', { class: 'ic', html: icon('trophy', 44), style: 'color:var(--amber)' }));
+    if (gotRight.length) {
+      const emoRow = el('div', { style: 'display:flex;gap:6px;justify-content:center;flex-wrap:wrap;font-size:26px' });
+      gotRight.forEach(c => { const s = el('span'); s.textContent = creatureEmoji(c); emoRow.appendChild(s); });
+      wrap.appendChild(emoRow);
+    }
     wrap.appendChild(el('h1', { html: `Nice ears.<br><span>${correctCount}/${targets.length} this round.</span>` }));
     wrap.appendChild(el('p', { text: 'Each one you name makes the next easier to hear. Your Grove grew a little.' }));
     const again = el('button', { class: 'cta', text: 'Again' });

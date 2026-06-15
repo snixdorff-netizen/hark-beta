@@ -153,6 +153,29 @@ export async function loadManifest() {
   } catch (e) {}
 }
 
+const EMOJI_MAP = {
+  lyrebird: '🦚',
+  barredowl: '🦉',
+  greathornedowl: '🦉',
+  treefrog: '🐸',
+  cicada: '🦗',
+  foxscream: '🦊',
+  graywolf: '🐺',
+  wind: '🌿',
+  springpeeper: '🐸',
+  wren: '🐦',
+  nighthawk: '🌑',
+  engine: '⚡',
+  commonfrog: '🐸',
+  commonloon: '🐦',
+  baltimoreoriole: '🟠',
+  humpbackwhale: '🐋',
+};
+
+const GROUP_EMOJI = { bird: '🐦', mammal: '🦌', amphibian: '🐸', insect: '🦗', marine: '🐋', geophony: '🌿' };
+
+export const creatureEmoji = (c) => EMOJI_MAP[c.id] || GROUP_EMOJI[c.group] || '🔊';
+
 export const byId = (id) => CREATURES.find((c) => c.id === id);
 export const inGroup = (g) => CREATURES.filter((c) => c.group === g);
 export const viralFeed = () => CREATURES.filter((c) => c.viral).concat(CREATURES.filter((c) => !c.viral));

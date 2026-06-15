@@ -1,6 +1,7 @@
 // Hark — the Grove. Completion you can see. Every sound you learn is rehomed here.
 import { el, icon } from '../ui.js';
 import { byId, CREATURES } from '../content.js';
+import { creatureEmoji } from '../content.js';
 import { get } from '../state.js';
 import { feedbackLink, shareInvite, showCredits } from '../probes.js';
 
@@ -35,7 +36,7 @@ export function mount(host, app) {
     const crowns = s.crowns[c.id] || 0;
     chips.appendChild(el('span', {
       style: 'font-size:11px;padding:5px 10px;border-radius:20px;background:var(--panel);border:.5px solid var(--line2)',
-      html: `${c.name}${crowns ? ' ' + '★'.repeat(crowns) : ''}`
+      html: `<span style="margin-right:3px">${creatureEmoji(c)}</span>${c.name}${crowns ? ' ' + '★'.repeat(crowns) : ''}`
     }));
   });
   if (!discovered.length) chips.appendChild(el('span', { style: 'font-size:12px;color:var(--muted)', text: 'Play the feed to bring sounds home.' }));

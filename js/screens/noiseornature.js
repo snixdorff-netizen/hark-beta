@@ -2,7 +2,7 @@
 import { el, clear, icon, sparkleBurst, haptic } from '../ui.js';
 import { mountSpectrogram } from '../spectrogram.js';
 import * as audio from '../audio.js';
-import { CREATURES, seededShuffle } from '../content.js';
+import { CREATURES, seededShuffle, creatureEmoji } from '../content.js';
 import { get, addXp, growGrove, touchStreak } from '../state.js';
 
 const NOISE = [
@@ -62,6 +62,26 @@ export function mount(host, app) {
     addSwipe(card, () => answer(false, card), () => answer(true, card));
   }
 
+  function showReveal(item, wasCorrect) {
+    clear(pad);
+    const stamp = el('div', { class: 'reveal-card' });
+    const emo = el('div', { style: 'font-size:56px;line-height:1' });
+    emo.textContent = creatureEmoji(item);
+    stamp.appendChild(emo);
+    stamp.appendChild(el('div', { style: 'font-size:18px;font-weight:500;margin-top:4px', text: item.name }));
+    const verdict = el('div', { style: 'font-size:13px;padding:5px 14px;border-radius:20px;margin-top:6px' });
+    if (wasCorrect) {
+      verdict.textContent = 'Good ear ✓';
+      verdict.style.cssText += ';background:rgba(62,201,159,.15);color:var(--teal)';
+    } else {
+      verdict.textContent = item.isNoise ? 'That was noise' : 'That was nature';
+      verdict.style.cssText += ';background:rgba(255,255,255,.08);color:var(--muted)';
+    }
+    stamp.appendChild(verdict);
+    pad.appendChild(stamp);
+    setTimeout(() => { i++; if (i < deck.length) renderCard(); else finish(); }, 950);
+  }
+
   function answer(saidNoise, card) {
     if (card.dataset.done) return;
     card.dataset.done = '1';
@@ -72,7 +92,7 @@ export function mount(host, app) {
     card.style.transition = 'transform .25s,opacity .25s';
     card.style.transform = `translateX(${saidNoise ? -120 : 120}px) rotate(${saidNoise ? -8 : 8}deg)`;
     card.style.opacity = '0';
-    setTimeout(() => { i++; i < deck.length ? renderCard() : finish(); }, 260);
+    setTimeout(() => showReveal(item, correct), 260);
   }
 
   function finish() {
