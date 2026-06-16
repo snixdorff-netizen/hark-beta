@@ -156,8 +156,12 @@ function go(name, params = {}) {
   updateChrome(name);
   track('screen_view', { screen: name });
   checkRankUp(s);
-  // Welcome-back message for streak players
-  if (name === 'feed' && s.streak >= 3 && s.lastPlayed === today()) {
+  // Streak urgency — user hasn't played today yet
+  if (name === 'feed' && s.streak >= 1 && s.lastPlayed !== today()) {
+    setTimeout(() => mentor(`<b>🔥 Day ${s.streak} streak.</b> Play a round to keep it alive — or it resets at midnight.`, 7000), 1000);
+  }
+  // Welcome-back message for streak players who already played today
+  else if (name === 'feed' && s.streak >= 3 && s.lastPlayed === today()) {
     const msgs = [
       `<b>Day ${s.streak}.</b> The forest is glad you're back.`,
       `<b>Wren:</b> ${s.streak} days straight. Most people don't make it this far.`,

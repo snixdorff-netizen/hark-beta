@@ -4,7 +4,7 @@ import { el, clear, icon, sparkleBurst, haptic } from '../ui.js';
 import { mountSpectrogram } from '../spectrogram.js';
 import * as audio from '../audio.js';
 import { buildRound, sessionTargets } from '../difficulty.js';
-import { get, addXp, adjustSkill, awardCrown, discover, growGrove, touchStreak, getQuest, bumpQuestSnap, markQuestDone } from '../state.js';
+import { get, addXp, adjustSkill, awardCrown, discover, growGrove, touchStreak, getQuest, bumpQuestSnap, markQuestDone, checkMilestone } from '../state.js';
 import { track, challengeUrl } from '../analytics.js';
 import { maybeShowWtp } from '../probes.js';
 import { creatureEmoji, rarityPct, byId } from '../content.js';
@@ -91,6 +91,8 @@ export function mount(host, app, params = {}) {
       adjustSkill(true);
       const { level: crownLevel, isNew: crownUp } = awardCrown(target.id);
       discover(target.id); addXp(10);
+      const snapMilestone = checkMilestone();
+      if (snapMilestone) setTimeout(() => app.milestone(snapMilestone), 1100);
       const reveal = el('div', { style: 'position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:var(--panel);border-radius:13px;pointer-events:none;animation:fade .2s ease' });
       const rEmo = el('div', { style: 'font-size:38px;line-height:1' });
       rEmo.textContent = creatureEmoji(target);
@@ -182,10 +184,16 @@ export function mount(host, app, params = {}) {
       milestoneDiv.appendChild(streakShareBtn);
       wrap.appendChild(milestoneDiv);
     } else if (gotRight.length) {
-      const shareBtn = el('button', { class: 'cta', text: '📤 Share your catch' });
-      shareBtn.addEventListener('click', () => {
-        track('snap_share', { count: gotRight.length });
-        shareCreature(gotRight[gotRight.length - 1], app);
+      const best = gotRight[gotRight.length - 1];
+      const shareBtn = el('button', { class: 'cta', text: '🎧 Challenge a friend' });
+      shareBtn.addEventListener('click', async () => {
+        track('snap_challenge_share', { id: best.id });
+        const url = challengeUrl(best.id);
+        const text = 'I named this sound on Hark — can you? 🎧 ' + url;
+        try {
+          if (navigator.share) await navigator.share({ title: 'Hark sound challenge', text, url });
+          else await navigator.clipboard.writeText(text);
+        } catch (e) { if (e.name !== 'AbortError') shareCreature(best, app); }
       });
       wrap.appendChild(shareBtn);
     }

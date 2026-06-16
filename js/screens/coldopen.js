@@ -126,6 +126,17 @@ export function mount(host, app) {
       showPrivacyNotice();
     });
     cold.appendChild(cta);
+
+    const snapLink = el('button', { class: 'ghost', style: 'color:var(--teal);font-size:13px', text: '🎧 Test your ear in Snap first →' });
+    snapLink.addEventListener('click', () => {
+      const s = get();
+      s.onboarded = true;
+      save();
+      track('onboarding_to_snap');
+      root.remove();
+      app.go('snap');
+    });
+    cold.appendChild(snapLink);
   }
 
   return () => root.remove();
