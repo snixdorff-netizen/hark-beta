@@ -130,6 +130,7 @@ function updateChrome(active) {
 }
 
 let _lastRankTitle = null;
+let _timeGreetShown = false;
 
 function checkRankUp(s) {
   const rp = rankProgress(Object.keys(s.discovered).length);
@@ -173,6 +174,23 @@ function go(name, params = {}) {
     ];
     const idx = s.streak % msgs.length;
     setTimeout(() => mentor(msgs[idx], 5000), 900);
+  }
+  // Time-aware atmospheric greeting — once per session for listeners who've found things
+  else if (name === 'feed' && !_timeGreetShown && Object.keys(s.discovered).length >= 1) {
+    _timeGreetShown = true;
+    const h = new Date().getHours();
+    const greet = h >= 5 && h < 8
+      ? '<b>Wren:</b> Dawn chorus. Everything is competing at once — the most sound per square meter you\'ll ever hear.'
+      : h >= 8 && h < 12
+      ? '<b>Wren:</b> Morning. Migrants are active. The soundscape shifts faster in the first three hours than any other time.'
+      : h >= 12 && h < 17
+      ? '<b>Wren:</b> Midday. Heat quiets most birds. The insects take over. Different ears needed.'
+      : h >= 17 && h < 20
+      ? '<b>Wren:</b> Golden hour. Thrushes and robins hold out longest — they always sing the last song before dark.'
+      : h >= 20 && h < 23
+      ? '<b>Wren:</b> Dusk. Night shift taking over. Owls are warming up — listen for the first hoot.'
+      : '<b>Wren:</b> Deep night. This is when I do my best listening. Foxes, owls, nighthawks. The world quiets and what\'s left is wild.';
+    setTimeout(() => mentor(greet, 7000), 800);
   }
 
   if (name === 'feed') {
