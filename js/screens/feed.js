@@ -78,6 +78,8 @@ export function mount(host, app) {
         const wasNew = !get().discovered[card.creature.id];
         discover(card.creature.id);
         if (wasNew) {
+          addXp(5);
+          haptic(8);
           app.toast('🌿 ' + card.creature.name + ' rehomed to your grove');
           if (card.creature.rare) {
             setTimeout(() => app.mentor('<b>Wren: Rare find.</b> ' + creatureEmoji(card.creature) + ' ' + card.creature.name + ' — only ' + Math.round(rarityPct(card.creature)) + '% of listeners ever find this one.', 8000), 800);

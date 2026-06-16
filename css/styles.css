@@ -210,6 +210,8 @@ button{font-family:inherit;color:inherit;border:none;background:none;cursor:poin
   transition:transform .2s;
 }
 .rank-badge:hover { transform:scale(1.2); }
+@keyframes rankup { 0%,100%{transform:scale(1)} 40%{transform:scale(1.6)} }
+.rank-badge.rankup { animation:rankup .45s ease 3; }
 
 /* Daily challenge badge on feed card */
 .daily-badge {

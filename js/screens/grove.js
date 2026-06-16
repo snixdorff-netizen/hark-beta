@@ -2,6 +2,7 @@
 import { el, icon } from '../ui.js';
 import { byId, CREATURES, GROUPS, creatureEmoji, rarityPct } from '../content.js';
 import { get } from '../state.js';
+import { rankProgress } from '../rank.js';
 import { feedbackLink, showCredits } from '../probes.js';
 import { shareGrove, shareCreature } from '../sharecard.js';
 import * as audio from '../audio.js';
@@ -29,9 +30,25 @@ export function mount(host, app) {
   pad.appendChild(head);
 
   // Restoration progress bar
-  const bar = el('div', { class: 'bar', style: 'margin-bottom:16px' });
+  const bar = el('div', { class: 'bar', style: 'margin-bottom:8px' });
   bar.appendChild(el('i', { style: `width:${Math.round(s.grove)}%` }));
   pad.appendChild(bar);
+
+  // Rank progress row
+  const rp = rankProgress(discovered.length);
+  const rankRow = el('div', { style: 'display:flex;align-items:center;gap:8px;margin-bottom:16px' });
+  rankRow.appendChild(el('div', { style: 'font-size:16px;line-height:1', text: rp.rank.emoji }));
+  rankRow.appendChild(el('div', { style: 'font-size:11px;color:var(--muted)', text: rp.rank.title }));
+  if (rp.next) {
+    const track2 = el('div', { style: 'flex:1;height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden' });
+    track2.appendChild(el('div', { style: `height:100%;width:${Math.round(rp.pct * 100)}%;background:var(--teal);border-radius:2px` }));
+    rankRow.appendChild(track2);
+    rankRow.appendChild(el('div', { style: 'font-size:11px;color:var(--muted)', text: rp.next.emoji }));
+    rankRow.appendChild(el('div', { style: 'font-size:10px;color:var(--muted);white-space:nowrap', text: (rp.next.min - discovered.length) + ' more' }));
+  } else {
+    rankRow.appendChild(el('div', { style: 'font-size:10px;color:var(--teal);font-weight:600;margin-left:4px', text: 'Max rank' }));
+  }
+  pad.appendChild(rankRow);
 
   // ── Creature mosaic ──────────────────────────────────────────────────────
   const mosaic = el('div', { style: 'display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:18px' });

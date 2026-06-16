@@ -134,7 +134,11 @@ let _lastRankTitle = null;
 function checkRankUp(s) {
   const rp = rankProgress(Object.keys(s.discovered).length);
   if (_lastRankTitle && _lastRankTitle !== rp.rank.title) {
-    setTimeout(() => mentor(`<b>Rank up!</b> You're now a ${rp.rank.emoji} <b>${rp.rank.title}</b>. Your ears are sharpening.`, 8000), 600);
+    setTimeout(() => {
+      mentor(`<b>Rank up!</b> You're now a ${rp.rank.emoji} <b>${rp.rank.title}</b>. Your ears are sharpening.`, 8000);
+      const badge = appRoot.querySelector('.rank-badge');
+      if (badge) { badge.classList.add('rankup'); setTimeout(() => badge.classList.remove('rankup'), 1400); }
+    }, 600);
   }
   _lastRankTitle = rp.rank.title;
 }
