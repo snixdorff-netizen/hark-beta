@@ -102,6 +102,11 @@ export function mount(host, app) {
     pad.appendChild(listWrap);
 
     const allSorted = s.haul.sorted.length >= s.haul.items.length;
+    if (allSorted && !s.haul.celebratedAt) {
+      s.haul.celebratedAt = Date.now(); save();
+      const sortedCreatures = s.haul.sorted.map((id) => byId(id)).filter(Boolean);
+      app.mentor('<b>Haul complete! 🌙</b> ' + sortedCreatures.length + ' sounds sorted. +' + (sortedCreatures.length * 5) + ' XP, your grove grew a little.', 7000);
+    }
     if (allSorted) {
       const u = el('div', { class: 'unknown' });
       u.innerHTML = `<span class="ic" style="color:var(--amber)">${icon('help', 22)}</span>

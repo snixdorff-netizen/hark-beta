@@ -270,9 +270,21 @@ function showShareOverlay(canvas, url) {
   hint.textContent = 'Screenshot to share 📸';
   ovl.appendChild(hint);
 
+  const copyBtn = document.createElement('button');
+  copyBtn.textContent = '🔗 Copy link';
+  copyBtn.style.cssText = 'background:rgba(62,201,159,.18);border:.5px solid rgba(62,201,159,.4);color:#3ec99f;font-size:14px;font-weight:500;padding:11px 28px;border-radius:24px;font-family:-apple-system,sans-serif;cursor:pointer';
+  copyBtn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      copyBtn.textContent = '✓ Copied!';
+      setTimeout(() => { copyBtn.textContent = '🔗 Copy link'; }, 2000);
+    } catch (e) { copyBtn.textContent = url; }
+  });
+  ovl.appendChild(copyBtn);
+
   const close = document.createElement('button');
   close.textContent = 'Done';
-  close.style.cssText = 'color:rgba(255,255,255,.45);font-size:13px;padding:10px 24px;border:none;background:none;font-family:-apple-system,sans-serif;cursor:pointer';
+  close.style.cssText = 'color:rgba(255,255,255,.35);font-size:12px;padding:8px 24px;border:none;background:none;font-family:-apple-system,sans-serif;cursor:pointer';
   close.addEventListener('click', () => ovl.remove());
   ovl.appendChild(close);
   host.appendChild(ovl);
