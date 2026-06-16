@@ -178,6 +178,9 @@ export function mount(host, app, params = {}) {
       ? `<span style="color:var(--teal)">${creatureEmoji(challengeCreature)} ${challengeCreature.name}.</span><br>You got it.`
       : `Nice ears.<br><span>${correctCount}/${targets.length} this round.</span>`;
     wrap.appendChild(el('h1', { html: headline }));
+    if (newStreak >= 1) {
+      wrap.appendChild(el('div', { style: 'font-size:12px;color:var(--amber);font-weight:500;margin-top:-8px', text: `🔥 Day ${newStreak} in the wild` }));
+    }
     wrap.appendChild(el('p', { text: challengeCreature ? '92 more wild sounds are out there. Can you find them all?' : 'Each one you name makes the next easier to hear. Your Grove grew a little.' }));
     if (challengeCreature) {
       const challengeBack = el('button', { class: 'cta', text: '🎧 Challenge someone back' });
@@ -204,7 +207,7 @@ export function mount(host, app, params = {}) {
       milestoneDiv.appendChild(streakShareBtn);
       wrap.appendChild(milestoneDiv);
     } else if (gotRight.length) {
-      const best = gotRight[gotRight.length - 1];
+      const best = gotRight.slice().sort((a, b) => rarityPct(a) - rarityPct(b))[0];
       const shareBtn = el('button', { class: 'cta', text: '🎧 Challenge a friend' });
       shareBtn.addEventListener('click', async () => {
         track('snap_challenge_share', { id: best.id });

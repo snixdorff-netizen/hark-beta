@@ -110,6 +110,18 @@ export function mount(host, app) {
     });
     shareBtn.addEventListener('click', () => shareGrove(discovered, s, app));
     pad.appendChild(shareBtn);
+
+    const inviteBtn = el('button', { style: 'width:100%;text-align:center;padding:10px;font-size:13px;color:var(--teal)', text: '🎧 Invite a friend to Hark' });
+    inviteBtn.addEventListener('click', async () => {
+      track('grove_invite');
+      const url = (await import('../analytics.js')).shareUrl();
+      const text = 'I\'ve been listening to wild sounds on Hark — it\'s weirdly addictive. 93 sounds to find. 🌿 ' + url;
+      try {
+        if (navigator.share) await navigator.share({ title: 'Hark — wild sounds', text, url });
+        else await navigator.clipboard.writeText(text);
+      } catch (e) {}
+    });
+    pad.appendChild(inviteBtn);
   } else {
     pad.appendChild(el('p', { style: 'font-size:13px;color:var(--muted);text-align:center;margin-bottom:16px', text: 'Play the feed to bring sounds home.' }));
   }
