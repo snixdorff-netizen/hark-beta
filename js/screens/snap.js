@@ -226,6 +226,36 @@ export function mount(host, app, params = {}) {
       const exploreBtn = el('button', { class: 'cta', style: 'background:rgba(62,201,159,.15);color:var(--teal)', text: '🌿 Explore the wild →' });
       exploreBtn.addEventListener('click', () => { track('challenge_to_feed'); app.go('feed'); });
       wrap.appendChild(exploreBtn);
+    } else if (dailyNamed) {
+      // ── Daily Sound Named card — Wordle-style shareable result ──────────────
+      const s2 = get();
+      const totalFound = Object.keys(s2.discovered).length;
+      const daily = dailyCreature;
+      const dailyCard = el('div', { style: 'background:rgba(224,164,77,.1);border:.5px solid rgba(224,164,77,.35);border-radius:14px;padding:16px 18px;text-align:center;width:100%' });
+      dailyCard.appendChild(el('div', { style: 'font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--amber);margin-bottom:8px', text: '⭐ DAILY SOUND NAMED' }));
+      const dEmo = el('div', { style: 'font-size:52px;line-height:1;margin-bottom:4px' });
+      dEmo.textContent = creatureEmoji(daily);
+      dailyCard.appendChild(dEmo);
+      dailyCard.appendChild(el('div', { style: 'font-size:17px;font-weight:600;color:var(--ink)', text: daily.name }));
+      dailyCard.appendChild(el('div', { style: 'font-size:11px;color:var(--muted);margin-top:3px', text: '🔥 Day ' + newStreak + ' · ' + totalFound + '/93 sounds found' }));
+      const dailyShareBtn = el('button', { class: 'cta', style: 'margin-top:12px', text: '🎧 Share today\'s sound' });
+      dailyShareBtn.addEventListener('click', async () => {
+        track('daily_snap_share', { id: daily.id });
+        const url = challengeUrl(daily.id);
+        const text = 'Named today\'s wild sound on Hark 🎧 ' + creatureEmoji(daily) + ' Can you? ' + url;
+        try {
+          if (navigator.share) await navigator.share({ title: 'Hark Daily Sound', text, url });
+          else { await navigator.clipboard.writeText(text); app.toast('Copied!', 2000); }
+        } catch (e) {}
+      });
+      dailyCard.appendChild(dailyShareBtn);
+      wrap.appendChild(dailyCard);
+      // Upcoming streak milestone hook
+      const NEXT_MILESTONES = [3, 7, 14, 30];
+      const nextM = NEXT_MILESTONES.find((n) => n > newStreak);
+      if (nextM && nextM - newStreak === 1) {
+        setTimeout(() => app.mentor('<b>Wren:</b> Day ' + newStreak + '. One more day and you hit ' + nextM + ' — a milestone most listeners never reach. Come back tomorrow.', 8000), 1400);
+      }
     } else if (isMilestone) {
       const milestoneDiv = el('div', { style: 'background:rgba(224,164,77,.12);border:.5px solid rgba(224,164,77,.4);border-radius:14px;padding:14px 18px;text-align:center;width:100%' });
       milestoneDiv.appendChild(el('div', { style: 'font-size:28px;margin-bottom:4px', text: '🔥' }));
