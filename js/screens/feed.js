@@ -50,6 +50,11 @@ export function mount(host, app) {
     loopPass++;
     const sep = el('div', { style: 'text-align:center;padding:32px 0 16px;font-size:12px;color:rgba(159,178,170,0.45);letter-spacing:.08em' });
     sep.textContent = '— back at the top —';
+    if (loopPass === 1) {
+      const disc = Object.keys(get().discovered).length;
+      setTimeout(() => app.mentor(`<b>Wren:</b> You've heard them all. Now see if you can name them — try <b>Snap</b> and find out how much your ear has learned. 🎧`, 8000), 600);
+      track('feed_loop_complete', { discovered: disc });
+    }
     feed.insertBefore(sep, sentinel);
     const seed = loopPass * 7919;
     const shuffled = seededShuffle(baseList.filter((c) => !c.isNoise), seed);

@@ -178,7 +178,7 @@ export function mount(host, app, params = {}) {
       ? `<span style="color:var(--teal)">${creatureEmoji(challengeCreature)} ${challengeCreature.name}.</span><br>You got it.`
       : `Nice ears.<br><span>${correctCount}/${targets.length} this round.</span>`;
     wrap.appendChild(el('h1', { html: headline }));
-    wrap.appendChild(el('p', { text: challengeCreature ? 'Challenge someone else — see if they can do it.' : 'Each one you name makes the next easier to hear. Your Grove grew a little.' }));
+    wrap.appendChild(el('p', { text: challengeCreature ? '92 more wild sounds are out there. Can you find them all?' : 'Each one you name makes the next easier to hear. Your Grove grew a little.' }));
     if (challengeCreature) {
       const challengeBack = el('button', { class: 'cta', text: '🎧 Challenge someone back' });
       challengeBack.addEventListener('click', async () => {
@@ -191,6 +191,9 @@ export function mount(host, app, params = {}) {
         } catch (e) {}
       });
       wrap.appendChild(challengeBack);
+      const exploreBtn = el('button', { class: 'cta', style: 'background:rgba(62,201,159,.15);color:var(--teal)', text: '🌿 Explore the wild →' });
+      exploreBtn.addEventListener('click', () => { track('challenge_to_feed'); app.go('feed'); });
+      wrap.appendChild(exploreBtn);
     } else if (isMilestone) {
       const milestoneDiv = el('div', { style: 'background:rgba(224,164,77,.12);border:.5px solid rgba(224,164,77,.4);border-radius:14px;padding:14px 18px;text-align:center;width:100%' });
       milestoneDiv.appendChild(el('div', { style: 'font-size:28px;margin-bottom:4px', text: '🔥' }));
