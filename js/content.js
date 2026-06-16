@@ -189,6 +189,38 @@ export function rarityPct(c) {
 export const byId = (id) => CREATURES.find((c) => c.id === id);
 export const inGroup = (g) => CREATURES.filter((c) => c.group === g);
 
+// Personal Wren observations — fire on first discovery to create memorable moments.
+// Different from `fact` (informational) — these are intimate, first-person field notes.
+export const WREN_QUOTES = {
+  lyrebird:         'I spent three weeks in the Dandenong Ranges before I was sure what I was hearing. Everything it says is borrowed — and somehow more honest for it.',
+  foxscream:        'First time I heard this at 2am I thought someone was in trouble. It took years before it stopped making the hairs on my neck stand up.',
+  barredowl:        '"Who cooks for you." The rhythm drops in and you\'ll never hear just sound again — you\'ll hear the question.',
+  treefrog:         'Hollywood wired this call into every forest scene on Earth. The frog itself has never seen a cinema.',
+  cicada:           'Its entire body is hollow — a resonance chamber for tymbals the size of a fingernail. The insect is the instrument.',
+  wind:             'Geophony — sound with no mouth. The original recording challenge: how do you capture air without it destroying your microphone?',
+  springpeeper:     'Half a gram. Louder than a power drill at close range. Spring peepers were my introduction to the idea that size means nothing in a soundscape.',
+  wren:             'That\'s my name, not my species. But listen to this and you\'ll understand why I chose it — nothing sounds more alive.',
+  nighthawk:        'It doesn\'t use its voice for the boom. Wings cupped, diving — pure aerodynamics. I spent years not knowing what made that sound.',
+  graywolf:         'Each wolf in a pack deliberately picks a different pitch than its packmates. They don\'t harmonize. They strategize.',
+  commonloon:       'The tremolo travels for miles across a lake and carries an emotion I can\'t name — it\'s the sound of wilderness before you\'ve seen it.',
+  barnowl:          'No hoot. Pure shriek. Earned "demon owl" for good reason. Even after you know it, the spine still answers.',
+  cuckoo:           'The only bird whose name is also its song. It parasitizes other nests and yet every culture made it a symbol of spring.',
+  whippoorwill:     'It will repeat its own name five hundred times without stopping. I once timed one at 583 calls before it rested.',
+  nightingale:      'It sings at night because its competition sleeps. Four hundred distinct song phrases, delivered to a dark and empty wood.',
+  mockingbird:      'The American lyrebird — cataloguing every sound it hears across a lifetime and playing them back in sequence. Its memory is the archive.',
+  australianmagpie: 'One of the most complex songs of any bird on Earth. Australians grow up hearing this and don\'t realize it\'s extraordinary until they leave.',
+  kookaburra:       'That laugh marks territory, not joy — but knowing that doesn\'t make it less infectious when it erupts at 5am.',
+  kingfisher:       'A streak of electric blue, heard before seen. The call is so sharp it sounds like a mistake.',
+  graycatbird:      'Part mimic, part composer. It builds each song from stolen phrases — no two days exactly the same.',
+  tui:              'New Zealand\'s answer to the lyrebird — clicks, coughs, and liquid cascades woven into one continuous improvisation.',
+  skylark:          'Climbing, always climbing. The song rises with the bird, a column of sound you have to tilt your head back to follow.',
+  nightjar:         'A churring engine sound from a creature you\'ll almost never see. It vibrates at 1,900 times a minute. I\'ve measured it.',
+  morepork:         'The Māori called it ruru. Two notes, descending, across every quiet New Zealand night. Once you know it, the silence after it feels different.',
+  reddeer:          'The rut roar travels farther than almost any land mammal sound on Earth. In a valley it echoes until you can\'t locate the source.',
+  coyote:           'The yip-howl chorus is coordinated — the pack broadcasts its presence and its size simultaneously. Every note is information.',
+};
+
+
 // Feed order: viral first, then rare, then interleaved by group for variety.
 // Goal: first 15 cards should be jaw-dropping; no two consecutive from same group.
 export function viralFeed() {

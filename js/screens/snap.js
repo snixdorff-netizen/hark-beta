@@ -7,7 +7,7 @@ import { buildRound, sessionTargets } from '../difficulty.js';
 import { get, addXp, adjustSkill, awardCrown, discover, growGrove, touchStreak, getQuest, bumpQuestSnap, markQuestDone, checkMilestone, checkCollectionComplete } from '../state.js';
 import { track, challengeUrl } from '../analytics.js';
 import { maybeShowWtp } from '../probes.js';
-import { creatureEmoji, rarityPct, byId, CREATURES } from '../content.js';
+import { creatureEmoji, rarityPct, byId, CREATURES, WREN_QUOTES } from '../content.js';
 import { shareCreature, shareStreak } from '../sharecard.js';
 
 export function mount(host, app, params = {}) {
@@ -119,7 +119,9 @@ export function mount(host, app, params = {}) {
         reveal.appendChild(el('div', { style: 'font-size:10px;color:#6f8bff;font-weight:600;letter-spacing:.04em;margin-top:2px', text: '✨ RARE' }));
         setTimeout(() => {
           track('rare_found', { id: target.id });
-          shareCreature(target, app);
+          const wrQ = WREN_QUOTES[target.id];
+          if (wrQ) app.mentor('<b>Wren:</b> ' + wrQ, 9000);
+          else shareCreature(target, app);
         }, 1200);
       } else if (crownUp && crownLevel === 3) {
         reveal.appendChild(el('div', { style: 'font-size:10px;color:var(--amber);font-weight:600;letter-spacing:.04em;margin-top:2px', text: '👑 MASTERED' }));
