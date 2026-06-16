@@ -17,8 +17,14 @@ export function mount(host, app) {
   const total = CREATURES.filter((c) => !c.isNoise).length;
 
   // ── Header ──────────────────────────────────────────────────────────────
-  const head = el('div', { style: 'display:flex;justify-content:space-between;align-items:center;margin-bottom:12px' });
-  head.appendChild(el('div', { style: 'font-size:20px;font-weight:600', text: 'Your Grove' }));
+  const head = el('div', { style: 'display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px' });
+  const headLeft = el('div');
+  headLeft.appendChild(el('div', { style: 'font-size:20px;font-weight:600', text: 'Your Grove' }));
+  if (discovered.length >= 10) {
+    const pct = discovered.length >= 75 ? 2 : discovered.length >= 50 ? 5 : discovered.length >= 25 ? 12 : 30;
+    headLeft.appendChild(el('div', { style: 'font-size:11px;color:var(--amber);font-weight:600;letter-spacing:.03em;margin-top:2px', text: 'Top ' + pct + '% of listeners' }));
+  }
+  head.appendChild(headLeft);
   head.appendChild(el('div', { style: 'font-size:13px;color:var(--teal)', text: discovered.length + '/' + total + ' rehomed' }));
   pad.appendChild(head);
 

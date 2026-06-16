@@ -1,7 +1,7 @@
 // Hark — viral share card. Canvas-generated image for iMessage, Instagram, Twitter.
 import { getRank } from './rank.js';
 import { get } from './state.js';
-import { shareUrl, track } from './analytics.js';
+import { shareUrl, challengeUrl, track } from './analytics.js';
 import { creatureEmoji } from './content.js';
 
 export async function shareCreature(creature, app) {
@@ -72,15 +72,15 @@ export async function shareCreature(creature, app) {
   // Footer
   ctx.fillStyle = 'rgba(159,178,170,0.5)';
   ctx.font = '12px -apple-system, Helvetica, Arial, sans-serif';
-  ctx.fillText('Can you find one? snixdorff-netizen.github.io/hark-beta/', size / 2, 416);
+  ctx.fillText('Can you name this sound? → hark-beta', size / 2, 416);
 
   track('share_card', { id: creature.id });
 
+  const url = challengeUrl(creature.id);
   try {
     const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
     const file = new File([blob], 'hark-' + creature.id + '.png', { type: 'image/png' });
-    const url = shareUrl();
-    const text = 'I found a ' + creature.name + ' on Hark 🌿 Can you hear one? ' + url;
+    const text = 'Can you name this wild sound? 🎧 ' + url;
     if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
       await navigator.share({ title: 'Hark — ' + creature.name, text, files: [file] });
     } else if (navigator.share) {
@@ -89,7 +89,7 @@ export async function shareCreature(creature, app) {
       showShareOverlay(canvas, url);
     }
   } catch (e) {
-    if (e.name !== 'AbortError') showShareOverlay(canvas, shareUrl());
+    if (e.name !== 'AbortError') showShareOverlay(canvas, url);
   }
 }
 

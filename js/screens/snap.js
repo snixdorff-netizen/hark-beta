@@ -22,7 +22,22 @@ export function mount(host, app, params = {}) {
   let gotRight = [];
 
   if (challengeCreature) showChallengeIntro();
+  else if (!localStorage.getItem('hark.snapSeen')) { localStorage.setItem('hark.snapSeen', '1'); showSnapTutorial(); }
   else renderRound();
+
+  function showSnapTutorial() {
+    clear(pad);
+    const v = el('div', { class: 'cold' });
+    const emoDiv = el('div', { style: 'font-size:52px;line-height:1' });
+    emoDiv.textContent = '🎧';
+    v.appendChild(emoDiv);
+    v.appendChild(el('h1', { text: 'Spectrogram Snap', style: 'font-size:21px;text-align:center' }));
+    v.appendChild(el('p', { style: 'color:var(--muted);max-width:270px;text-align:center;line-height:1.6', text: 'You hear a wild sound. Four spectrograms appear — the visual fingerprints of sound. Find the match. No clock. No fail-state.' }));
+    const btn = el('button', { class: 'cta', text: "Let's go →" });
+    btn.addEventListener('click', renderRound);
+    v.appendChild(btn);
+    pad.appendChild(v);
+  }
 
   function showChallengeIntro() {
     clear(pad);
