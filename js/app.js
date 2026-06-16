@@ -1,7 +1,7 @@
 // Hark — app shell, router, persistent chrome.
 import { el, clear, icon, iconEl } from './ui.js';
 import { get, save, touchStreak, today, getQuest, addXp } from './state.js';
-import { loadManifest, byId, creatureEmoji } from './content.js';
+import { loadManifest, byId, creatureEmoji, GROUPS } from './content.js';
 import { rankProgress } from './rank.js';
 import * as audio from './audio.js';
 import { init as initAnalytics, track } from './analytics.js';
@@ -53,7 +53,7 @@ function cycleTheme() {
   updateChrome(shell?.nav?.querySelector('.active')?.dataset?.name);
 }
 
-const app = { go, mentor, toast, milestone: showMilestone };
+const app = { go, mentor, toast, milestone: showMilestone, collection: showCollection };
 
 function buildShell() {
   if (shell) return shell;
@@ -190,6 +190,47 @@ function toast(text, ms = 2500) {
   const t = el('div', { class: 'toast-disc', text });
   appRoot.appendChild(t);
   setTimeout(() => { if (t.isConnected) t.remove(); }, ms);
+}
+
+function showCollection(hit) {
+  const groupLabel = (GROUPS[hit.group] || {}).label || hit.group;
+  addXp(200);
+  const ovl = el('div', { class: 'milestone-ovl' });
+
+  ovl.appendChild(el('div', { style: 'font-size:11px;font-weight:600;color:var(--teal);letter-spacing:.1em', text: 'COLLECTION COMPLETE' }));
+
+  const emoRow = el('div', { style: 'display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:8px 0;font-size:32px;line-height:1' });
+  hit.creatures.forEach((c) => {
+    const e = document.createElement('div');
+    e.textContent = creatureEmoji(c);
+    emoRow.appendChild(e);
+  });
+  ovl.appendChild(emoRow);
+
+  ovl.appendChild(el('div', { style: 'font-size:22px;font-weight:700;color:var(--ink)', text: groupLabel }));
+  ovl.appendChild(el('div', { style: 'font-size:13px;color:var(--muted);margin-top:2px', text: 'Every ' + groupLabel.toLowerCase() + ' sound found. 🌿' }));
+  ovl.appendChild(el('div', { style: 'font-size:12px;color:var(--amber);margin-top:2px', text: '+200 XP · Full Collection' }));
+
+  const shareBtn = el('button', { class: 'cta', style: 'margin-top:12px', text: '📤 Share your collection' });
+  shareBtn.addEventListener('click', async () => {
+    const s2 = get();
+    const disc = Object.keys(s2.discovered).map(byId).filter(Boolean);
+    await shareGrove(disc, s2, app);
+    ovl.remove();
+    updateChrome(shell?.nav?.querySelector('.active')?.dataset?.name);
+  });
+  ovl.appendChild(shareBtn);
+
+  const skip = el('button', { class: 'ghost', text: 'Keep listening →' });
+  skip.addEventListener('click', () => {
+    ovl.remove();
+    updateChrome(shell?.nav?.querySelector('.active')?.dataset?.name);
+  });
+  ovl.appendChild(skip);
+
+  appRoot.appendChild(ovl);
+  track('collection_complete', { group: hit.group });
+  updateChrome(shell?.nav?.querySelector('.active')?.dataset?.name);
 }
 
 function showMilestone(n) {

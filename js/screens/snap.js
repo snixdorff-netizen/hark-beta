@@ -4,10 +4,10 @@ import { el, clear, icon, sparkleBurst, haptic } from '../ui.js';
 import { mountSpectrogram } from '../spectrogram.js';
 import * as audio from '../audio.js';
 import { buildRound, sessionTargets } from '../difficulty.js';
-import { get, addXp, adjustSkill, awardCrown, discover, growGrove, touchStreak, getQuest, bumpQuestSnap, markQuestDone, checkMilestone } from '../state.js';
+import { get, addXp, adjustSkill, awardCrown, discover, growGrove, touchStreak, getQuest, bumpQuestSnap, markQuestDone, checkMilestone, checkCollectionComplete } from '../state.js';
 import { track, challengeUrl } from '../analytics.js';
 import { maybeShowWtp } from '../probes.js';
-import { creatureEmoji, rarityPct, byId } from '../content.js';
+import { creatureEmoji, rarityPct, byId, CREATURES } from '../content.js';
 import { shareCreature, shareStreak } from '../sharecard.js';
 
 export function mount(host, app, params = {}) {
@@ -93,6 +93,8 @@ export function mount(host, app, params = {}) {
       discover(target.id); addXp(10);
       const snapMilestone = checkMilestone();
       if (snapMilestone) setTimeout(() => app.milestone(snapMilestone), 1100);
+      const snapColHit = checkCollectionComplete(CREATURES);
+      if (snapColHit) setTimeout(() => app.collection(snapColHit), snapMilestone ? 5000 : 1800);
       const reveal = el('div', { style: 'position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:var(--panel);border-radius:13px;pointer-events:none;animation:fade .2s ease' });
       const rEmo = el('div', { style: 'font-size:38px;line-height:1' });
       rEmo.textContent = creatureEmoji(target);

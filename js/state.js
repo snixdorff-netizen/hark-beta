@@ -20,6 +20,7 @@ const DEFAULT = {
   questDiscover: 0,        // new creatures discovered today (for discover quest)
   questDone: false,        // daily quest completed
   milestones: [],          // creature-count thresholds already celebrated
+  collectionsComplete: [], // group keys where every creature has been found
   settings: { sound: true, captions: true, highContrast: false },
 };
 
@@ -128,6 +129,29 @@ export function getQuest() {
   const goal = type === 'snap' ? 3 : type === 'discover' ? 5 : 1;
   const progress = type === 'snap' ? state.questSnap : type === 'discover' ? state.questDiscover : (state.challengeDay === today() ? 1 : 0);
   return { type, goal, progress, done: state.questDone };
+}
+
+// Returns { group, creatures } for the first newly-completed collection, or null.
+// allCreatures: the full CREATURES array (passed in to avoid circular imports).
+export function checkCollectionComplete(allCreatures) {
+  if (!state.collectionsComplete) state.collectionsComplete = [];
+  const done = state.collectionsComplete;
+  const byGroup = {};
+  allCreatures.filter((c) => !c.isNoise).forEach((c) => {
+    if (!byGroup[c.group]) byGroup[c.group] = { all: [], found: 0 };
+    byGroup[c.group].all.push(c);
+    if (state.discovered[c.id]) byGroup[c.group].found++;
+  });
+  const hit = Object.keys(byGroup).find((g) => {
+    const gr = byGroup[g];
+    return gr.all.length >= 3 && gr.found === gr.all.length && !done.includes(g);
+  });
+  if (hit) {
+    state.collectionsComplete.push(hit);
+    save();
+    return { group: hit, creatures: byGroup[hit].all };
+  }
+  return null;
 }
 
 // Returns the first uncelebrated milestone threshold crossed, or null.

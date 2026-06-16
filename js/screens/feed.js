@@ -3,8 +3,8 @@
 import { el, clear, icon, haptic } from '../ui.js';
 import { mountSpectrogram } from '../spectrogram.js';
 import * as audio from '../audio.js';
-import { viralFeed, GROUPS, creatureEmoji, seededShuffle } from '../content.js';
-import { get, discover, addXp, save, today, getQuest, bumpQuestDiscover, markQuestDone, checkMilestone } from '../state.js';
+import { viralFeed, CREATURES, GROUPS, creatureEmoji, seededShuffle } from '../content.js';
+import { get, discover, addXp, save, today, getQuest, bumpQuestDiscover, markQuestDone, checkMilestone, checkCollectionComplete } from '../state.js';
 import { track, challengeUrl } from '../analytics.js';
 import { shareCreature } from '../sharecard.js';
 
@@ -76,6 +76,8 @@ export function mount(host, app) {
           app.toast('🌿 ' + card.creature.name + ' rehomed to your grove');
           const hit = checkMilestone();
           if (hit) setTimeout(() => app.milestone(hit), 1400);
+          const colHit = checkCollectionComplete(CREATURES);
+          if (colHit) setTimeout(() => app.collection(colHit), hit ? 5000 : 1800);
           const q = getQuest();
           if (q.type === 'discover' && !q.done) {
             const n = bumpQuestDiscover();
