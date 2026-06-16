@@ -1,70 +1,99 @@
-// Hark — the Grove. Completion you can see. Every sound you learn is rehomed here.
+// Hark — the Grove. Every sound you learn is rehomed here.
 import { el, icon } from '../ui.js';
 import { byId, CREATURES, creatureEmoji, rarityPct } from '../content.js';
 import { get } from '../state.js';
 import { feedbackLink, showCredits } from '../probes.js';
-import { shareStreak } from '../sharecard.js';
+import { shareGrove } from '../sharecard.js';
 
 export function mount(host, app) {
   const s = get();
   const root = el('div', { class: 'screen' });
-
-  const stage = el('div', { class: 'grove-stage' });
-  const sizes = [30, 46, 38, 54, 34, 48, 30];
-  const litCount = Math.round((s.grove / 100) * sizes.length);
-  sizes.forEach((sz, i) => {
-    const t = el('span', { class: 'ic tree' + (i < litCount ? ' lit' : ''), html: icon('tree', sz) });
-    stage.appendChild(t);
-  });
-  // a little wren if grove is growing
-  if (s.grove > 10) stage.appendChild(el('span', { class: 'ic', html: icon('leaf', 20), style: 'position:absolute;top:30%;right:24%;color:var(--teal)' }));
-  root.appendChild(stage);
-
-  const meta = el('div', { class: 'grove-meta' });
-  const head = el('div', { style: 'display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px' });
-  head.appendChild(el('div', { style: 'font-size:16px;font-weight:500', text: 'Your Grove' }));
-  head.appendChild(el('div', { style: 'font-size:13px;color:var(--teal)', text: `${Math.round(s.grove)}% restored` }));
-  meta.appendChild(head);
-  const bar = el('div', { class: 'bar' });
-  bar.appendChild(el('i', { style: `width:${Math.round(s.grove)}%` }));
-  meta.appendChild(bar);
+  const pad = el('div', { class: 'pad', style: 'overflow-y:auto;height:100%' });
+  root.appendChild(pad);
 
   const discovered = Object.keys(s.discovered).map(byId).filter(Boolean);
-  meta.appendChild(el('div', { style: 'font-size:12px;color:var(--muted);margin:12px 0 8px', text: `${discovered.length} of ${CREATURES.length} sounds rehomed` }));
-  const chips = el('div', { style: 'display:flex;flex-wrap:wrap;gap:6px' });
+  const total = CREATURES.filter((c) => !c.isNoise).length;
+
+  // ── Header ──────────────────────────────────────────────────────────────
+  const head = el('div', { style: 'display:flex;justify-content:space-between;align-items:center;margin-bottom:12px' });
+  head.appendChild(el('div', { style: 'font-size:20px;font-weight:600', text: 'Your Grove' }));
+  head.appendChild(el('div', { style: 'font-size:13px;color:var(--teal)', text: discovered.length + '/' + total + ' rehomed' }));
+  pad.appendChild(head);
+
+  // Restoration progress bar
+  const bar = el('div', { class: 'bar', style: 'margin-bottom:16px' });
+  bar.appendChild(el('i', { style: `width:${Math.round(s.grove)}%` }));
+  pad.appendChild(bar);
+
+  // ── Creature mosaic ──────────────────────────────────────────────────────
+  const mosaic = el('div', { style: 'display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:18px' });
+
+  // Show discovered creatures
   discovered.forEach((c) => {
     const crowns = s.crowns[c.id] || 0;
     const pct = rarityPct(c);
-    const borderCol = c.rare ? 'rgba(111,139,255,.4)' : 'var(--line2)';
-    chips.appendChild(el('span', {
-      title: pct + '% of listeners have found this',
-      style: `font-size:11px;padding:5px 10px;border-radius:20px;background:var(--panel);border:.5px solid ${borderCol};display:inline-flex;align-items:center;gap:3px`,
-      html: `<span>${creatureEmoji(c)}</span><span>${c.name}${crowns ? ' ' + '★'.repeat(crowns) : ''}</span><span style="color:var(--muted);font-size:9px;margin-left:2px">${pct}%</span>`
-    }));
-  });
-  if (!discovered.length) chips.appendChild(el('span', { style: 'font-size:12px;color:var(--muted)', text: 'Play the feed to bring sounds home.' }));
-  meta.appendChild(chips);
-
-  if (s.streak >= 1) {
-    const shareGroveBtn = el('button', {
-      class: 'btn primary',
-      style: 'width:100%;margin-top:14px;font-size:14px',
-      text: '📤 Share your grove (' + s.streak + '-day streak)',
+    const isRare = c.rare;
+    const isMastered = crowns >= 3;
+    const cell = el('div', {
+      title: c.name + ' · ' + pct + '% find this',
+      style: [
+        'display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px',
+        'border-radius:12px;padding:8px 4px;cursor:default',
+        isMastered ? 'background:rgba(224,164,77,.12);border:.5px solid rgba(224,164,77,.35)' :
+          isRare ? 'background:rgba(111,139,255,.1);border:.5px solid rgba(111,139,255,.3)' :
+          'background:var(--panel);border:.5px solid var(--line)',
+      ].join(';'),
     });
-    shareGroveBtn.addEventListener('click', () => shareStreak(s.streak, null));
-    meta.appendChild(shareGroveBtn);
+    const emoDiv = el('div', { style: `font-size:${isMastered ? 26 : 22}px;line-height:1` });
+    emoDiv.textContent = creatureEmoji(c);
+    cell.appendChild(emoDiv);
+    if (crowns > 0) {
+      const starDiv = el('div', { style: 'font-size:9px;color:var(--amber);letter-spacing:1px', text: '★'.repeat(crowns) });
+      cell.appendChild(starDiv);
+    }
+    const pctDiv = el('div', { style: 'font-size:8px;color:var(--muted);text-align:center', text: pct + '%' });
+    cell.appendChild(pctDiv);
+    mosaic.appendChild(cell);
+  });
+
+  // Empty slots for undiscovered creatures
+  const undiscovered = total - discovered.length;
+  for (let i = 0; i < Math.min(undiscovered, 10); i++) {
+    const empty = el('div', {
+      style: 'display:flex;align-items:center;justify-content:center;border-radius:12px;padding:8px 4px;background:rgba(255,255,255,.03);border:.5px dashed var(--line);height:60px',
+      html: `<span style="font-size:16px;opacity:.2">${icon('leaf', 16)}</span>`,
+    });
+    mosaic.appendChild(empty);
+  }
+  if (undiscovered > 10) {
+    const more = el('div', {
+      style: 'grid-column:span 2;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);padding:8px',
+      text: '+' + (undiscovered - 10) + ' more out there',
+    });
+    mosaic.appendChild(more);
   }
 
-  const actions = el('div', { style: 'display:flex;justify-content:space-between;align-items:center;margin-top:18px;border-top:.5px solid var(--line);padding-top:10px' });
-  actions.appendChild(feedbackLink());
-  meta.appendChild(actions);
+  pad.appendChild(mosaic);
 
-  const creditsRow = el('div', { style: 'text-align:center;padding-top:6px' });
-  const creditsBtn = el('button', { style: 'font-size:11px;color:var(--muted);padding:6px 12px', text: 'Sound credits & licenses' });
+  // ── Share + actions ──────────────────────────────────────────────────────
+  if (discovered.length > 0) {
+    const shareBtn = el('button', {
+      class: 'cta',
+      style: 'width:100%',
+      text: '📤 Share your grove',
+    });
+    shareBtn.addEventListener('click', () => shareGrove(discovered, s, app));
+    pad.appendChild(shareBtn);
+  } else {
+    pad.appendChild(el('p', { style: 'font-size:13px;color:var(--muted);text-align:center;margin-bottom:16px', text: 'Play the feed to bring sounds home.' }));
+  }
+
+  const actions = el('div', { style: 'display:flex;justify-content:space-between;align-items:center;border-top:.5px solid var(--line);padding-top:10px;margin-top:4px' });
+  actions.appendChild(feedbackLink());
+  const creditsBtn = el('button', { style: 'font-size:11px;color:var(--muted);padding:6px 0', text: 'Sound credits' });
   creditsBtn.addEventListener('click', showCredits);
-  creditsRow.appendChild(creditsBtn);
-  meta.appendChild(creditsRow);
-  root.appendChild(meta);
+  actions.appendChild(creditsBtn);
+  pad.appendChild(actions);
 
   host.appendChild(root);
   return () => root.remove();

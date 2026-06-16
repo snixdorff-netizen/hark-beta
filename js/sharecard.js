@@ -162,6 +162,99 @@ export async function shareStreak(streak, app) {
   }
 }
 
+export async function shareGrove(discovered, s, app) {
+  const rank = getRank(discovered.length);
+  const size = 480;
+  const canvas = document.createElement('canvas');
+  canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext('2d');
+
+  const grad = ctx.createLinearGradient(0, 0, 0, size);
+  grad.addColorStop(0, '#0d1f1b'); grad.addColorStop(1, '#060e0b');
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, size, size);
+
+  ctx.strokeStyle = 'rgba(62,201,159,0.05)';
+  ctx.lineWidth = 1;
+  for (let y = 40; y < size; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(size, y); ctx.stroke(); }
+
+  ctx.font = '500 13px -apple-system, Helvetica, Arial, sans-serif';
+  ctx.fillStyle = '#3ec99f'; ctx.textAlign = 'left';
+  ctx.fillText('HARK', 28, 44);
+  ctx.textAlign = 'right'; ctx.font = '12px -apple-system, Helvetica, Arial, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.45)';
+  ctx.fillText(rank.emoji + ' ' + rank.title, size - 28, 44);
+
+  // Grove heading
+  ctx.textAlign = 'center';
+  ctx.font = '600 18px -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif';
+  ctx.fillStyle = 'rgba(238,243,240,0.9)';
+  ctx.fillText('My Grove', size / 2, 86);
+
+  // Emoji mosaic — up to 25 creatures in a 5-column grid
+  const toShow = discovered.slice(0, 25);
+  const cols = 5;
+  const cellW = 76, cellH = 72;
+  const startX = (size - cols * cellW) / 2 + cellW / 2;
+  const startY = 116;
+  ctx.font = '36px serif';
+  toShow.forEach((c, idx) => {
+    const col = idx % cols;
+    const row = Math.floor(idx / cols);
+    const x = startX + col * cellW;
+    const y = startY + row * cellH;
+    if (c.rare) {
+      ctx.save();
+      ctx.shadowColor = '#6f8bff'; ctx.shadowBlur = 14;
+    }
+    ctx.fillText(creatureEmoji(c), x, y);
+    if (c.rare) ctx.restore();
+    const crowns = s.crowns[c.id] || 0;
+    if (crowns > 0) {
+      ctx.font = '10px serif';
+      ctx.fillText('★'.repeat(crowns), x, y + 18);
+      ctx.font = '36px serif';
+    }
+  });
+
+  if (discovered.length > 25) {
+    ctx.font = '12px -apple-system, Helvetica, Arial, sans-serif';
+    ctx.fillStyle = 'rgba(159,178,170,0.55)';
+    ctx.textAlign = 'center';
+    ctx.fillText('+' + (discovered.length - 25) + ' more', size / 2, startY + Math.ceil(toShow.length / cols) * cellH + 10);
+  }
+
+  ctx.beginPath();
+  ctx.moveTo(64, 418); ctx.lineTo(size - 64, 418);
+  ctx.strokeStyle = 'rgba(62,201,159,0.25)'; ctx.lineWidth = 1; ctx.stroke();
+
+  ctx.textAlign = 'center';
+  ctx.font = '13px -apple-system, Helvetica, Arial, sans-serif';
+  ctx.fillStyle = 'rgba(159,178,170,0.75)';
+  ctx.fillText(discovered.length + '/93 sounds found · 🔥 ' + s.streak + '-day streak', size / 2, 440);
+
+  ctx.font = '11px -apple-system, Helvetica, Arial, sans-serif';
+  ctx.fillStyle = 'rgba(159,178,170,0.4)';
+  ctx.fillText('snixdorff-netizen.github.io/hark-beta/', size / 2, 466);
+
+  track('grove_share', { count: discovered.length });
+
+  try {
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+    const file = new File([blob], 'hark-grove.png', { type: 'image/png' });
+    const url = shareUrl();
+    const text = 'I\'ve found ' + discovered.length + '/93 wild sounds on Hark 🌿 ' + url;
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ title: 'My Hark Grove', text, files: [file] });
+    } else if (navigator.share) {
+      await navigator.share({ title: 'Hark', text, url });
+    } else {
+      showShareOverlay(canvas, url);
+    }
+  } catch (e) {
+    if (e.name !== 'AbortError') showShareOverlay(canvas, shareUrl());
+  }
+}
+
 function showShareOverlay(canvas, url) {
   const host = document.getElementById('app');
   const ovl = document.createElement('div');
