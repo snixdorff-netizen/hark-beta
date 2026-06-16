@@ -1,6 +1,6 @@
 // Hark — the Grove. Every sound you learn is rehomed here.
 import { el, icon } from '../ui.js';
-import { byId, CREATURES, GROUPS, creatureEmoji, rarityPct } from '../content.js';
+import { byId, CREATURES, GROUPS, creatureEmoji, rarityPct, WREN_QUOTES } from '../content.js';
 import { get } from '../state.js';
 import { rankProgress } from '../rank.js';
 import { feedbackLink, showCredits } from '../probes.js';
@@ -178,6 +178,24 @@ function showCreatureDetail(c, s, app) {
   playRow.appendChild(pb);
   playRow.appendChild(el('div', { style: 'font-size:13px;color:var(--muted)', text: 'Play the real field recording' }));
   sheet.appendChild(playRow);
+
+  // Discovery date
+  const discoveredAt = s.discovered[c.id];
+  const dateStr = (typeof discoveredAt === 'number')
+    ? new Date(discoveredAt).toLocaleDateString('en', { month: 'short', day: 'numeric', year: 'numeric' })
+    : null;
+  if (dateStr) {
+    sheet.appendChild(el('div', { style: 'font-size:10px;color:var(--muted);letter-spacing:.04em;margin-bottom:14px', text: 'FOUND · ' + dateStr }));
+  }
+
+  // Wren field note
+  const wrQ = WREN_QUOTES[c.id];
+  if (wrQ) {
+    const note = el('div', { style: 'border-left:2px solid rgba(62,201,159,.4);padding:8px 12px;margin-bottom:14px;background:rgba(62,201,159,.05);border-radius:0 8px 8px 0' });
+    note.appendChild(el('div', { style: 'font-size:10px;font-weight:600;color:var(--teal);letter-spacing:.06em;margin-bottom:4px', text: 'WREN' }));
+    note.appendChild(el('div', { style: 'font-size:12px;color:var(--ink);line-height:1.6;font-style:italic', text: wrQ }));
+    sheet.appendChild(note);
+  }
 
   // Fact
   sheet.appendChild(el('p', { style: 'font-size:13px;color:var(--ink);line-height:1.65;margin:0 0 18px', text: c.fact }));

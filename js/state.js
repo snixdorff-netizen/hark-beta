@@ -64,7 +64,7 @@ export function addXp(n) { state.xp += n; save(); }
 
 export function discover(id) {
   if (!state.discovered[id]) {
-    state.discovered[id] = true;
+    state.discovered[id] = Date.now();
     save();
   }
 }
