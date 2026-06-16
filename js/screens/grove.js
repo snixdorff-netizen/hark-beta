@@ -1,9 +1,11 @@
 // Hark — the Grove. Every sound you learn is rehomed here.
 import { el, icon } from '../ui.js';
-import { byId, CREATURES, creatureEmoji, rarityPct } from '../content.js';
+import { byId, CREATURES, GROUPS, creatureEmoji, rarityPct } from '../content.js';
 import { get } from '../state.js';
 import { feedbackLink, showCredits } from '../probes.js';
-import { shareGrove } from '../sharecard.js';
+import { shareGrove, shareCreature } from '../sharecard.js';
+import * as audio from '../audio.js';
+import { track, challengeUrl } from '../analytics.js';
 
 export function mount(host, app) {
   const s = get();
@@ -38,12 +40,13 @@ export function mount(host, app) {
       title: c.name + ' · ' + pct + '% find this',
       style: [
         'display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px',
-        'border-radius:12px;padding:8px 4px;cursor:default',
+        'border-radius:12px;padding:8px 4px;cursor:pointer;transition:transform .12s',
         isMastered ? 'background:rgba(224,164,77,.12);border:.5px solid rgba(224,164,77,.35)' :
           isRare ? 'background:rgba(111,139,255,.1);border:.5px solid rgba(111,139,255,.3)' :
           'background:var(--panel);border:.5px solid var(--line)',
       ].join(';'),
     });
+    cell.addEventListener('click', () => showCreatureDetail(c, s, app));
     const emoDiv = el('div', { style: `font-size:${isMastered ? 26 : 22}px;line-height:1` });
     emoDiv.textContent = creatureEmoji(c);
     cell.appendChild(emoDiv);
@@ -97,4 +100,72 @@ export function mount(host, app) {
 
   host.appendChild(root);
   return () => root.remove();
+}
+
+function showCreatureDetail(c, s, app) {
+  const crowns = s.crowns[c.id] || 0;
+  const pct = rarityPct(c);
+  const groupLabel = (GROUPS[c.group] || {}).label || c.group;
+
+  const ovl = el('div', { class: 'ovl' });
+  const sheet = el('div', { class: 'sheet', style: 'text-align:left;padding:22px 20px calc(env(safe-area-inset-bottom,0px) + 22px)' });
+
+  // Header: emoji + name + close
+  const header = el('div', { style: 'display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px' });
+  const left = el('div', { style: 'display:flex;gap:14px;align-items:center' });
+  const emoDiv = el('div', { style: 'font-size:52px;line-height:1' });
+  emoDiv.textContent = creatureEmoji(c);
+  left.appendChild(emoDiv);
+  const nameCol = el('div');
+  nameCol.appendChild(el('div', { style: 'font-size:18px;font-weight:600;color:var(--ink)', text: c.name }));
+  nameCol.appendChild(el('div', { style: 'font-size:12px;color:var(--muted);margin-top:3px', text: groupLabel + ' · ' + c.region }));
+  left.appendChild(nameCol);
+  header.appendChild(left);
+  const closeBtn = el('button', { style: 'color:var(--muted);font-size:22px;padding:0 4px;line-height:1;flex-shrink:0', text: '×' });
+  closeBtn.addEventListener('click', () => ovl.remove());
+  header.appendChild(closeBtn);
+  sheet.appendChild(header);
+
+  // Rarity + mastery chips
+  const chips = el('div', { style: 'display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px' });
+  const rarColor = c.rare ? 'rgba(111,139,255,.12);color:#6f8bff;border:.5px solid rgba(111,139,255,.25)' : 'var(--panel);color:var(--muted);border:.5px solid var(--line)';
+  chips.appendChild(el('div', { style: `font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:${rarColor};letter-spacing:.03em`, text: c.rare ? '✨ Rare · ' + pct + '% find this' : pct + '% find this' }));
+  if (crowns > 0) {
+    const crownText = crowns === 3 ? '★★★ Mastered' : '★'.repeat(crowns) + ' Mastery';
+    chips.appendChild(el('div', { style: 'font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(224,164,77,.12);color:var(--amber);border:.5px solid rgba(224,164,77,.25)', text: crownText }));
+  }
+  sheet.appendChild(chips);
+
+  // Play sound row
+  const playRow = el('div', { style: 'display:flex;align-items:center;gap:12px;background:var(--panel);border-radius:12px;padding:10px 14px;margin-bottom:14px;border:.5px solid var(--line)' });
+  const pb = el('button', { class: 'playbtn', style: 'width:38px;height:38px;flex-shrink:0', html: icon('play', 18) });
+  pb.addEventListener('click', () => { audio.unlock(); audio.play(c); });
+  playRow.appendChild(pb);
+  playRow.appendChild(el('div', { style: 'font-size:13px;color:var(--muted)', text: 'Play the real field recording' }));
+  sheet.appendChild(playRow);
+
+  // Fact
+  sheet.appendChild(el('p', { style: 'font-size:13px;color:var(--ink);line-height:1.65;margin:0 0 18px', text: c.fact }));
+
+  // Challenge CTA
+  const challengeBtn = el('button', { class: 'cta', style: 'width:100%;margin-bottom:10px', text: '🎧 Challenge a friend with this sound' });
+  challengeBtn.addEventListener('click', async () => {
+    const url = challengeUrl(c.id);
+    const text = 'Can you name this wild sound? 🎧 ' + url;
+    try {
+      if (navigator.share) await navigator.share({ title: 'Hark sound challenge', text, url });
+      else await navigator.clipboard.writeText(text);
+      track('grove_challenge', { id: c.id });
+    } catch (e) { if (e.name !== 'AbortError') shareCreature(c, app); }
+    ovl.remove();
+  });
+  sheet.appendChild(challengeBtn);
+
+  const shareBtn = el('button', { style: 'width:100%;text-align:center;padding:10px;font-size:13px;color:var(--teal)', text: '📤 Share this creature' });
+  shareBtn.addEventListener('click', () => { track('grove_share_creature', { id: c.id }); shareCreature(c, app); ovl.remove(); });
+  sheet.appendChild(shareBtn);
+
+  ovl.appendChild(sheet);
+  ovl.addEventListener('click', (e) => { if (e.target === ovl) ovl.remove(); });
+  document.getElementById('app').appendChild(ovl);
 }
