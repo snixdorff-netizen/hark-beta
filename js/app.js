@@ -1,11 +1,12 @@
 // Hark — app shell, router, persistent chrome.
 import { el, clear, icon, iconEl } from './ui.js';
-import { get, save, touchStreak, today, getQuest } from './state.js';
-import { loadManifest } from './content.js';
+import { get, save, touchStreak, today, getQuest, addXp } from './state.js';
+import { loadManifest, byId, creatureEmoji } from './content.js';
 import { rankProgress } from './rank.js';
 import * as audio from './audio.js';
 import { init as initAnalytics, track } from './analytics.js';
 import { showPrivacyNotice, showOwnerDashboard } from './probes.js';
+import { shareGrove } from './sharecard.js';
 
 import { mount as coldopen } from './screens/coldopen.js';
 import { mount as feed } from './screens/feed.js';
@@ -52,7 +53,7 @@ function cycleTheme() {
   updateChrome(shell?.nav?.querySelector('.active')?.dataset?.name);
 }
 
-const app = { go, mentor };
+const app = { go, mentor, toast, milestone: showMilestone };
 
 function buildShell() {
   if (shell) return shell;
@@ -177,6 +178,63 @@ function mentor(html, ms = 6500) {
   m.addEventListener('click', () => m.remove());
   appRoot.appendChild(m);
   mentorTimer = setTimeout(() => m.remove(), ms);
+}
+
+function toast(text, ms = 2500) {
+  const old = appRoot.querySelector('.toast-disc');
+  if (old) old.remove();
+  const t = el('div', { class: 'toast-disc', text });
+  appRoot.appendChild(t);
+  setTimeout(() => { if (t.isConnected) t.remove(); }, ms);
+}
+
+function showMilestone(n) {
+  const s = get();
+  addXp(100);
+  const discovered = Object.keys(s.discovered).map(byId).filter(Boolean);
+  const ovl = el('div', { class: 'milestone-ovl' });
+
+  const leaf = el('div', { style: 'font-size:44px;line-height:1' });
+  leaf.textContent = '🌿';
+  ovl.appendChild(leaf);
+
+  const num = el('div', { style: 'font-size:72px;font-weight:700;color:var(--teal);line-height:1' });
+  num.textContent = n;
+  ovl.appendChild(num);
+
+  ovl.appendChild(el('div', { style: 'font-size:17px;font-weight:500;color:var(--ink);margin-top:4px', text: 'sounds rehomed to your grove.' }));
+  ovl.appendChild(el('div', { style: 'font-size:12px;color:var(--amber);letter-spacing:.03em', text: '+100 XP · Your grove is growing.' }));
+
+  if (discovered.length > 0) {
+    const row = el('div', { style: 'display:flex;gap:10px;margin:4px 0;font-size:32px;line-height:1' });
+    discovered.slice(-Math.min(5, discovered.length)).forEach((c) => {
+      const e = document.createElement('div');
+      e.textContent = creatureEmoji(c);
+      row.appendChild(e);
+    });
+    ovl.appendChild(row);
+  }
+
+  const shareBtn = el('button', { class: 'cta', style: 'margin-top:8px', text: '📤 Share your grove' });
+  shareBtn.addEventListener('click', async () => {
+    const s2 = get();
+    const disc = Object.keys(s2.discovered).map(byId).filter(Boolean);
+    await shareGrove(disc, s2, app);
+    ovl.remove();
+    updateChrome(shell?.nav?.querySelector('.active')?.dataset?.name);
+  });
+  ovl.appendChild(shareBtn);
+
+  const skip = el('button', { class: 'ghost', text: 'Keep listening →' });
+  skip.addEventListener('click', () => {
+    ovl.remove();
+    updateChrome(shell?.nav?.querySelector('.active')?.dataset?.name);
+  });
+  ovl.appendChild(skip);
+
+  appRoot.appendChild(ovl);
+  track('milestone', { n });
+  updateChrome(shell?.nav?.querySelector('.active')?.dataset?.name);
 }
 
 // PWA install prompt — stored and shown once after 2nd play

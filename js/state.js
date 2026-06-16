@@ -19,6 +19,7 @@ const DEFAULT = {
   questSnap: 0,            // snap rounds completed today (for snap quest)
   questDiscover: 0,        // new creatures discovered today (for discover quest)
   questDone: false,        // daily quest completed
+  milestones: [],          // creature-count thresholds already celebrated
   settings: { sound: true, captions: true, highContrast: false },
 };
 
@@ -127,6 +128,21 @@ export function getQuest() {
   const goal = type === 'snap' ? 3 : type === 'discover' ? 5 : 1;
   const progress = type === 'snap' ? state.questSnap : type === 'discover' ? state.questDiscover : (state.challengeDay === today() ? 1 : 0);
   return { type, goal, progress, done: state.questDone };
+}
+
+// Returns the first uncelebrated milestone threshold crossed, or null.
+export function checkMilestone() {
+  const THRESHOLDS = [5, 10, 25, 50, 75];
+  const count = Object.keys(state.discovered).length;
+  const seen = state.milestones || [];
+  const hit = THRESHOLDS.find((n) => n <= count && !seen.includes(n));
+  if (hit) {
+    if (!state.milestones) state.milestones = [];
+    state.milestones.push(hit);
+    save();
+    return hit;
+  }
+  return null;
 }
 
 export function reset() {

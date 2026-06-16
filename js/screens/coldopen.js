@@ -106,6 +106,7 @@ export function mount(host, app) {
     mountSpectrogram(sg, target, 240, 60);
 
     cold.appendChild(el('p', { text: target.fact }));
+    cold.appendChild(el('div', { style: 'font-size:12px;color:var(--muted);margin-top:-10px', text: '92 more sounds are waiting in the wild.' }));
 
     const shareBtn = el('button', { class: 'ghost', style: 'color:var(--teal);font-size:14px', text: '📤 Tell a friend about Hark' });
     shareBtn.addEventListener('click', () => {
