@@ -4,7 +4,7 @@ import { mountSpectrogram } from '../spectrogram.js';
 import * as audio from '../audio.js';
 import { CREATURES, seededShuffle, creatureEmoji } from '../content.js';
 import { get, addXp, growGrove, touchStreak } from '../state.js';
-import { track as analyticsTrack, shareUrl } from '../analytics.js';
+import { track as analyticsTrack, shareUrl, challengeUrl } from '../analytics.js';
 
 const NOISE = [
   { id: 'static', name: 'Radio static', group: 'geophony', isNoise: true, duration: 2.4, fact: '', events: [{ t: 0, dur: 2.4, type: 'noise', f0: 300, f1: 9000, gain: 0.3 }] },
@@ -23,7 +23,7 @@ export function mount(host, app) {
     seededShuffle(nature, seed).slice(0, 5).concat(seededShuffle(NOISE.concat(CREATURES.filter(c => c.isNoise)), seed + 3).slice(0, 3)),
     seed + 5
   );
-  let i = 0, right = 0;
+  let i = 0, right = 0, lastRightCreature = null;
   renderCard();
 
   function renderCard() {
@@ -88,7 +88,7 @@ export function mount(host, app) {
     card.dataset.done = '1';
     const item = deck[i];
     const correct = saidNoise === !!item.isNoise;
-    if (correct) { right++; addXp(6); sparkleBurst(card); haptic(12); }
+    if (correct) { right++; addXp(6); sparkleBurst(card); haptic(12); if (!item.isNoise) lastRightCreature = item; }
     else { haptic(20); }
     card.style.transition = 'transform .25s,opacity .25s';
     card.style.transform = `translateX(${saidNoise ? -120 : 120}px) rotate(${saidNoise ? -8 : 8}deg)`;
@@ -108,9 +108,9 @@ export function mount(host, app) {
       const scoreShare = el('button', { class: 'cta', text: '📤 Share your score' });
       scoreShare.addEventListener('click', async () => {
         analyticsTrack('noise_share', { right, total: deck.length });
-        const url = shareUrl();
+        const url = lastRightCreature ? challengeUrl(lastRightCreature.id) : shareUrl();
         const pct = Math.round((right / deck.length) * 100);
-        const text = 'I scored ' + right + '/' + deck.length + ' (' + pct + '%) on Hark\'s Noise or Nature challenge 🌿 Can you beat it? ' + url;
+        const text = 'I scored ' + right + '/' + deck.length + ' (' + pct + '%) on Hark\'s Noise or Nature. Can you beat it? 🌿 ' + url;
         try {
           if (navigator.share) await navigator.share({ title: 'Hark — Noise or Nature', text, url });
           else await navigator.clipboard.writeText(text);

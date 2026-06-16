@@ -35,7 +35,14 @@ export function mount(host, app) {
   const s = get();
   const dailyDone = s.challengeDay === today();
 
-  let cards = baseList.map((c, i) => buildCard(c, app, i === 0, dailyDone, i === 0 ? dailyTip : null));
+  // Rotate Sound of the Day through viral creatures by calendar day
+  const viralPool = baseList.filter((c) => c.viral);
+  const todayCreature = viralPool.length ? viralPool[dayN % viralPool.length] : baseList[0];
+  const orderedList = todayCreature
+    ? [todayCreature, ...baseList.filter((c) => c.id !== todayCreature.id)]
+    : baseList;
+
+  let cards = orderedList.map((c, i) => buildCard(c, app, i === 0, dailyDone, i === 0 ? dailyTip : null));
   cards.forEach((c, i) => {
     feed.appendChild(c.node);
     if (i === 3) feed.appendChild(buildSnapPullCard(app));
@@ -57,7 +64,7 @@ export function mount(host, app) {
     }
     feed.insertBefore(sep, sentinel);
     const seed = loopPass * 7919;
-    const shuffled = seededShuffle(baseList.filter((c) => !c.isNoise), seed);
+    const shuffled = seededShuffle(orderedList.filter((c) => !c.isNoise), seed);
     const newCards = shuffled.map((c) => buildCard(c, app, false, dailyDone, null));
     newCards.forEach((c) => { feed.insertBefore(c.node, sentinel); io.observe(c.node); });
     cards = cards.concat(newCards);
