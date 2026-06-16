@@ -3,7 +3,7 @@
 import { el, clear, icon, haptic } from '../ui.js';
 import { mountSpectrogram } from '../spectrogram.js';
 import * as audio from '../audio.js';
-import { viralFeed, CREATURES, GROUPS, creatureEmoji, seededShuffle } from '../content.js';
+import { viralFeed, CREATURES, GROUPS, creatureEmoji, rarityPct, seededShuffle } from '../content.js';
 import { get, discover, addXp, save, today, getQuest, bumpQuestDiscover, markQuestDone, checkMilestone, checkCollectionComplete } from '../state.js';
 import { track, challengeUrl } from '../analytics.js';
 import { shareCreature } from '../sharecard.js';
@@ -74,6 +74,9 @@ export function mount(host, app) {
         discover(card.creature.id);
         if (wasNew) {
           app.toast('🌿 ' + card.creature.name + ' rehomed to your grove');
+          if (card.creature.rare) {
+            setTimeout(() => app.mentor('<b>Wren: Rare find.</b> ' + creatureEmoji(card.creature) + ' ' + card.creature.name + ' — only ' + Math.round(rarityPct(card.creature)) + '% of listeners ever find this one.', 8000), 800);
+          }
           const hit = checkMilestone();
           if (hit) setTimeout(() => app.milestone(hit), 1400);
           const colHit = checkCollectionComplete(CREATURES);

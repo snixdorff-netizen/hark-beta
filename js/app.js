@@ -170,6 +170,28 @@ function go(name, params = {}) {
     const idx = s.streak % msgs.length;
     setTimeout(() => mentor(msgs[idx], 5000), 900);
   }
+
+  if (name === 'feed') {
+    // Haul-ready nudge
+    if (s.haul && Date.now() > s.haul.readyAt) {
+      const unsorted = s.haul.items.filter((id) => !s.haul.sorted.includes(id)).length;
+      if (unsorted > 0) {
+        setTimeout(() => mentor('<b>Wren:</b> Your overnight haul is ready — something unusual showed up. Check the Haul tab. 🌙', 7000), 1800);
+      }
+    }
+    // Progressive feature discovery tips (shown once each)
+    const discovered = Object.keys(s.discovered).length;
+    const shownTips = (() => { try { return JSON.parse(localStorage.getItem('hark.tips') || '[]'); } catch (e) { return []; } })();
+    const tip = (key, html, delay) => {
+      if (shownTips.includes(key)) return;
+      shownTips.push(key);
+      localStorage.setItem('hark.tips', JSON.stringify(shownTips));
+      setTimeout(() => mentor(html, 8000), delay);
+    };
+    if (discovered >= 3 && discovered < 8) tip('snap_tip', '<b>Wren:</b> You\'ve found a few. Now test yourself — try <b>Snap</b> and see if you can ID them by spectrogram alone.', 2500);
+    else if (discovered >= 8 && discovered < 15) tip('grove_tip', '<b>Wren:</b> Your Grove is growing. Tap the <b>Grove</b> tab to see every sound you\'ve collected.', 2500);
+    else if (discovered >= 15) tip('haul_tip', '<b>Wren:</b> Deploy the <b>Haul</b> recorder tonight. It listens while you sleep and brings back whatever the forest says.', 2500);
+  }
 }
 
 function mentor(html, ms = 6500) {
