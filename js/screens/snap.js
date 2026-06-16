@@ -7,8 +7,15 @@ import { buildRound, sessionTargets } from '../difficulty.js';
 import { get, addXp, adjustSkill, awardCrown, discover, growGrove, touchStreak, getQuest, bumpQuestSnap, markQuestDone, checkMilestone, checkCollectionComplete } from '../state.js';
 import { track, challengeUrl } from '../analytics.js';
 import { maybeShowWtp } from '../probes.js';
-import { creatureEmoji, rarityPct, byId, CREATURES, WREN_QUOTES } from '../content.js';
+import { creatureEmoji, rarityPct, byId, CREATURES, WREN_QUOTES, viralFeed } from '../content.js';
 import { shareCreature, shareStreak } from '../sharecard.js';
+
+// Daily creature — same for all players today (rotates through viral pool by calendar day)
+function getDailyCreature() {
+  const dayN = Math.floor(Date.now() / 86400000);
+  const viralPool = CREATURES.filter((c) => c.viral && !c.isNoise);
+  return viralPool.length ? viralPool[dayN % viralPool.length] : null;
+}
 
 export function mount(host, app, params = {}) {
   const root = el('div', { class: 'screen' });
@@ -17,9 +24,11 @@ export function mount(host, app, params = {}) {
 
   let seed = (get().xp * 131 + 17) >>> 0;
   const challengeCreature = params.challenge ? byId(params.challenge) : null;
-  const targets = challengeCreature ? [challengeCreature] : sessionTargets(seed, params.preferIds);
+  const dailyCreature = (!challengeCreature && !params.preferIds) ? getDailyCreature() : null;
+  const targets = challengeCreature ? [challengeCreature] : sessionTargets(seed, params.preferIds, dailyCreature);
   let i = 0, correctCount = 0;
   let gotRight = [];
+  let dailyNamed = false;
 
   if (challengeCreature) showChallengeIntro();
   else if (!localStorage.getItem('hark.snapSeen')) { localStorage.setItem('hark.snapSeen', '1'); showSnapTutorial(); }
@@ -62,8 +71,9 @@ export function mount(host, app, params = {}) {
     const target = targets[i];
     const round = buildRound(target, skill, (seed + i * 97) >>> 0);
 
+    const isDaily = dailyCreature && target.id === dailyCreature.id;
     const head = el('div', { class: 'q-head' });
-    head.appendChild(el('div', { class: 'q-title', text: stretch ? 'One more — trust your ears' : 'Which one is this?' }));
+    head.appendChild(el('div', { class: 'q-title', text: isDaily ? '⭐ Today\'s Sound — same for everyone' : (stretch ? 'One more — trust your ears' : 'Which one is this?') }));
     head.appendChild(el('div', { class: 'pill', html: icon('flame', 14) + ' ' + s.streak }));
     pad.appendChild(head);
 
@@ -115,7 +125,24 @@ export function mount(host, app, params = {}) {
       rEmo.textContent = creatureEmoji(target);
       reveal.appendChild(rEmo);
       reveal.appendChild(el('div', { style: 'font-size:11px;color:var(--teal);font-weight:600;letter-spacing:.03em', text: target.name }));
-      if (target.rare) {
+      // Daily sound named — fire special share moment (once per day)
+      const isDailyTarget = dailyCreature && target.id === dailyCreature.id;
+      if (isDailyTarget && !dailyNamed) {
+        dailyNamed = true;
+        reveal.appendChild(el('div', { style: 'font-size:10px;color:var(--amber);font-weight:600;letter-spacing:.04em;margin-top:2px', text: '⭐ DAILY SOUND' }));
+        setTimeout(async () => {
+          track('daily_snap_named', { id: target.id });
+          const url = challengeUrl(target.id);
+          const text = 'Named today\'s wild sound on Hark 🎧 Can you? ' + url;
+          app.mentor('<b>Daily sound named!</b> ' + creatureEmoji(target) + ' Challenge someone to beat you. 🎧', 8000);
+          setTimeout(async () => {
+            try {
+              if (navigator.share) await navigator.share({ title: 'Hark Daily Sound', text, url });
+              else await navigator.clipboard.writeText(text);
+            } catch (e) {}
+          }, 1500);
+        }, 1000);
+      } else if (target.rare) {
         reveal.appendChild(el('div', { style: 'font-size:10px;color:#6f8bff;font-weight:600;letter-spacing:.04em;margin-top:2px', text: '✨ RARE' }));
         setTimeout(() => {
           track('rare_found', { id: target.id });

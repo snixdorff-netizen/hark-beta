@@ -38,9 +38,14 @@ export function buildRound(target, skill, seed) {
 }
 
 // the 5-round session, ending on a "stretch" (one notch harder than your current skill)
-export function sessionTargets(seed, preferIds) {
-  const base = preferIds && preferIds.length
-    ? preferIds.map(byId).filter(Boolean)
-    : seededShuffle(CREATURES.filter((c) => !c.isNoise), seed).slice(0, 5);
-  return base.slice(0, 5);
+// dailyFirst: inject as round 0 if not already in targets and no preferIds override
+export function sessionTargets(seed, preferIds, dailyFirst) {
+  if (preferIds && preferIds.length) {
+    return preferIds.map(byId).filter(Boolean).slice(0, 5);
+  }
+  let base = seededShuffle(CREATURES.filter((c) => !c.isNoise), seed).slice(0, 5);
+  if (dailyFirst && !base.find((c) => c.id === dailyFirst.id)) {
+    base = [dailyFirst, ...base.slice(0, 4)];
+  }
+  return base;
 }
