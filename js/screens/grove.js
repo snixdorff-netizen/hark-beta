@@ -101,6 +101,41 @@ export function mount(host, app) {
 
   pad.appendChild(mosaic);
 
+  // ── Group progress ───────────────────────────────────────────────────────
+  const discoveredIds = new Set(Object.keys(s.discovered));
+  const groupKeys = Object.keys(GROUPS);
+  const groupRows = groupKeys.map((gKey) => {
+    const g = GROUPS[gKey];
+    const inGroup = CREATURES.filter((c) => !c.isNoise && c.group === gKey);
+    const foundCount = inGroup.filter((c) => discoveredIds.has(c.id)).length;
+    return { g, total: inGroup.length, found: foundCount };
+  }).filter((r) => r.total > 0);
+
+  if (groupRows.length > 0) {
+    const gpSection = el('div', { style: 'margin-bottom:18px' });
+    gpSection.appendChild(el('div', { style: 'font-size:10px;color:var(--muted);letter-spacing:.07em;margin-bottom:10px', text: 'BY GROUP' }));
+    groupRows.forEach(({ g, total, found }) => {
+      const pct = Math.round((found / total) * 100);
+      const complete = found >= total;
+      const row = el('div', { style: 'margin-bottom:10px' });
+      const hdr = el('div', { style: 'display:flex;justify-content:space-between;align-items:center;margin-bottom:4px' });
+      const lbl = el('div', { style: 'display:flex;align-items:center;gap:6px' });
+      const dot = el('div', { style: `width:7px;height:7px;border-radius:50%;background:${g.color};flex-shrink:0` });
+      lbl.appendChild(dot);
+      lbl.appendChild(el('span', { style: 'font-size:12px;color:var(--ink)', text: g.label }));
+      if (complete) lbl.appendChild(el('span', { style: 'font-size:10px;color:var(--teal);font-weight:600;margin-left:4px', text: '✓ Complete' }));
+      hdr.appendChild(lbl);
+      hdr.appendChild(el('div', { style: 'font-size:11px;color:var(--muted)', text: found + '/' + total }));
+      row.appendChild(hdr);
+      const track = el('div', { style: 'height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden' });
+      const fill = el('div', { style: `height:100%;width:${pct}%;background:${g.color};border-radius:2px` });
+      track.appendChild(fill);
+      row.appendChild(track);
+      gpSection.appendChild(row);
+    });
+    pad.appendChild(gpSection);
+  }
+
   // ── Share + actions ──────────────────────────────────────────────────────
   if (discovered.length > 0) {
     const shareBtn = el('button', {
