@@ -192,18 +192,24 @@ export function mount(host, app, params = {}) {
     const wrap = el('div', { class: 'cold', style: 'position:relative' });
     wrap.appendChild(el('span', { class: 'ic', html: icon('trophy', 44), style: 'color:var(--amber)' }));
     if (gotRight.length) {
-      const emoRow = el('div', { style: 'display:flex;gap:8px;justify-content:center;flex-wrap:wrap' });
+      // Creature cards: emoji + name + rarity + first-sentence fact
+      const factList = el('div', { style: 'display:flex;flex-direction:column;gap:10px;width:100%' });
       gotRight.forEach(c => {
-        const chip = el('div', { style: 'display:flex;flex-direction:column;align-items:center;gap:2px' });
-        const emo = el('span', { style: 'font-size:28px;line-height:1' });
-        emo.textContent = creatureEmoji(c);
-        chip.appendChild(emo);
-        const pct = el('div', { style: 'font-size:9px;color:var(--muted)' });
-        pct.textContent = rarityPct(c) + '% find this';
-        chip.appendChild(pct);
-        emoRow.appendChild(chip);
+        const row = el('div', { style: 'display:flex;gap:12px;align-items:flex-start;background:var(--panel);border:.5px solid var(--line);border-radius:12px;padding:10px 12px' });
+        const emoWrap = el('div', { style: 'font-size:26px;line-height:1;flex-shrink:0;padding-top:2px' });
+        emoWrap.textContent = creatureEmoji(c);
+        row.appendChild(emoWrap);
+        const info = el('div', { style: 'flex:1;min-width:0' });
+        info.appendChild(el('div', { style: 'font-size:13px;font-weight:600;color:var(--ink)', text: c.name }));
+        info.appendChild(el('div', { style: 'font-size:10px;color:var(--teal);margin-top:1px', text: rarityPct(c) + '% of listeners find this' }));
+        if (c.fact) {
+          const firstSentence = c.fact.split(/[.!?]/)[0].trim() + '.';
+          info.appendChild(el('div', { style: 'font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5', text: firstSentence }));
+        }
+        row.appendChild(info);
+        factList.appendChild(row);
       });
-      wrap.appendChild(emoRow);
+      wrap.appendChild(factList);
     }
     const headline = challengeCreature && correctCount > 0
       ? `<span style="color:var(--teal)">${creatureEmoji(challengeCreature)} ${challengeCreature.name}.</span><br>You got it.`

@@ -197,50 +197,6 @@ function buildCard(c, app, isDaily, dailyDone, dailyTip) {
   return { node, creature: c, sg, rendered: false };
 }
 
-function buildQuestCard(app) {
-  const q = getQuest();
-  const QUEST_META = {
-    snap:     { icon: '👂', label: 'Play Snap',     desc: `Play ${q.goal} rounds of Snap today`, action: () => app.go('snap') },
-    discover: { icon: '🌿', label: 'Explore sounds', desc: `Discover ${q.goal} new sounds in the feed`, action: null },
-    challenge: { icon: '🎧', label: 'Challenge a friend', desc: 'Send a sound challenge to a friend today', action: () => app.go('feed') },
-  };
-  const meta = QUEST_META[q.type];
-  const pct = Math.min(1, q.progress / q.goal);
-  const done = q.done || q.progress >= q.goal;
-
-  const node = el('div', { style: 'background:rgba(62,201,159,.07);border:.5px solid rgba(62,201,159,.2);border-radius:16px;padding:14px 16px' });
-  const header = el('div', { style: 'display:flex;align-items:center;gap:8px;margin-bottom:8px' });
-  const badge = el('div', { style: 'font-size:13px;font-weight:600;color:var(--teal);letter-spacing:.04em', text: "TODAY'S MISSION" });
-  if (done) {
-    const tick = el('div', { style: 'margin-left:auto;font-size:12px;color:var(--teal);font-weight:600', text: '✓ Complete +75 XP' });
-    header.appendChild(badge); header.appendChild(tick);
-  } else {
-    header.appendChild(badge);
-  }
-  node.appendChild(header);
-
-  const body = el('div', { style: 'display:flex;align-items:center;gap:10px' });
-  const emoDiv = el('div', { style: 'font-size:28px;line-height:1;flex-shrink:0' });
-  emoDiv.textContent = meta.icon;
-  body.appendChild(emoDiv);
-  const right = el('div', { style: 'flex:1;min-width:0' });
-  right.appendChild(el('div', { style: 'font-size:14px;font-weight:600;color:var(--ink)', text: meta.label }));
-  right.appendChild(el('div', { style: 'font-size:12px;color:var(--muted);margin-top:1px', text: meta.desc }));
-  // Progress bar
-  const bar = el('div', { style: 'height:4px;background:rgba(62,201,159,.15);border-radius:2px;margin-top:8px;overflow:hidden' });
-  const fill = el('div', { style: `height:100%;width:${Math.round(pct * 100)}%;background:var(--teal);border-radius:2px;transition:width .4s` });
-  bar.appendChild(fill);
-  right.appendChild(bar);
-  right.appendChild(el('div', { style: 'font-size:10px;color:var(--muted);margin-top:3px', text: done ? 'Done for today' : `${q.progress}/${q.goal}` }));
-  body.appendChild(right);
-  if (!done && meta.action) {
-    const btn = el('button', { style: 'padding:6px 12px;border-radius:20px;background:rgba(62,201,159,.15);border:.5px solid rgba(62,201,159,.3);color:var(--teal);font-size:12px;font-weight:600;flex-shrink:0;cursor:pointer', text: 'Go →' });
-    btn.addEventListener('click', meta.action);
-    body.appendChild(btn);
-  }
-  node.appendChild(body);
-  return node;
-}
 
 function buildSnapPullCard(app) {
   const node = el('div', { class: 'card', style: 'background:radial-gradient(120% 80% at 50% 35%, rgba(62,201,159,.08) 0%, #0d1110 70%);border:.5px solid rgba(62,201,159,.2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:40px 24px;min-height:220px' });
