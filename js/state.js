@@ -154,6 +154,29 @@ export function checkCollectionComplete(allCreatures) {
   return null;
 }
 
+// Returns the new rank title+emoji if the discovery count just crossed a rank threshold
+// for the first time, or null. Rank thresholds: 1, 6, 16, 31, 51, 76.
+export function checkRankUp() {
+  const RANK_THRESHOLDS = [1, 6, 16, 31, 51, 76];
+  const RANK_META = {
+    1:  { emoji: '👂', title: 'Curious' },
+    6:  { emoji: '🎧', title: 'Listener' },
+    16: { emoji: '🎤', title: 'Fieldworker' },
+    31: { emoji: '🌿', title: 'Naturalist' },
+    51: { emoji: '📻', title: 'Recordist' },
+    76: { emoji: '🌲', title: 'Ecologist' },
+  };
+  const count = Object.keys(state.discovered).length;
+  if (!state.ranksReached) state.ranksReached = [];
+  const hit = RANK_THRESHOLDS.find((n) => n <= count && !state.ranksReached.includes(n));
+  if (hit) {
+    state.ranksReached.push(hit);
+    save();
+    return RANK_META[hit];
+  }
+  return null;
+}
+
 // Returns the first uncelebrated milestone threshold crossed, or null.
 export function checkMilestone() {
   const THRESHOLDS = [5, 10, 25, 50, 75];

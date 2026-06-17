@@ -4,7 +4,7 @@ import { el, clear, icon, haptic } from '../ui.js';
 import { mountSpectrogram } from '../spectrogram.js';
 import * as audio from '../audio.js';
 import { viralFeed, CREATURES, GROUPS, creatureEmoji, rarityPct, seededShuffle, WREN_QUOTES } from '../content.js';
-import { get, discover, addXp, save, today, getQuest, bumpQuestDiscover, markQuestDone, checkMilestone, checkCollectionComplete } from '../state.js';
+import { get, discover, addXp, save, today, getQuest, bumpQuestDiscover, markQuestDone, checkMilestone, checkCollectionComplete, checkRankUp } from '../state.js';
 import { track, challengeUrl } from '../analytics.js';
 import { shareCreature } from '../sharecard.js';
 
@@ -102,6 +102,21 @@ export function mount(host, app) {
           if (hit) setTimeout(() => app.milestone(hit), 1400);
           const colHit = checkCollectionComplete(CREATURES);
           if (colHit) setTimeout(() => app.collection(colHit), hit ? 5000 : 1800);
+          const rankHit = checkRankUp();
+          if (rankHit) {
+            const RANK_LINES = {
+              'Curious':     'You\'re now <b>Curious</b>. That\'s the hardest rank to earn — most people don\'t even start.',
+              'Listener':    '🎧 <b>Listener.</b> Six sounds you can name on hearing. That\'s not nothing.',
+              'Fieldworker': '🎤 <b>Fieldworker.</b> You\'re starting to separate signal from noise. Sixteen creatures — the field is opening up.',
+              'Naturalist':  '🌿 <b>Naturalist.</b> Thirty-one sounds. You\'ve covered the main biomes. The world sounds different to you now.',
+              'Recordist':   '📻 <b>Recordist.</b> Fifty-one sounds. At this level you\'re not just listening — you\'re archiving. The forest knows you.',
+              'Ecologist':   '🌲 <b>Ecologist.</b> Seventy-six. I\'ve run out of things to teach you. Keep the haul running.',
+            };
+            const delay = (hit ? 8000 : colHit ? 8000 : 2200);
+            const line = RANK_LINES[rankHit.title] || ('<b>' + rankHit.title + '</b>. Keep going.');
+            setTimeout(() => app.mentor('<b>Wren:</b> ' + line, 10000), delay);
+            track('rank_up', { rank: rankHit.title });
+          }
           const q = getQuest();
           if (q.type === 'discover' && !q.done) {
             const n = bumpQuestDiscover();
