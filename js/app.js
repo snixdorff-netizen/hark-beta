@@ -236,6 +236,15 @@ function toast(text, ms = 2500) {
   setTimeout(() => { if (t.isConnected) t.remove(); }, ms);
 }
 
+const GROUP_COMPLETE_QUOTES = {
+  bird: 'Every bird. It took me years to find them all the first time. You did it faster — and you remembered.',
+  mammal: 'Five mammals, all here. Warm blood, different acoustics. Each one solved the same problem — be heard — differently.',
+  amphibian: 'The amphibians are complete. They were singing long before birds evolved. You found the oldest chorus on Earth.',
+  insect: 'Seven insects. Seven different mechanical solutions to make sound, find a mate, survive. Collection complete.',
+  geophony: 'Even the sounds with no mouth. Wind, water, thunder — the world itself, archived in your grove.',
+  marine: 'The deep ocean, singing. You found it.',
+};
+
 function showCollection(hit) {
   const groupLabel = (GROUPS[hit.group] || {}).label || hit.group;
   addXp(200);
@@ -254,6 +263,12 @@ function showCollection(hit) {
   ovl.appendChild(el('div', { style: 'font-size:22px;font-weight:700;color:var(--ink)', text: groupLabel }));
   ovl.appendChild(el('div', { style: 'font-size:13px;color:var(--muted);margin-top:2px', text: 'Every ' + groupLabel.toLowerCase() + ' sound found. 🌿' }));
   ovl.appendChild(el('div', { style: 'font-size:12px;color:var(--amber);margin-top:2px', text: '+200 XP · Full Collection' }));
+  const wrQ = GROUP_COMPLETE_QUOTES[hit.group];
+  if (wrQ) {
+    const note = el('div', { style: 'font-size:12px;font-style:italic;color:var(--muted);border-left:2px solid rgba(62,201,159,.4);padding:8px 12px;text-align:left;margin-top:12px;background:rgba(62,201,159,.05);border-radius:0 6px 6px 0' });
+    note.textContent = 'Wren: “' + wrQ + '”';
+    ovl.appendChild(note);
+  }
 
   const shareBtn = el('button', { class: 'cta', style: 'margin-top:12px', text: '📤 Share your collection' });
   shareBtn.addEventListener('click', async () => {

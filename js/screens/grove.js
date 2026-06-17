@@ -124,8 +124,11 @@ export function mount(host, app) {
       lbl.appendChild(dot);
       lbl.appendChild(el('span', { style: 'font-size:12px;color:var(--ink)', text: g.label }));
       if (complete) lbl.appendChild(el('span', { style: 'font-size:10px;color:var(--teal);font-weight:600;margin-left:4px', text: '✓ Complete' }));
+      const oneAway = !complete && found === total - 1;
       hdr.appendChild(lbl);
-      hdr.appendChild(el('div', { style: 'font-size:11px;color:var(--muted)', text: found + '/' + total }));
+      const countEl = el('div', { style: `font-size:11px;${oneAway ? 'color:var(--amber);font-weight:600' : 'color:var(--muted)'}` });
+      countEl.textContent = found + '/' + total + (oneAway ? ' · 1 away' : '');
+      hdr.appendChild(countEl);
       row.appendChild(hdr);
       const track = el('div', { style: 'height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden' });
       const fill = el('div', { style: `height:100%;width:${pct}%;background:${g.color};border-radius:2px` });
