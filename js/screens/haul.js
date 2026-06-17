@@ -59,9 +59,6 @@ export function mount(host, app) {
     v.appendChild(el('h1', { text: 'Recording…', style: 'font-size:20px;font-weight:500;margin:0' }));
     const sub = el('p', { style: 'color:var(--muted)' });
     v.appendChild(sub);
-    const ff = el('button', { class: 'ghost', text: 'Fast-forward (beta)' });
-    ff.addEventListener('click', () => { s.haul.readyAt = Date.now(); save(); render(); });
-    v.appendChild(ff);
     pad.appendChild(v);
     const upd = () => {
       const ms = Math.max(0, s.haul.readyAt - Date.now());

@@ -89,10 +89,14 @@ export function mount(host, app) {
           haptic(8);
           app.toast('🌿 ' + card.creature.name + ' rehomed to your grove');
           const wrQ = WREN_QUOTES[card.creature.id];
+          const isDaily = todayCreature && card.creature.id === todayCreature.id;
           if (wrQ) {
             setTimeout(() => app.mentor('<b>Wren:</b> ' + wrQ, 9000), 900);
           } else if (card.creature.rare) {
             setTimeout(() => app.mentor('<b>Wren: Rare find.</b> ' + creatureEmoji(card.creature) + ' ' + card.creature.name + ' — only ' + Math.round(rarityPct(card.creature)) + '% of listeners ever find this one.', 8000), 800);
+          }
+          if (isDaily) {
+            setTimeout(() => app.mentor('<b>Wren:</b> That\'s today\'s Sound of the Day. Can you name it blind? Try the <b>Daily Snap Challenge</b> 🎧', 7000), 5500);
           }
           const hit = checkMilestone();
           if (hit) setTimeout(() => app.milestone(hit), 1400);
