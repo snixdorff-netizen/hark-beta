@@ -29,6 +29,7 @@ export function mount(host, app, params = {}) {
   let i = 0, correctCount = 0;
   let gotRight = [];
   let dailyNamed = false;
+  let dailyWrongCount = 0;
 
   if (challengeCreature) showChallengeIntro();
   else if (!localStorage.getItem('hark.snapSeen')) { localStorage.setItem('hark.snapSeen', '1'); showSnapTutorial(); }
@@ -162,6 +163,7 @@ export function mount(host, app, params = {}) {
     } else {
       card.classList.add('wrong'); haptic(20); adjustSkill(false);
       audio.play(target);
+      if (dailyCreature && target.id === dailyCreature.id) dailyWrongCount++;
       setTimeout(() => card.classList.remove('wrong'), 450);
     }
   }
@@ -231,22 +233,27 @@ export function mount(host, app, params = {}) {
       const s2 = get();
       const totalFound = Object.keys(s2.discovered).length;
       const daily = dailyCreature;
+      const emoResult = '❌'.repeat(dailyWrongCount) + '✅';
+      const dayN2 = Math.floor(Date.now() / 86400000);
+      const shareText2 = 'Hark #' + dayN2 + ' 🎧\n' + creatureEmoji(daily) + ' ' + emoResult + '\nDay ' + newStreak + ' 🔥 · ' + totalFound + '/93 🌿';
+
       const dailyCard = el('div', { style: 'background:rgba(224,164,77,.1);border:.5px solid rgba(224,164,77,.35);border-radius:14px;padding:16px 18px;text-align:center;width:100%' });
       dailyCard.appendChild(el('div', { style: 'font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--amber);margin-bottom:8px', text: '⭐ DAILY SOUND NAMED' }));
       const dEmo = el('div', { style: 'font-size:52px;line-height:1;margin-bottom:4px' });
       dEmo.textContent = creatureEmoji(daily);
       dailyCard.appendChild(dEmo);
       dailyCard.appendChild(el('div', { style: 'font-size:17px;font-weight:600;color:var(--ink)', text: daily.name }));
-      dailyCard.appendChild(el('div', { style: 'font-size:11px;color:var(--muted);margin-top:3px', text: '🔥 Day ' + newStreak + ' · ' + totalFound + '/93 sounds found' }));
-      const dailyShareBtn = el('button', { class: 'cta', style: 'margin-top:12px', text: '🎧 Share today\'s sound' });
+      dailyCard.appendChild(el('div', { style: 'font-size:18px;letter-spacing:4px;margin:6px 0 2px', text: emoResult }));
+      dailyCard.appendChild(el('div', { style: 'font-size:11px;color:var(--muted)', text: '🔥 Day ' + newStreak + ' · ' + totalFound + '/93 sounds found' }));
+      const dailyShareBtn = el('button', { class: 'cta', style: 'margin-top:12px', text: '📋 Share your result' });
       dailyShareBtn.addEventListener('click', async () => {
         track('daily_snap_share', { id: daily.id });
         const url = challengeUrl(daily.id);
-        const text = 'Named today\'s wild sound on Hark 🎧 ' + creatureEmoji(daily) + ' Can you? ' + url;
+        const fullText = shareText2 + '\n' + url;
         try {
-          if (navigator.share) await navigator.share({ title: 'Hark Daily Sound', text, url });
-          else { await navigator.clipboard.writeText(text); app.toast('Copied!', 2000); }
-        } catch (e) {}
+          if (navigator.share) await navigator.share({ title: 'Hark Daily Sound', text: fullText, url });
+          else { await navigator.clipboard.writeText(fullText); app.toast('✓ Copied to clipboard', 2000); }
+        } catch (e) { if (e.name !== 'AbortError') { try { await navigator.clipboard.writeText(fullText); app.toast('✓ Copied', 2000); } catch (e2) {} } }
       });
       dailyCard.appendChild(dailyShareBtn);
       wrap.appendChild(dailyCard);
