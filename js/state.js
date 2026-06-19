@@ -7,6 +7,7 @@ const DEFAULT = {
   onboarded: false,
   xp: 0,
   streak: 0,
+  longestStreak: 0,
   lastPlayed: null,        // YYYY-MM-DD
   crowns: {},              // creatureId -> 0..3 (bronze/silver/gold mastery)
   discovered: {},          // creatureId -> true
@@ -56,6 +57,8 @@ export function touchStreak() {
   const days = last ? Math.round((now - last) / 86400000) : 99;
   if (days <= 2) state.streak += 1; else state.streak = 1;
   state.lastPlayed = t;
+  if (!state.longestStreak) state.longestStreak = 0;
+  if (state.streak > state.longestStreak) state.longestStreak = state.streak;
   save();
   return state.streak;
 }

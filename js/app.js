@@ -161,8 +161,14 @@ function go(name, params = {}) {
   updateChrome(name);
   track('screen_view', { screen: name });
   checkRankUp(s);
-  // Streak urgency — user hasn't played today yet
-  if (name === 'feed' && s.streak >= 1 && s.lastPlayed !== today()) {
+  // Streak break — returning after >2 days absent; streak is still the old value (reset happens on next touchStreak)
+  const _lastP = s.lastPlayed ? new Date(s.lastPlayed) : null;
+  const _daysGone = _lastP ? Math.round((Date.now() - _lastP) / 86400000) : 0;
+  if (name === 'feed' && _daysGone > 2 && s.streak > 1) {
+    setTimeout(() => mentor(`<b>Wren:</b> Your ${s.streak}-day streak ended. The field is still here — start again.`, 8000), 1000);
+  }
+  // Streak urgency — user hasn't played today yet (streak still alive)
+  else if (name === 'feed' && s.streak >= 1 && s.lastPlayed !== today() && _daysGone <= 2) {
     setTimeout(() => mentor(`<b>🔥 Day ${s.streak} streak.</b> Play a round to keep it alive — or it resets at midnight.`, 7000), 1000);
   }
   // Welcome-back message for streak players who already played today

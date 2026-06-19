@@ -241,7 +241,9 @@ export function mount(host, app, params = {}) {
       const daily = dailyCreature;
       const emoResult = '❌'.repeat(dailyWrongCount) + '✅';
       const dayN2 = Math.floor(Date.now() / 86400000);
-      const shareText2 = 'Hark #' + dayN2 + ' 🎧\n' + creatureEmoji(daily) + ' ' + emoResult + '\nDay ' + newStreak + ' 🔥 · ' + totalFound + '/93 🌿';
+      const best = s2.longestStreak || newStreak;
+      const bestLine = best > newStreak ? ' · 🏆 Best: ' + best : '';
+      const shareText2 = 'Hark #' + dayN2 + ' 🎧\n' + creatureEmoji(daily) + ' ' + emoResult + '\nDay ' + newStreak + ' 🔥' + bestLine + ' · ' + totalFound + '/93 🌿';
 
       const dailyCard = el('div', { style: 'background:rgba(224,164,77,.1);border:.5px solid rgba(224,164,77,.35);border-radius:14px;padding:16px 18px;text-align:center;width:100%' });
       dailyCard.appendChild(el('div', { style: 'font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--amber);margin-bottom:8px', text: '⭐ DAILY SOUND NAMED' }));
