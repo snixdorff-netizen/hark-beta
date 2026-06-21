@@ -22,9 +22,11 @@ export function mount(host, app, params = {}) {
   const pad = el('div', { class: 'pad' });
   root.appendChild(pad); host.appendChild(root);
 
-  let seed = (get().xp * 131 + 17) >>> 0;
   const challengeCreature = params.challenge ? byId(params.challenge) : null;
   const dailyCreature = (!challengeCreature && !params.preferIds) ? getDailyCreature() : null;
+  const isDaily = !!dailyCreature && !params.preferIds;
+  const dayN2 = Math.floor(Date.now() / 86400000);
+  let seed = isDaily ? (dayN2 * 7919) : ((get().xp * 131 + 17) >>> 0);
   const targets = challengeCreature ? [challengeCreature] : sessionTargets(seed, params.preferIds, dailyCreature);
   let i = 0, correctCount = 0;
   let gotRight = [];
@@ -68,7 +70,8 @@ export function mount(host, app, params = {}) {
     const s = get();
     // last round is a "stretch": one notch harder
     const stretch = i === targets.length - 1;
-    const skill = stretch ? s.skill + 0.7 : s.skill;
+    const dailySession = !!dailyCreature && !params.preferIds;
+    const skill = dailySession ? 1.5 : (stretch ? s.skill + 0.7 : s.skill);
     const target = targets[i];
     const round = buildRound(target, skill, (seed + i * 97) >>> 0);
 
