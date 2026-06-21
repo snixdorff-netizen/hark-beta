@@ -22,6 +22,7 @@ const DEFAULT = {
   questDone: false,        // daily quest completed
   milestones: [],          // creature-count thresholds already celebrated
   collectionsComplete: [], // group keys where every creature has been found
+  endgameSeen: false,
   settings: { sound: true, captions: true, highContrast: false },
 };
 

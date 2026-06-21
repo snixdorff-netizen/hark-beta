@@ -122,6 +122,15 @@ export function mount(host, app) {
             const n = bumpQuestDiscover();
             if (n >= q.goal) { markQuestDone(); addXp(75); app.mentor('<b>Quest complete!</b> +75 XP. Your ears are getting sharper every day. 🌿', 6000); track('quest_complete', { type: 'discover' }); }
           }
+          const total2 = CREATURES.filter((c2) => !c2.isNoise).length;
+          const found2 = Object.keys(get().discovered).length;
+          const s3 = get();
+          if (found2 >= total2 && !s3.endgameSeen) {
+            s3.endgameSeen = true; save(); addXp(500);
+            const endDelay = (hit || colHit || rankHit) ? 10000 : 2000;
+            setTimeout(() => app.mentor('<b>Wren:</b> Every creature. Every continent. You\'ve archived the living world. But that 67 kHz signal is still out there — nobody\'s been able to name it. Keep the haul running.', 14000), endDelay);
+            track('endgame_complete', { total: total2 });
+          }
         }
         audio.play(card.creature).catch(() => {});
       }
