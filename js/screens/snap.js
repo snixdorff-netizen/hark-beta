@@ -32,6 +32,8 @@ export function mount(host, app, params = {}) {
   let gotRight = [];
   let dailyNamed = false;
   let dailyWrongCount = 0;
+  const roundResults = [];
+  let roundAttempts = 0;
 
   if (challengeCreature) showChallengeIntro();
   else if (!localStorage.getItem('hark.snapSeen')) { localStorage.setItem('hark.snapSeen', '1'); showSnapTutorial(); }
@@ -77,8 +79,13 @@ export function mount(host, app, params = {}) {
 
     const isDaily = dailyCreature && target.id === dailyCreature.id;
     const head = el('div', { class: 'q-head' });
-    head.appendChild(el('div', { class: 'q-title', text: isDaily ? '⭐ Today\'s Sound — same for everyone' : (stretch ? 'One more — trust your ears' : 'Which one is this?') }));
-    head.appendChild(el('div', { class: 'pill', html: icon('flame', 14) + ' ' + s.streak }));
+    head.appendChild(el('div', { class: 'q-title', text: dailySession ? '⭐ Daily — same for everyone' : (stretch ? 'One more — trust your ears' : 'Which one is this?') }));
+    const dots = el('div', { style: 'display:flex;gap:4px;align-items:center' });
+    for (let d = 0; d < targets.length; d++) {
+      const dot = d < roundResults.length ? (roundResults[d] ? '✅' : '❌') : (d === i ? '⚡' : '⚪');
+      dots.appendChild(el('span', { style: 'font-size:10px;line-height:1', text: dot }));
+    }
+    head.appendChild(dots);
     pad.appendChild(head);
 
     const replay = el('div', { class: 'replay' });
@@ -104,15 +111,14 @@ export function mount(host, app, params = {}) {
 
     const foot = el('div', { class: 'foot' });
     foot.appendChild(el('div', { class: 'hint', text: 'no clock — take your time' }));
-    const dots = el('div', { class: 'dots' });
-    targets.forEach((_, k) => dots.appendChild(el('span', { class: k < i ? 'on' : (k === i ? 'now' : '') })));
-    foot.appendChild(dots);
     pad.appendChild(foot);
   }
 
   function choose(c, card, target) {
     if (card.dataset.done) return;
     if (c.id === target.id) {
+      roundResults.push(roundAttempts === 0);
+      roundAttempts = 0;
       card.dataset.done = '1';
       card.classList.add('correct'); haptic(14); sparkleBurst(card);
       correctCount++;
@@ -164,6 +170,7 @@ export function mount(host, app, params = {}) {
       card.appendChild(reveal);
       setTimeout(next, (target.rare || (crownUp && crownLevel === 3)) ? 1800 : 950);
     } else {
+      roundAttempts++;
       card.classList.add('wrong'); haptic(20); adjustSkill(false);
       audio.play(target);
       if (dailyCreature && target.id === dailyCreature.id) dailyWrongCount++;
