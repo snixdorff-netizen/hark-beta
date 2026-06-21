@@ -21,6 +21,17 @@ export function getNextRank(discoveredCount) {
   return RANKS.find((r) => r.min > discoveredCount) || null;
 }
 
+export function earScore(state) {
+  const disc = Object.keys(state.discovered).length;
+  const mastered = Object.values(state.crowns).filter((v) => v >= 3).length;
+  const streak = state.longestStreak || state.streak || 0;
+  const discPts = Math.min(50, Math.round((disc / 93) * 50));
+  const mastPts = Math.min(25, Math.round((mastered / 30) * 25));
+  const streakPts = Math.min(15, Math.round(Math.min(streak, 30) / 30 * 15));
+  const xpPts = Math.min(10, Math.round(Math.min(state.xp, 2000) / 2000 * 10));
+  return discPts + mastPts + streakPts + xpPts;
+}
+
 export function rankProgress(discoveredCount) {
   const rank = getRank(discoveredCount);
   const next = getNextRank(discoveredCount);

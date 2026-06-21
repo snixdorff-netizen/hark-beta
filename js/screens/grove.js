@@ -2,7 +2,7 @@
 import { el, icon } from '../ui.js';
 import { byId, CREATURES, GROUPS, creatureEmoji, rarityPct, WREN_QUOTES } from '../content.js';
 import { get } from '../state.js';
-import { rankProgress } from '../rank.js';
+import { rankProgress, earScore } from '../rank.js';
 import { feedbackLink, showCredits } from '../probes.js';
 import { shareGrove, shareCreature } from '../sharecard.js';
 import * as audio from '../audio.js';
@@ -143,6 +143,37 @@ export function mount(host, app) {
       gpSection.appendChild(row);
     });
     pad.appendChild(gpSection);
+  }
+
+  // ── Ear Score ────────────────────────────────────────────────────────────
+  if (discovered.length >= 3) {
+    const score = earScore(s);
+    const scoreCard = el('div', { style: 'background:radial-gradient(120% 80% at 50% 35%, rgba(224,164,77,.08) 0%, var(--panel) 70%);border:.5px solid rgba(224,164,77,.25);border-radius:14px;padding:18px 20px;text-align:center;margin-bottom:16px' });
+    scoreCard.appendChild(el('div', { style: 'font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--amber);margin-bottom:6px', text: 'EAR SCORE' }));
+    scoreCard.appendChild(el('div', { style: 'font-size:48px;font-weight:700;color:var(--ink);line-height:1', text: String(score) }));
+    const tier = score >= 80 ? 'Legendary' : score >= 60 ? 'Expert' : score >= 40 ? 'Sharp' : score >= 20 ? 'Growing' : 'Beginner';
+    scoreCard.appendChild(el('div', { style: 'font-size:12px;color:var(--muted);margin-top:4px', text: tier + ' · out of 100' }));
+    const scoreSections = el('div', { style: 'display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:10px' });
+    const chip = (label, val, max) => {
+      const pct = Math.round((val / max) * 100);
+      return el('div', { style: 'font-size:10px;color:var(--muted);background:rgba(255,255,255,.05);border-radius:10px;padding:3px 8px', text: label + ' ' + pct + '%' });
+    };
+    scoreSections.appendChild(chip('Discovery', Math.min(50, Math.round((discovered.length / 93) * 50)), 50));
+    scoreSections.appendChild(chip('Mastery', Math.min(25, Math.round((Object.values(s.crowns).filter(v => v >= 3).length / 30) * 25)), 25));
+    scoreSections.appendChild(chip('Streak', Math.min(15, Math.round(Math.min(s.longestStreak || 0, 30) / 30 * 15)), 15));
+    scoreCard.appendChild(scoreSections);
+    const scoreShareBtn = el('button', { style: 'margin-top:12px;font-size:12px;color:var(--teal);padding:6px 16px;border-radius:20px;background:rgba(62,201,159,.1);border:.5px solid rgba(62,201,159,.25)', text: '📤 Share your Ear Score' });
+    scoreShareBtn.addEventListener('click', async () => {
+      track('ear_score_share', { score });
+      const url = (await import('../analytics.js')).shareUrl();
+      const text = 'My Hark Ear Score: ' + score + '/100 ' + rp.rank.emoji + ' ' + rp.rank.title + '. Can you beat it? 🎧 ' + url;
+      try {
+        if (navigator.share) await navigator.share({ title: 'Hark Ear Score', text, url });
+        else { await navigator.clipboard.writeText(text); app.mentor('✓ Copied to clipboard', 2000); }
+      } catch (e) {}
+    });
+    scoreCard.appendChild(scoreShareBtn);
+    pad.appendChild(scoreCard);
   }
 
   // ── Share + actions ──────────────────────────────────────────────────────

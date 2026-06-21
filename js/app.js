@@ -2,7 +2,7 @@
 import { el, clear, icon, iconEl } from './ui.js';
 import { get, save, touchStreak, today, getQuest, addXp } from './state.js';
 import { loadManifest, byId, creatureEmoji, GROUPS } from './content.js';
-import { rankProgress } from './rank.js';
+import { rankProgress, earScore } from './rank.js';
 import * as audio from './audio.js';
 import { init as initAnalytics, track } from './analytics.js';
 import { showPrivacyNotice, showOwnerDashboard } from './probes.js';
