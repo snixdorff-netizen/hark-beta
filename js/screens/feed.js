@@ -131,6 +131,7 @@ export function mount(host, app) {
             setTimeout(() => app.mentor('<b>Wren:</b> Every creature. Every continent. You\'ve archived the living world. But that 67 kHz signal is still out there — nobody\'s been able to name it. Keep the haul running.', 14000), endDelay);
             track('endgame_complete', { total: total2 });
           }
+          if (app.checkThemeUnlock) app.checkThemeUnlock();
         }
         audio.play(card.creature).catch(() => {});
       }

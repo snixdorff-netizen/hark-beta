@@ -35,9 +35,15 @@ let brandTapTimer = null;
 const THEMES = ['nightwood', 'daylight', 'instrument'];
 const THEME_ICONS = { nightwood: 'moon', daylight: 'sun', instrument: 'wave' };
 const THEME_LABELS = { nightwood: 'Nightwood', daylight: 'Daylight', instrument: 'Instrument' };
+const THEME_UNLOCK = { nightwood: 0, daylight: 15, instrument: 40 };
 let currentTheme = localStorage.getItem('hark.theme') || 'nightwood';
 
 const THEME_COLORS = { nightwood: '#0d1110', daylight: '#f4efe6', instrument: '#0b1018' };
+
+function unlockedThemes() {
+  const disc = Object.keys(get().discovered).length;
+  return THEMES.filter((t) => disc >= THEME_UNLOCK[t]);
+}
 
 function applyTheme(t) {
   currentTheme = t;
@@ -48,12 +54,28 @@ function applyTheme(t) {
 }
 
 function cycleTheme() {
-  const next = THEMES[(THEMES.indexOf(currentTheme) + 1) % THEMES.length];
+  const available = unlockedThemes();
+  const idx = available.indexOf(currentTheme);
+  const next = available[(idx + 1) % available.length];
   applyTheme(next);
   updateChrome(shell?.nav?.querySelector('.active')?.dataset?.name);
 }
 
-const app = { go, mentor, toast, milestone: showMilestone, collection: showCollection };
+function checkThemeUnlock() {
+  const disc = Object.keys(get().discovered).length;
+  const unlocked = JSON.parse(localStorage.getItem('hark.themesUnlocked') || '["nightwood"]');
+  for (const t of THEMES) {
+    if (disc >= THEME_UNLOCK[t] && !unlocked.includes(t)) {
+      unlocked.push(t);
+      localStorage.setItem('hark.themesUnlocked', JSON.stringify(unlocked));
+      setTimeout(() => mentor('<b>Wren:</b> New look unlocked — <b>' + THEME_LABELS[t] + '</b>. Tap the theme button in the top bar to try it.', 8000), 3500);
+      track('theme_unlock', { theme: t });
+      return;
+    }
+  }
+}
+
+const app = { go, mentor, toast, milestone: showMilestone, collection: showCollection, checkThemeUnlock };
 
 function buildShell() {
   if (shell) return shell;

@@ -130,6 +130,7 @@ export function mount(host, app, params = {}) {
       if (snapMilestone) setTimeout(() => app.milestone(snapMilestone), 1100);
       const snapColHit = checkCollectionComplete(CREATURES);
       if (snapColHit) setTimeout(() => app.collection(snapColHit), snapMilestone ? 5000 : 1800);
+      if (app.checkThemeUnlock) app.checkThemeUnlock();
       const reveal = el('div', { style: 'position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:var(--panel);border-radius:13px;pointer-events:none;animation:fade .2s ease' });
       const rEmo = el('div', { style: 'font-size:38px;line-height:1' });
       rEmo.textContent = creatureEmoji(target);
