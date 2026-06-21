@@ -255,6 +255,93 @@ export async function shareGrove(discovered, s, app) {
   }
 }
 
+export async function shareSnap(results, daily, streak, app) {
+  const s = get();
+  const discovered = Object.keys(s.discovered).length;
+  const rank = getRank(discovered);
+  const dayN = Math.floor(Date.now() / 86400000);
+  const correct = results.filter(Boolean).length;
+
+  const size = 480;
+  const canvas = document.createElement('canvas');
+  canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext('2d');
+
+  const grad = ctx.createLinearGradient(0, 0, 0, size);
+  grad.addColorStop(0, '#0d1f1b'); grad.addColorStop(1, '#060e0b');
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, size, size);
+
+  ctx.strokeStyle = 'rgba(224,164,77,0.04)';
+  ctx.lineWidth = 1;
+  for (let y = 40; y < size; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(size, y); ctx.stroke(); }
+
+  ctx.font = '500 13px -apple-system, Helvetica, Arial, sans-serif';
+  ctx.fillStyle = '#3ec99f'; ctx.textAlign = 'left';
+  ctx.fillText('HARK', 28, 44);
+
+  ctx.textAlign = 'right'; ctx.font = '12px -apple-system, Helvetica, Arial, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.45)';
+  ctx.fillText(rank.emoji + ' ' + rank.title, size - 28, 44);
+
+  ctx.textAlign = 'center';
+  ctx.font = '600 11px -apple-system, Helvetica, Arial, sans-serif';
+  ctx.fillStyle = '#e0a44d'; ctx.letterSpacing = '0.1em';
+  ctx.fillText('⭐ DAILY SNAP · #' + dayN, size / 2, 82);
+
+  if (daily) {
+    ctx.font = '80px serif';
+    ctx.fillText(creatureEmoji(daily), size / 2, 186);
+    ctx.font = '600 22px -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif';
+    ctx.fillStyle = '#eef3f0';
+    ctx.fillText(daily.name, size / 2, 228);
+  }
+
+  const dotSize = 36;
+  const gap = 12;
+  const totalW = results.length * dotSize + (results.length - 1) * gap;
+  const startX = (size - totalW) / 2 + dotSize / 2;
+  ctx.font = '28px serif';
+  results.forEach((ok, idx) => {
+    ctx.fillText(ok ? '✅' : '❌', startX + idx * (dotSize + gap), 280);
+  });
+
+  ctx.font = '600 16px -apple-system, Helvetica, Arial, sans-serif';
+  ctx.fillStyle = '#eef3f0';
+  ctx.fillText(correct + '/' + results.length, size / 2, 320);
+
+  ctx.beginPath();
+  ctx.moveTo(size / 2 - 50, 346); ctx.lineTo(size / 2 + 50, 346);
+  ctx.strokeStyle = '#e0a44d'; ctx.lineWidth = 1.5; ctx.stroke();
+
+  ctx.font = '13px -apple-system, Helvetica, Arial, sans-serif';
+  ctx.fillStyle = 'rgba(224,164,77,0.8)';
+  ctx.fillText('🔥 Day ' + streak + ' · ' + discovered + '/93 sounds found', size / 2, 378);
+
+  ctx.fillStyle = 'rgba(159,178,170,0.5)'; ctx.font = '12px -apple-system, Helvetica, Arial, sans-serif';
+  ctx.fillText('Can you beat my score? → hark-beta', size / 2, 420);
+
+  ctx.fillStyle = 'rgba(159,178,170,0.3)'; ctx.font = '11px -apple-system, Helvetica, Arial, sans-serif';
+  ctx.fillText('snixdorff-netizen.github.io/hark-beta/', size / 2, 456);
+
+  track('snap_share_card', { correct, total: results.length, streak });
+
+  const url = daily ? challengeUrl(daily.id) : shareUrl();
+  try {
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+    const file = new File([blob], 'hark-snap-' + dayN + '.png', { type: 'image/png' });
+    const text = 'Hark #' + dayN + ' 🎧 ' + correct + '/' + results.length + ' · Day ' + streak + ' 🔥 ' + url;
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ title: 'Hark Daily Snap #' + dayN, text, files: [file] });
+    } else if (navigator.share) {
+      await navigator.share({ title: 'Hark', text, url });
+    } else {
+      showShareOverlay(canvas, url);
+    }
+  } catch (e) {
+    if (e.name !== 'AbortError') showShareOverlay(canvas, url);
+  }
+}
+
 function showShareOverlay(canvas, url) {
   const host = document.getElementById('app');
   const ovl = document.createElement('div');

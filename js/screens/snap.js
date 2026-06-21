@@ -8,7 +8,7 @@ import { get, addXp, adjustSkill, awardCrown, discover, growGrove, touchStreak, 
 import { track, challengeUrl } from '../analytics.js';
 import { maybeShowWtp } from '../probes.js';
 import { creatureEmoji, rarityPct, byId, CREATURES, WREN_QUOTES, viralFeed } from '../content.js';
-import { shareCreature, shareStreak } from '../sharecard.js';
+import { shareCreature, shareStreak, shareSnap } from '../sharecard.js';
 
 // Daily creature — same for all players today (rotates through viral pool by calendar day)
 function getDailyCreature() {
@@ -264,16 +264,8 @@ export function mount(host, app, params = {}) {
       dailyCard.appendChild(el('div', { style: 'font-size:17px;font-weight:600;color:var(--ink)', text: daily.name }));
       dailyCard.appendChild(el('div', { style: 'font-size:18px;letter-spacing:4px;margin:6px 0 2px', text: emoResult }));
       dailyCard.appendChild(el('div', { style: 'font-size:11px;color:var(--muted)', text: '🔥 Day ' + newStreak + ' · ' + totalFound + '/93 sounds found' }));
-      const dailyShareBtn = el('button', { class: 'cta', style: 'margin-top:12px', text: '📋 Share your result' });
-      dailyShareBtn.addEventListener('click', async () => {
-        track('daily_snap_share', { id: daily.id });
-        const url = challengeUrl(daily.id);
-        const fullText = shareText2 + '\n' + url;
-        try {
-          if (navigator.share) await navigator.share({ title: 'Hark Daily Sound', text: fullText, url });
-          else { await navigator.clipboard.writeText(fullText); app.toast('✓ Copied to clipboard', 2000); }
-        } catch (e) { if (e.name !== 'AbortError') { try { await navigator.clipboard.writeText(fullText); app.toast('✓ Copied', 2000); } catch (e2) {} } }
-      });
+      const dailyShareBtn = el('button', { class: 'cta', style: 'margin-top:12px', text: '📸 Share your result' });
+      dailyShareBtn.addEventListener('click', () => shareSnap(roundResults, daily, newStreak, app));
       dailyCard.appendChild(dailyShareBtn);
       wrap.appendChild(dailyCard);
       // Upcoming streak milestone hook
@@ -290,6 +282,9 @@ export function mount(host, app, params = {}) {
       const streakShareBtn = el('button', { class: 'cta', style: 'margin-top:10px', text: '📤 Share your streak' });
       streakShareBtn.addEventListener('click', () => shareStreak(newStreak, app));
       milestoneDiv.appendChild(streakShareBtn);
+      const snapShareBtn2 = el('button', { class: 'ghost', style: 'margin-top:6px;font-size:12px', text: '📸 Share snap results' });
+      snapShareBtn2.addEventListener('click', () => shareSnap(roundResults, dailyCreature, newStreak, app));
+      milestoneDiv.appendChild(snapShareBtn2);
       wrap.appendChild(milestoneDiv);
     } else if (gotRight.length) {
       const best = gotRight.slice().sort((a, b) => rarityPct(a) - rarityPct(b))[0];
