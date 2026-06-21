@@ -56,6 +56,7 @@ export function mount(host, app) {
     if (i === 1 && showWelcomeBack) feed.appendChild(buildWelcomeBack(app, s, _daysAway));
     if (i === 3) feed.appendChild(buildSnapPullCard(app));
     if (i === 5 && mysteryCreature) feed.appendChild(buildMysteryCard(mysteryCreature, app));
+    if (i === 8 && Object.keys(s.discovered).length >= 2) feed.appendChild(buildFieldLog(dayN));
   });
 
   // Sentinal sentinel div at the bottom — when it enters view, append another loop pass
@@ -266,6 +267,33 @@ function buildMysteryCard(creature, app) {
   node.appendChild(el('div', { class: 'fact', style: 'color:rgba(111,139,255,.6);font-style:italic', text: 'Listen carefully. The spectrogram holds clues. Take it to Snap when you\'re ready.' }));
 
   track('mystery_shown', { id: creature.id });
+  return node;
+}
+
+const FIELD_LOG = [
+  { title: 'Dawn recording, day 4', body: 'Set up at 4:47 AM. First bird at 4:52 — a robin, always a robin. By 5:10 there were eleven species overlapping. The mic can\'t separate them the way the ear can. That\'s the gap I keep trying to close.', tag: 'recording' },
+  { title: 'On silence', body: 'Recorded four hours of "silence" in a hemlock stand. Playing it back: 340 distinct sound events. Wind through different needle densities. A beetle walking on bark. My own heartbeat through the ground. Silence is a frequency we haven\'t learned to hear yet.', tag: 'philosophy' },
+  { title: 'The fox problem', body: 'Three nights staking out a fox den. First night: nothing. Second night: a scream at 2 AM that stopped my heart. Third night: I realized the fox had been watching me the whole time. It screamed when it got bored of my company.', tag: 'fieldwork' },
+  { title: 'Spectrogram notes', body: 'A student asked why spectrograms look "wrong." They don\'t. Your eyes are just used to seeing horizontally. Sound moves in time, pitch moves in frequency. The spectrogram is a photograph of something your ears already see perfectly.', tag: 'technique' },
+  { title: 'Rain delay', body: 'Rain cancels most recording sessions. But rain on different surfaces — tin, leaves, water, sand — those are some of the most requested sounds in the archive. Geophony doesn\'t care about your schedule.', tag: 'weather' },
+  { title: 'Nighthawk watch', body: 'The nighthawk\'s wing-boom isn\'t a call. It\'s air over feathers during a dive — a sound made by architecture, not intention. The bird didn\'t evolve to make it. It evolved to fly, and the sound followed. Most of the best sounds are accidents.', tag: 'biology' },
+  { title: 'On mastery', body: 'A colleague can identify 400 species by ear. I asked how long it took. "Twenty years and one good teacher." The teacher was a blind ornithologist who never saw a bird in her life but could name any song within three notes.', tag: 'story' },
+  { title: 'Equipment list', body: 'People ask about my mic. It\'s a $200 shotgun condenser from 2014. The $3,000 parabolic I bought in 2018 sits in a closet. The best microphone is the one you carry, pointed at something interesting.', tag: 'gear' },
+  { title: 'Wolf notes', body: 'Spent a week with a bioacoustics team tracking wolves. Each pack has a unique harmonic signature — the wolves deliberately shift pitch to avoid matching each other. It makes four wolves sound like twelve. Deception through harmony.', tag: 'fieldwork' },
+  { title: 'The 67 kHz question', body: 'Found it on a recording from 2019. 67 kHz — well above human hearing, but the equipment caught it. Consistent, patterned, biological. Not bat, not dolphin, not insect. Three labs have looked at it. Nobody can name it. I listen to it every week.', tag: 'mystery' },
+  { title: 'Spring migration', body: 'The first warbler showed up today. I heard it before I saw it — a thin, rising note from the top of a dead ash. By next week there will be twenty species that weren\'t here yesterday. The air changes flavor during migration.', tag: 'season' },
+  { title: 'On listening', body: 'The difference between hearing and listening is the same as the difference between seeing and reading. One happens automatically. The other is a skill you build, lose, and rebuild, every day, for the rest of your life.', tag: 'philosophy' },
+  { title: 'Cicada emergence', body: 'Measured a cicada chorus at 96 dB from thirty feet. That\'s louder than a motorcycle. Each individual tymbal clicks 300 times per second. The sound has been described as "screaming in unison." I\'d call it a collective prayer for continuity.', tag: 'biology' },
+  { title: 'Winter recording', body: 'Cold air carries sound farther. A great horned owl I recorded in January was audible from 1.2 miles. In July, the same owl at the same distance would disappear into the insect floor. Winter is the long-distance listener\'s season.', tag: 'technique' },
+];
+
+function buildFieldLog(dayN) {
+  const entry = FIELD_LOG[dayN % FIELD_LOG.length];
+  const node = el('div', { class: 'card', style: 'background:radial-gradient(120% 80% at 50% 35%, rgba(62,201,159,.05) 0%, #0d1110 70%);border:.5px solid rgba(62,201,159,.15);padding:22px 20px' });
+  node.appendChild(el('div', { style: 'font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--teal);margin-bottom:10px', text: 'WREN\'S FIELD LOG · #' + (dayN % FIELD_LOG.length + 1) }));
+  node.appendChild(el('div', { style: 'font-size:16px;font-weight:600;color:var(--ink);margin-bottom:8px', text: entry.title }));
+  node.appendChild(el('div', { style: 'font-size:13px;color:rgba(238,243,240,.75);line-height:1.7;font-style:italic', text: entry.body }));
+  node.appendChild(el('div', { style: 'font-size:10px;color:var(--muted);margin-top:10px;letter-spacing:.04em', text: '#' + entry.tag }));
   return node;
 }
 
