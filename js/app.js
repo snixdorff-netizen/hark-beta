@@ -173,13 +173,21 @@ function go(name, params = {}) {
   }
   // Welcome-back message for streak players who already played today
   else if (name === 'feed' && s.streak >= 3 && s.lastPlayed === today()) {
-    const msgs = [
-      `<b>Day ${s.streak}.</b> The forest is glad you're back.`,
-      `<b>Wren:</b> ${s.streak} days straight. Most people don't make it this far.`,
-      `<b>Wren:</b> Back again. Your ear remembers more than you think.`,
-    ];
-    const idx = s.streak % msgs.length;
-    setTimeout(() => mentor(msgs[idx], 5000), 900);
+    const streakMsg = s.streak === 7 ? '<b>Wren:</b> Seven days. A full week of wild listening. This is habit now. Your grove has memory.'
+      : s.streak === 14 ? '<b>Wren:</b> Two weeks straight. You\'re hearing things most people walk right past.'
+      : s.streak === 30 ? '<b>Wren:</b> Thirty days. A month of field work. Most naturalists take years to get here.'
+      : s.streak === 60 ? '<b>Wren:</b> Sixty days. I don\'t have anything left to teach you. The field is yours now.'
+      : null;
+    if (streakMsg) {
+      setTimeout(() => mentor(streakMsg, 10000), 900);
+    } else {
+      const msgs = [
+        `<b>Day ${s.streak}.</b> The forest is glad you're back.`,
+        `<b>Wren:</b> ${s.streak} days straight. Most people don't make it this far.`,
+        `<b>Wren:</b> Back again. Your ear remembers more than you think.`,
+      ];
+      setTimeout(() => mentor(msgs[s.streak % msgs.length], 5000), 900);
+    }
   }
   // Time-aware atmospheric greeting — once per session for listeners who've found things
   else if (name === 'feed' && !_timeGreetShown && Object.keys(s.discovered).length >= 1) {
@@ -219,6 +227,11 @@ function go(name, params = {}) {
     if (discovered >= 3 && discovered < 8) tip('snap_tip', '<b>Wren:</b> You\'ve found a few. Now test yourself — try <b>Snap</b> and see if you can ID them by spectrogram alone.', 2500);
     else if (discovered >= 8 && discovered < 15) tip('grove_tip', '<b>Wren:</b> Your Grove is growing. Tap the <b>Grove</b> tab to see every sound you\'ve collected.', 2500);
     else if (discovered >= 15) tip('haul_tip', '<b>Wren:</b> Deploy the <b>Haul</b> recorder tonight. It listens while you sleep and brings back whatever the forest says.', 2500);
+    const rp = rankProgress(discovered);
+    if (rp.next && (rp.next.min - discovered) <= 2) {
+      const away = rp.next.min - discovered;
+      tip('near_rank_' + rp.next.title, `<b>Wren:</b> ${rp.next.emoji} ${away === 1 ? 'One more sound' : 'Two more sounds'} and you reach <b>${rp.next.title}</b>. Keep going.`, 3000);
+    }
   }
 }
 
