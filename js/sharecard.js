@@ -1,8 +1,8 @@
 // Hark — viral share card. Canvas-generated image for iMessage, Instagram, Twitter.
-import { getRank } from './rank.js';
+import { getRank, earScore } from './rank.js';
 import { get } from './state.js';
 import { shareUrl, challengeUrl, track } from './analytics.js';
-import { creatureEmoji } from './content.js';
+import { creatureEmoji, byId, rarityPct } from './content.js';
 
 export async function shareCreature(creature, app) {
   const s = get();
@@ -332,6 +332,111 @@ export async function shareSnap(results, daily, streak, app) {
     const text = 'Hark #' + dayN + ' 🎧 ' + correct + '/' + results.length + ' · Day ' + streak + ' 🔥 ' + url;
     if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
       await navigator.share({ title: 'Hark Daily Snap #' + dayN, text, files: [file] });
+    } else if (navigator.share) {
+      await navigator.share({ title: 'Hark', text, url });
+    } else {
+      showShareOverlay(canvas, url);
+    }
+  } catch (e) {
+    if (e.name !== 'AbortError') showShareOverlay(canvas, url);
+  }
+}
+
+export async function shareWrapped(app) {
+  const s = get();
+  const discIds = Object.keys(s.discovered);
+  const discovered = discIds.length;
+  const rank = getRank(discovered);
+  const score = earScore(s);
+  const mastered = Object.values(s.crowns).filter((v) => v >= 3).length;
+  const streak = s.longestStreak || s.streak || 0;
+
+  const rarestCreature = discIds.map(byId).filter(Boolean).sort((a, b) => rarityPct(a) - rarityPct(b))[0];
+
+  const size = 480;
+  const canvas = document.createElement('canvas');
+  canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext('2d');
+
+  const grad = ctx.createLinearGradient(0, 0, 0, size);
+  grad.addColorStop(0, '#0a1812'); grad.addColorStop(0.5, '#0d1f1b'); grad.addColorStop(1, '#060e0b');
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, size, size);
+
+  ctx.strokeStyle = 'rgba(62,201,159,0.04)';
+  ctx.lineWidth = 1;
+  for (let y = 40; y < size; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(size, y); ctx.stroke(); }
+
+  ctx.font = '500 13px -apple-system, Helvetica, Arial, sans-serif';
+  ctx.fillStyle = '#3ec99f'; ctx.textAlign = 'left';
+  ctx.fillText('HARK', 28, 38);
+
+  ctx.textAlign = 'right'; ctx.font = '12px -apple-system, Helvetica, Arial, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.45)';
+  ctx.fillText(rank.emoji + ' ' + rank.title, size - 28, 38);
+
+  ctx.textAlign = 'center';
+  ctx.font = '600 11px -apple-system, Helvetica, Arial, sans-serif';
+  ctx.fillStyle = '#3ec99f';
+  ctx.fillText('MY HARK WRAPPED', size / 2, 72);
+
+  ctx.font = '700 64px -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif';
+  ctx.fillStyle = '#e0a44d';
+  ctx.fillText(String(score), size / 2, 146);
+  ctx.font = '500 14px -apple-system, Helvetica, Arial, sans-serif';
+  ctx.fillStyle = 'rgba(238,243,240,0.7)';
+  ctx.fillText('Ear Score', size / 2, 170);
+
+  ctx.beginPath();
+  ctx.moveTo(80, 196); ctx.lineTo(size - 80, 196);
+  ctx.strokeStyle = 'rgba(62,201,159,0.2)'; ctx.lineWidth = 1; ctx.stroke();
+
+  const stats = [
+    { val: String(discovered), label: 'sounds found' },
+    { val: String(mastered), label: 'mastered' },
+    { val: String(streak) + 'd', label: 'best streak' },
+  ];
+  const colW = (size - 80) / stats.length;
+  ctx.textAlign = 'center';
+  stats.forEach((st, idx) => {
+    const x = 40 + colW * idx + colW / 2;
+    ctx.font = '700 28px -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif';
+    ctx.fillStyle = '#eef3f0';
+    ctx.fillText(st.val, x, 244);
+    ctx.font = '11px -apple-system, Helvetica, Arial, sans-serif';
+    ctx.fillStyle = 'rgba(159,178,170,0.65)';
+    ctx.fillText(st.label, x, 264);
+  });
+
+  if (rarestCreature) {
+    ctx.beginPath();
+    ctx.moveTo(80, 290); ctx.lineTo(size - 80, 290);
+    ctx.strokeStyle = 'rgba(111,139,255,0.15)'; ctx.lineWidth = 1; ctx.stroke();
+
+    ctx.font = '600 10px -apple-system, Helvetica, Arial, sans-serif';
+    ctx.fillStyle = '#6f8bff';
+    ctx.fillText('RAREST FIND', size / 2, 318);
+    ctx.font = '44px serif';
+    ctx.fillText(creatureEmoji(rarestCreature), size / 2, 370);
+    ctx.font = '500 16px -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif';
+    ctx.fillStyle = '#eef3f0';
+    ctx.fillText(rarestCreature.name, size / 2, 400);
+    ctx.font = '11px -apple-system, Helvetica, Arial, sans-serif';
+    ctx.fillStyle = 'rgba(111,139,255,0.7)';
+    ctx.fillText('Only ' + Math.round(rarityPct(rarestCreature)) + '% of listeners find this', size / 2, 420);
+  }
+
+  ctx.fillStyle = 'rgba(159,178,170,0.35)'; ctx.font = '11px -apple-system, Helvetica, Arial, sans-serif';
+  ctx.fillText('snixdorff-netizen.github.io/hark-beta/', size / 2, 460);
+
+  track('wrapped_share', { score, discovered, mastered, streak });
+
+  const url = shareUrl();
+  try {
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+    const file = new File([blob], 'hark-wrapped.png', { type: 'image/png' });
+    const text = 'My Hark Wrapped 🎧 Ear Score: ' + score + '/100 · ' + discovered + ' sounds · ' + rank.emoji + ' ' + rank.title + ' ' + url;
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ title: 'My Hark Wrapped', text, files: [file] });
     } else if (navigator.share) {
       await navigator.share({ title: 'Hark', text, url });
     } else {

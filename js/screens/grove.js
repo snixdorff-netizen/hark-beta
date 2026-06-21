@@ -4,7 +4,7 @@ import { byId, CREATURES, GROUPS, creatureEmoji, rarityPct, WREN_QUOTES } from '
 import { get } from '../state.js';
 import { rankProgress, earScore } from '../rank.js';
 import { feedbackLink, showCredits } from '../probes.js';
-import { shareGrove, shareCreature } from '../sharecard.js';
+import { shareGrove, shareCreature, shareWrapped } from '../sharecard.js';
 import * as audio from '../audio.js';
 import { track, challengeUrl } from '../analytics.js';
 
@@ -173,6 +173,11 @@ export function mount(host, app) {
       } catch (e) {}
     });
     scoreCard.appendChild(scoreShareBtn);
+    if (discovered.length >= 5) {
+      const wrappedBtn = el('button', { style: 'display:block;margin:8px auto 0;font-size:12px;color:#6f8bff;padding:6px 16px;border-radius:20px;background:rgba(111,139,255,.08);border:.5px solid rgba(111,139,255,.2)', text: '🎧 My Hark Wrapped' });
+      wrappedBtn.addEventListener('click', () => shareWrapped(app));
+      scoreCard.appendChild(wrappedBtn);
+    }
     pad.appendChild(scoreCard);
   }
 
