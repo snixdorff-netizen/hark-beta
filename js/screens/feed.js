@@ -46,10 +46,16 @@ export function mount(host, app) {
   const _lastDate = s.lastPlayed ? new Date(s.lastPlayed) : null;
   const _daysAway = _lastDate ? Math.round((Date.now() - _lastDate) / 86400000) : 0;
   const showWelcomeBack = _daysAway >= 3 && Object.keys(s.discovered).length >= 3;
+
+  const weekN = Math.floor(dayN / 7);
+  const undiscovered = CREATURES.filter((c) => !c.isNoise && !s.discovered[c.id]);
+  const mysteryCreature = undiscovered.length > 0 ? undiscovered[(weekN * 7919) % undiscovered.length] : null;
+
   cards.forEach((c, i) => {
     feed.appendChild(c.node);
     if (i === 1 && showWelcomeBack) feed.appendChild(buildWelcomeBack(app, s, _daysAway));
     if (i === 3) feed.appendChild(buildSnapPullCard(app));
+    if (i === 5 && mysteryCreature) feed.appendChild(buildMysteryCard(mysteryCreature, app));
   });
 
   // Sentinal sentinel div at the bottom — when it enters view, append another loop pass
@@ -226,6 +232,42 @@ function buildCard(c, app, isDaily, dailyDone, dailyTip) {
   return { node, creature: c, sg, rendered: false };
 }
 
+
+function buildMysteryCard(creature, app) {
+  const g = GROUPS[creature.group];
+  const node = el('div', { class: 'card', style: `background:radial-gradient(120% 80% at 50% 35%, rgba(111,139,255,.15) 0%, #0d1110 70%);border:.5px solid rgba(111,139,255,.25)` });
+
+  node.appendChild(el('div', { class: 'grp', html: `<span style="width:8px;height:8px;border-radius:50%;background:${g.color};display:inline-block"></span> ${g.label} · ???` }));
+
+  const stage = el('div', { class: 'stage' });
+  const emoEl = el('div', { style: 'font-size:92px;line-height:1;user-select:none;filter:drop-shadow(0 2px 16px rgba(0,0,0,.4)) blur(2px)' });
+  emoEl.textContent = '❓';
+  stage.appendChild(emoEl);
+  node.appendChild(stage);
+
+  const badge = el('div', { style: 'text-align:center;font-size:11px;font-weight:600;letter-spacing:.08em;color:#6f8bff;margin:-4px 0 8px', text: '🔮 MYSTERY SOUND · Changes weekly' });
+  node.appendChild(badge);
+
+  node.appendChild(el('h2', { text: '???' }));
+  node.appendChild(el('div', { class: 'sub', text: 'Can you identify this sound?' }));
+
+  const sg = el('div', { class: 'specwrap' });
+  node.appendChild(sg);
+  mountSpectrogram(sg, creature, 320, 84);
+
+  const line = el('div', { class: 'playline' });
+  const play = el('button', { class: 'playbtn', 'aria-label': 'Play', html: icon('play', 22) });
+  play.addEventListener('click', () => { audio.unlock(); haptic(); audio.play(creature); track('mystery_play', { id: creature.id }); });
+  const idb = el('button', { class: 'idbtn', style: 'background:rgba(111,139,255,.18);border-color:rgba(111,139,255,.4)', html: icon('ear', 18) + ' Name this sound' });
+  idb.addEventListener('click', () => { track('mystery_snap', { id: creature.id }); app.go('snap', { preferIds: [creature.id] }); });
+  line.appendChild(play); line.appendChild(idb);
+  node.appendChild(line);
+
+  node.appendChild(el('div', { class: 'fact', style: 'color:rgba(111,139,255,.6);font-style:italic', text: 'Listen carefully. The spectrogram holds clues. Take it to Snap when you\'re ready.' }));
+
+  track('mystery_shown', { id: creature.id });
+  return node;
+}
 
 function buildWelcomeBack(app, s, daysAway) {
   const disc = Object.keys(s.discovered).length;
