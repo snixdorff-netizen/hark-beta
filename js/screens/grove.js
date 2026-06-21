@@ -26,7 +26,13 @@ export function mount(host, app) {
     headLeft.appendChild(el('div', { style: 'font-size:11px;color:var(--amber);font-weight:600;letter-spacing:.03em;margin-top:2px', text: 'Top ' + pct + '% of listeners' }));
   }
   head.appendChild(headLeft);
-  head.appendChild(el('div', { style: 'font-size:13px;color:var(--teal)', text: discovered.length + '/' + total + ' rehomed' }));
+  const headRight = el('div', { style: 'text-align:right' });
+  headRight.appendChild(el('div', { style: 'font-size:13px;color:var(--teal)', text: discovered.length + '/' + total + ' rehomed' }));
+  const mastered = discovered.filter((c) => (s.crowns[c.id] || 0) >= 3).length;
+  if (mastered > 0 || discovered.length >= 10) {
+    headRight.appendChild(el('div', { style: 'font-size:11px;color:var(--amber);margin-top:2px', text: '★ ' + mastered + '/' + total + ' mastered' }));
+  }
+  head.appendChild(headRight);
   pad.appendChild(head);
 
   // Restoration progress bar

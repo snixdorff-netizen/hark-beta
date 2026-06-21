@@ -227,6 +227,8 @@ function go(name, params = {}) {
     if (discovered >= 3 && discovered < 8) tip('snap_tip', '<b>Wren:</b> You\'ve found a few. Now test yourself — try <b>Snap</b> and see if you can ID them by spectrogram alone.', 2500);
     else if (discovered >= 8 && discovered < 15) tip('grove_tip', '<b>Wren:</b> Your Grove is growing. Tap the <b>Grove</b> tab to see every sound you\'ve collected.', 2500);
     else if (discovered >= 15) tip('haul_tip', '<b>Wren:</b> Deploy the <b>Haul</b> recorder tonight. It listens while you sleep and brings back whatever the forest says.', 2500);
+    const masteredCount = Object.values(s.crowns).filter((v) => v >= 3).length;
+    if (discovered >= 10 && masteredCount === 0) tip('mastery_tip', '<b>Wren:</b> Name a sound correctly three times in <b>Snap</b> to master it. ★★★ Mastered sounds get a golden home in your grove.', 3200);
     const rp = rankProgress(discovered);
     if (rp.next && (rp.next.min - discovered) <= 2) {
       const away = rp.next.min - discovered;
