@@ -43,8 +43,12 @@ export function mount(host, app) {
     : baseList;
 
   let cards = orderedList.map((c, i) => buildCard(c, app, i === 0, dailyDone, i === 0 ? dailyTip : null));
+  const _lastDate = s.lastPlayed ? new Date(s.lastPlayed) : null;
+  const _daysAway = _lastDate ? Math.round((Date.now() - _lastDate) / 86400000) : 0;
+  const showWelcomeBack = _daysAway >= 3 && Object.keys(s.discovered).length >= 3;
   cards.forEach((c, i) => {
     feed.appendChild(c.node);
+    if (i === 1 && showWelcomeBack) feed.appendChild(buildWelcomeBack(app, s, _daysAway));
     if (i === 3) feed.appendChild(buildSnapPullCard(app));
   });
 
@@ -222,6 +226,50 @@ function buildCard(c, app, isDaily, dailyDone, dailyTip) {
   return { node, creature: c, sg, rendered: false };
 }
 
+
+function buildWelcomeBack(app, s, daysAway) {
+  const disc = Object.keys(s.discovered).length;
+  const total = CREATURES.filter((c) => !c.isNoise).length;
+  const remaining = total - disc;
+  const mastered = Object.values(s.crowns).filter((v) => v >= 3).length;
+  const streak = s.streak || 0;
+  const best = s.longestStreak || streak;
+  const lines = [
+    'The field never stops recording.',
+    'Every species kept singing while you were away.',
+    'Silence doesn\'t mean nothing happened.',
+    'The forest noticed you were gone.',
+  ];
+  const line = lines[daysAway % lines.length];
+
+  const node = el('div', { class: 'card', style: 'background:radial-gradient(120% 80% at 50% 35%, rgba(62,201,159,.08) 0%, #0d1110 70%);border:.5px solid rgba(62,201,159,.2);display:flex;flex-direction:column;align-items:center;padding:28px 20px;gap:8px' });
+  node.appendChild(el('div', { style: 'font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--teal)', text: 'WELCOME BACK' }));
+  const emo = el('div', { style: 'font-size:48px;line-height:1;margin:4px 0' });
+  emo.textContent = '🌿';
+  node.appendChild(emo);
+  node.appendChild(el('div', { style: 'font-size:15px;font-weight:600;color:var(--ink);text-align:center', text: daysAway + ' days away' }));
+  node.appendChild(el('div', { style: 'font-size:12px;color:var(--muted);text-align:center;font-style:italic;max-width:260px;margin-bottom:4px', text: line }));
+
+  const stats = el('div', { style: 'display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin:6px 0' });
+  const stat = (val, label) => {
+    const s2 = el('div', { style: 'text-align:center' });
+    s2.appendChild(el('div', { style: 'font-size:18px;font-weight:700;color:var(--ink)', text: String(val) }));
+    s2.appendChild(el('div', { style: 'font-size:10px;color:var(--muted)', text: label }));
+    return s2;
+  };
+  stats.appendChild(stat(disc, 'found'));
+  stats.appendChild(stat(remaining, 'remaining'));
+  if (mastered > 0) stats.appendChild(stat(mastered, 'mastered'));
+  if (best > 1) stats.appendChild(stat(best, 'best streak'));
+  node.appendChild(stats);
+
+  const cta = el('button', { class: 'cta', text: '🎧 Start a new streak' });
+  cta.addEventListener('click', () => { track('welcome_back_snap'); app.go('snap'); });
+  node.appendChild(cta);
+
+  track('welcome_back_shown', { days: daysAway, disc });
+  return node;
+}
 
 function buildSnapPullCard(app) {
   const node = el('div', { class: 'card', style: 'background:radial-gradient(120% 80% at 50% 35%, rgba(62,201,159,.08) 0%, #0d1110 70%);border:.5px solid rgba(62,201,159,.2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:40px 24px;min-height:220px' });
