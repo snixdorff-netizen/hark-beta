@@ -1,12 +1,12 @@
 // Hark — service worker. Offline-first cache for the app shell.
-const CACHE = 'hark-v54';
+const CACHE = 'hark-v55';
 const ASSETS = [
   './', './index.html', './css/styles.css', './manifest.webmanifest',
   './js/app.js', './js/ui.js', './js/state.js', './js/audio.js',
   './js/spectrogram.js', './js/content.js', './js/difficulty.js',
   './js/analytics.js', './js/probes.js', './js/rank.js', './js/sharecard.js',
   './js/screens/feed.js', './js/screens/snap.js', './js/screens/noiseornature.js',
-  './js/screens/haul.js', './js/screens/grove.js', './js/screens/coldopen.js',
+  './js/screens/haul.js', './js/screens/grove.js', './js/screens/coldopen.js', './js/screens/ambient.js',
 ];
 self.addEventListener('install', (e) => {
   self.skipWaiting();

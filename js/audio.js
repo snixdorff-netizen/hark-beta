@@ -137,6 +137,27 @@ export async function decode(creature) {
   return loadClip(creature);
 }
 
+export async function playAmbient(creature) {
+  ensure();
+  if (ctx.state === 'suspended') await ctx.resume();
+  if (creature.clip) {
+    try {
+      const buf = await loadClip(creature);
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      const g = ctx.createGain(); g.gain.value = 0.55;
+      src.connect(g); g.connect(master);
+      src.start();
+      active.push(src);
+      return buf.duration;
+    } catch (e) { return 0; }
+  }
+  if (!creature.events?.length) return 0;
+  const t0 = ctx.currentTime + 0.06;
+  creature.events.forEach((ev) => scheduleEvent(ev, t0));
+  return creature.duration || 2;
+}
+
 // Returns the duration scheduled (seconds).
 export async function play(creature) {
   ensure();

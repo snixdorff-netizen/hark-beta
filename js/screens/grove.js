@@ -7,6 +7,7 @@ import { feedbackLink, showCredits } from '../probes.js';
 import { shareGrove, shareCreature, shareWrapped } from '../sharecard.js';
 import * as audio from '../audio.js';
 import { track, challengeUrl } from '../analytics.js';
+import { showAmbient } from './ambient.js';
 
 export function mount(host, app) {
   const s = get();
@@ -190,6 +191,15 @@ export function mount(host, app) {
     });
     shareBtn.addEventListener('click', () => shareGrove(discovered, s, app));
     pad.appendChild(shareBtn);
+
+    if (discovered.length >= 3) {
+      const ambientBtn = el('button', {
+        style: 'width:100%;text-align:center;padding:12px;font-size:13px;font-weight:500;color:var(--ink);background:rgba(62,201,159,.06);border:.5px solid rgba(62,201,159,.15);border-radius:12px;margin-top:8px',
+        text: '🌙 Ambient Listen — play your grove',
+      });
+      ambientBtn.addEventListener('click', () => showAmbient(app));
+      pad.appendChild(ambientBtn);
+    }
 
     const inviteBtn = el('button', { style: 'width:100%;text-align:center;padding:10px;font-size:13px;color:var(--teal)', text: '🎧 Invite a friend to Hark' });
     inviteBtn.addEventListener('click', async () => {
