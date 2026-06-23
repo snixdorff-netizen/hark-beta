@@ -182,6 +182,44 @@ export function mount(host, app) {
     pad.appendChild(scoreCard);
   }
 
+  // ── Listening Personality ───────────────────────────────────────────────
+  if (discovered.length >= 8) {
+    const groupCounts = {};
+    discovered.forEach((c) => { groupCounts[c.group] = (groupCounts[c.group] || 0) + 1; });
+    const topGroup = Object.entries(groupCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+    const rareCount = discovered.filter((c) => c.rare).length;
+    const masteredCount = Object.values(s.crowns).filter((v) => v >= 3).length;
+    const streakVal = s.longestStreak || s.streak || 0;
+
+    const PERSONALITIES = [
+      { key: 'birder', test: () => topGroup === 'bird' && groupCounts.bird >= 5, emoji: '🐦', title: 'The Birder', desc: 'You gravitate toward birdsong. Your ear picks up pitch changes faster than most.' },
+      { key: 'nightowl', test: () => (groupCounts.mammal || 0) >= 2 && rareCount >= 3, emoji: '🦉', title: 'Night Owl', desc: 'You find what others walk past. Foxes, wolves, rare calls — the dark doesn\'t scare your ears.' },
+      { key: 'completionist', test: () => Object.keys(groupCounts).length >= 4, emoji: '🗺️', title: 'The Completionist', desc: 'You don\'t stop at one group. Every biome, every category — your grove has range.' },
+      { key: 'naturalist', test: () => (groupCounts.amphibian || 0) >= 2 || (groupCounts.geophony || 0) >= 2, emoji: '🌿', title: 'Deep Naturalist', desc: 'Frogs, rain, wind — you listen to the earth itself. The quiet sounds that most skip over.' },
+      { key: 'scholar', test: () => masteredCount >= 3, emoji: '📖', title: 'The Scholar', desc: 'You don\'t just find sounds — you learn them. Mastery is your metric. Three stars or nothing.' },
+      { key: 'streak', test: () => streakVal >= 7, emoji: '🔥', title: 'The Devotee', desc: 'You show up. Seven days or more, rain or shine. Consistency is the rarest skill in the field.' },
+    ];
+    const personality = PERSONALITIES.find((p) => p.test()) || { key: 'explorer', emoji: '👂', title: 'The Explorer', desc: 'Still mapping the territory. Keep discovering — your personality sharpens with every new sound.' };
+
+    const pCard = el('div', { style: 'background:radial-gradient(120% 80% at 50% 35%, rgba(111,139,255,.06) 0%, var(--panel) 70%);border:.5px solid rgba(111,139,255,.2);border-radius:14px;padding:16px 20px;text-align:center;margin-bottom:16px' });
+    pCard.appendChild(el('div', { style: 'font-size:10px;font-weight:600;letter-spacing:.1em;color:#6f8bff;margin-bottom:6px', text: 'LISTENING PERSONALITY' }));
+    pCard.appendChild(el('div', { style: 'font-size:36px;line-height:1;margin-bottom:4px', text: personality.emoji }));
+    pCard.appendChild(el('div', { style: 'font-size:16px;font-weight:600;color:var(--ink)', text: personality.title }));
+    pCard.appendChild(el('div', { style: 'font-size:12px;color:var(--muted);margin-top:4px;max-width:280px;display:inline-block;line-height:1.5', text: personality.desc }));
+    const pShareBtn = el('button', { style: 'display:block;margin:10px auto 0;font-size:12px;color:#6f8bff;padding:6px 16px;border-radius:20px;background:rgba(111,139,255,.08);border:.5px solid rgba(111,139,255,.2)', text: '📤 Share my type' });
+    pShareBtn.addEventListener('click', async () => {
+      track('personality_share', { type: personality.key });
+      const url = (await import('../analytics.js')).shareUrl();
+      const text = 'My Hark listening personality: ' + personality.emoji + ' ' + personality.title + '. What\'s yours? 🎧 ' + url;
+      try {
+        if (navigator.share) await navigator.share({ title: 'Hark Listening Personality', text, url });
+        else { await navigator.clipboard.writeText(text); app.mentor('✓ Copied to clipboard', 2000); }
+      } catch (e) {}
+    });
+    pCard.appendChild(pShareBtn);
+    pad.appendChild(pCard);
+  }
+
   // ── Share + actions ──────────────────────────────────────────────────────
   if (discovered.length > 0) {
     const shareBtn = el('button', {
