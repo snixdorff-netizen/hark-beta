@@ -7,6 +7,7 @@ import * as audio from './audio.js';
 import { init as initAnalytics, track } from './analytics.js';
 import { showPrivacyNotice, showOwnerDashboard } from './probes.js';
 import { shareGrove } from './sharecard.js';
+import { mirrorState, hasAskedPermission, markPromptSeen, requestPermission, isNotificationSupported } from './notifications.js';
 
 import { mount as coldopen } from './screens/coldopen.js';
 import { mount as feed } from './screens/feed.js';
@@ -179,6 +180,7 @@ function go(name, params = {}) {
   buildShell();
   clear(shell.body);
   const s = get();
+  mirrorState(s);
   cleanup = SCREENS[name](shell.body, app, params);
   updateChrome(name);
   track('screen_view', { screen: name });
@@ -210,6 +212,10 @@ function go(name, params = {}) {
       ];
       setTimeout(() => mentor(msgs[s.streak % msgs.length], 5000), 900);
     }
+  }
+  // Notification opt-in — asked once, after the streak is real enough to be worth protecting
+  if (name === 'feed' && s.streak >= 3 && isNotificationSupported() && !hasAskedPermission()) {
+    setTimeout(() => promptNotifications(), 2600);
   }
   // Time-aware atmospheric greeting — once per session for listeners who've found things
   else if (name === 'feed' && !_timeGreetShown && Object.keys(s.discovered).length >= 1) {
@@ -278,6 +284,33 @@ function toast(text, ms = 2500) {
   const t = el('div', { class: 'toast-disc', text });
   appRoot.appendChild(t);
   setTimeout(() => { if (t.isConnected) t.remove(); }, ms);
+}
+
+function promptNotifications() {
+  if (appRoot.querySelector('.notify-prompt')) return;
+  const card = el('div', {
+    class: 'notify-prompt',
+    style: 'position:fixed;left:16px;right:16px;bottom:84px;z-index:50;background:var(--panel);border:.5px solid rgba(62,201,159,.3);border-radius:14px;padding:16px 18px;box-shadow:0 8px 32px rgba(0,0,0,.4)',
+  });
+  card.appendChild(el('div', { style: 'font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px', text: '🔔 Keep your streak alive?' }));
+  card.appendChild(el('div', { style: 'font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:12px', text: 'Hark can nudge you in the evening if you haven\'t played yet. No spam — just your streak.' }));
+  const row = el('div', { style: 'display:flex;gap:8px' });
+  const enableBtn = el('button', { class: 'cta', style: 'flex:1;padding:9px', text: 'Enable' });
+  const skipBtn = el('button', { style: 'padding:9px 14px;color:var(--muted);font-size:13px', text: 'Not now' });
+  enableBtn.addEventListener('click', async () => {
+    card.remove();
+    const result = await requestPermission();
+    track('notify_opt_in', { result });
+    if (result === 'granted') toast('✓ Streak reminders on', 2500);
+  });
+  skipBtn.addEventListener('click', () => {
+    markPromptSeen();
+    track('notify_opt_in', { result: 'skipped' });
+    card.remove();
+  });
+  row.appendChild(enableBtn); row.appendChild(skipBtn);
+  card.appendChild(row);
+  appRoot.appendChild(card);
 }
 
 const GROUP_COMPLETE_QUOTES = {

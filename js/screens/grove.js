@@ -8,6 +8,7 @@ import { shareGrove, shareCreature, shareWrapped } from '../sharecard.js';
 import * as audio from '../audio.js';
 import { track, challengeUrl } from '../analytics.js';
 import { showAmbient } from './ambient.js';
+import { isNotificationSupported, notificationsEnabled, requestPermission, setEnabled, hasAskedPermission } from '../notifications.js';
 
 export function mount(host, app) {
   const s = get();
@@ -252,6 +253,45 @@ export function mount(host, app) {
     pad.appendChild(inviteBtn);
   } else {
     pad.appendChild(el('p', { style: 'font-size:13px;color:var(--muted);text-align:center;margin-bottom:16px', text: 'Play the feed to bring sounds home.' }));
+  }
+
+  if (isNotificationSupported()) {
+    const notifRow = el('div', { style: 'display:flex;justify-content:space-between;align-items:center;padding:10px 2px;border-top:.5px solid var(--line)' });
+    const notifLabel = el('div');
+    notifLabel.appendChild(el('div', { style: 'font-size:13px;color:var(--ink)', text: '🔔 Streak reminders' }));
+    notifLabel.appendChild(el('div', { style: 'font-size:10px;color:var(--muted);margin-top:2px', text: 'Evening nudge if you haven\'t played yet' }));
+    notifRow.appendChild(notifLabel);
+    const on = notificationsEnabled();
+    const toggle = el('button', {
+      style: `width:44px;height:26px;border-radius:14px;position:relative;background:${on ? 'var(--teal)' : 'rgba(255,255,255,.12)'};transition:background .15s;flex-shrink:0`,
+    });
+    const knob = el('div', { style: `width:20px;height:20px;border-radius:50%;background:#fff;position:absolute;top:3px;left:${on ? '21px' : '3px'};transition:left .15s` });
+    toggle.appendChild(knob);
+    toggle.addEventListener('click', async () => {
+      const nowOn = notificationsEnabled();
+      if (nowOn) {
+        setEnabled(false);
+        toggle.style.background = 'rgba(255,255,255,.12)';
+        knob.style.left = '3px';
+        track('notify_toggle', { on: false });
+      } else if (Notification.permission === 'granted') {
+        setEnabled(true);
+        toggle.style.background = 'var(--teal)';
+        knob.style.left = '21px';
+        track('notify_toggle', { on: true });
+      } else if (Notification.permission === 'denied') {
+        app.mentor('<b>Wren:</b> Notifications are blocked in your browser settings. Enable them there to turn this on.', 6000);
+      } else {
+        const result = await requestPermission();
+        if (result === 'granted') {
+          toggle.style.background = 'var(--teal)';
+          knob.style.left = '21px';
+        }
+        track('notify_opt_in', { result, source: 'grove_toggle' });
+      }
+    });
+    notifRow.appendChild(toggle);
+    pad.appendChild(notifRow);
   }
 
   const actions = el('div', { style: 'display:flex;justify-content:space-between;align-items:center;border-top:.5px solid var(--line);padding-top:10px;margin-top:4px' });

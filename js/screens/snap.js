@@ -9,6 +9,7 @@ import { track, challengeUrl } from '../analytics.js';
 import { maybeShowWtp } from '../probes.js';
 import { creatureEmoji, rarityPct, byId, CREATURES, WREN_QUOTES, viralFeed } from '../content.js';
 import { shareCreature, shareStreak, shareSnap } from '../sharecard.js';
+import { mirrorState } from '../notifications.js';
 
 // Daily creature — same for all players today (rotates through viral pool by calendar day)
 function getDailyCreature() {
@@ -189,6 +190,7 @@ export function mount(host, app, params = {}) {
 
   function finish() {
     const newStreak = touchStreak();
+    mirrorState(get());
     growGrove(4);
     track('snap_complete', { correct: correctCount, total: targets.length });
     if (!challengeCreature) {
