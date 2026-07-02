@@ -307,6 +307,10 @@ export function mount(host, app) {
   creditsBtn.addEventListener('click', showCredits);
   actions.appendChild(creditsBtn);
   pad.appendChild(actions);
+  const privacyRow = el('div', { style: 'text-align:center;margin-top:2px' });
+  const privacyLink = el('a', { href: 'privacy.html', target: '_blank', rel: 'noopener', style: 'font-size:10px;color:var(--muted);text-decoration:underline', text: 'Privacy policy' });
+  privacyRow.appendChild(privacyLink);
+  pad.appendChild(privacyRow);
 
   host.appendChild(root);
   return () => root.remove();

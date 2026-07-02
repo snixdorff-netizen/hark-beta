@@ -1,7 +1,7 @@
 // Hark — service worker. Offline-first cache for the app shell.
-const CACHE = 'hark-v66';
+const CACHE = 'hark-v67';
 const ASSETS = [
-  './', './index.html', './css/styles.css', './manifest.webmanifest',
+  './', './index.html', './privacy.html', './css/styles.css', './manifest.webmanifest',
   './js/app.js', './js/ui.js', './js/state.js', './js/audio.js',
   './js/spectrogram.js', './js/content.js', './js/difficulty.js',
   './js/analytics.js', './js/probes.js', './js/rank.js', './js/sharecard.js', './js/notifications.js',

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0d1f1b">
+<title>Privacy Policy — Hark</title>
+<link rel="icon" href="assets/img/icon.svg" type="image/svg+xml">
+<style>
+  :root { --bg:#0d1110; --panel:#13201c; --ink:#eef3f0; --muted:#9fb2aa; --teal:#3ec99f; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 32px 20px 80px; max-width: 640px; margin-inline: auto;
+    background: var(--bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.65;
+  }
+  h1 { font-size: 26px; margin-bottom: 4px; }
+  .updated { color: var(--muted); font-size: 13px; margin-bottom: 32px; }
+  h2 { font-size: 17px; color: var(--teal); margin-top: 36px; margin-bottom: 8px; }
+  p, li { font-size: 15px; color: rgba(238,243,240,.9); }
+  ul { padding-left: 20px; }
+  a { color: var(--teal); }
+  .back { display: inline-block; margin-top: 40px; color: var(--teal); text-decoration: none; font-size: 14px; }
+  code { background: var(--panel); padding: 1px 6px; border-radius: 4px; font-size: 13px; }
+</style>
+</head>
+<body>
+  <h1>Privacy Policy</h1>
+  <div class="updated">Hark — a calm little game that teaches your ears the wild</div>
+
+  <p>Hark is built by an independent developer. This page explains exactly what the app collects, why, and what it never collects. If anything here is unclear, the fastest way to ask is the in-app "Send feedback" link, which opens an email directly to the person who built it.</p>
+
+  <h2>What Hark collects</h2>
+  <p>Hark generates a random device identifier (a UUID) the first time you open it — not tied to your name, email, or any account, because there are no accounts. That identifier is used to:</p>
+  <ul>
+    <li>Recognize your device across sessions, so your progress and streak persist</li>
+    <li>Group anonymous play events (screens viewed, sounds discovered, streaks kept) to understand what's working and what isn't</li>
+    <li>If you tap the in-app "Enjoying Hark?" prompt, record the star rating you gave — and, if you choose to send feedback, whatever you write in that email</li>
+  </ul>
+  <p>Technical context sent alongside each event: a coarse timestamp, your device's timezone, a truncated browser identifier (used only to catch device-specific bugs), and whether the app is running installed to your home screen. If you arrived via a friend's shared link, that referral is recorded so shared invites can be measured.</p>
+
+  <h2>What Hark never collects</h2>
+  <ul>
+    <li>Your name, email address, or phone number (unless you choose to email feedback yourself)</li>
+    <li>Precise location — only your device's timezone, which browsers expose automatically</li>
+    <li>Contacts, photos, microphone, camera, or any other device permission</li>
+    <li>Anything from other apps or sites you use</li>
+    <li>Payment information — Hark has never asked for any</li>
+  </ul>
+
+  <h2>Where it goes</h2>
+  <p>Events are stored locally on your device (in browser storage) and are also sent to a Supabase project the developer controls, so play patterns can be reviewed in aggregate. This data is not sold, shared with advertisers, or used for anything beyond understanding and improving Hark.</p>
+
+  <h2>Your controls</h2>
+  <ul>
+    <li>Clearing your browser's site data for Hark removes your device identifier and all local progress — a new device identifier is generated on your next visit.</li>
+    <li>The "Enjoying Hark?" rating prompt is entirely optional and only ever asked once.</li>
+    <li>You can stop analytics collection at any point by asking via the feedback link — this is a small independent project, and a real person reads that inbox.</li>
+  </ul>
+
+  <h2>Third-party audio</h2>
+  <p>Hark's field recordings are licensed under Creative Commons or public domain terms from their original recordists. Full attribution and license details are listed in-app under Grove → Sound credits. These recordings do not collect any data of their own.</p>
+
+  <h2>Changes</h2>
+  <p>If this policy changes, the update will be reflected on this page with a new date. Continuing to use Hark after a change means you've seen the updated version.</p>
+
+  <p style="margin-top:32px;color:var(--muted);font-size:13px;">Questions? Use "Send feedback" in the app, or email <a href="mailto:stuart@intervals.ai?subject=Hark%20privacy%20question">stuart@intervals.ai</a>.</p>
+
+  <a class="back" href="./">← Back to Hark</a>
+</body>
+</html>

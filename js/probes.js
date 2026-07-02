@@ -17,7 +17,7 @@ export function showPrivacyNotice() {
   markNotice();
   const host = document.getElementById('app');
   const note = el('div', { class: 'privacy' });
-  note.appendChild(el('span', { class: 'msg', text: 'This beta logs anonymous play events (no name, no email, no contacts) to improve Hark.' }));
+  note.appendChild(el('span', { class: 'msg', html: 'This beta logs anonymous play events (no name, no email, no contacts) to improve Hark. <a href="privacy.html" target="_blank" rel="noopener" style="color:var(--teal);text-decoration:underline">Full policy</a>' }));
   const ok = el('button', { class: 'lnk', text: 'OK' });
   ok.addEventListener('click', () => note.remove());
   note.appendChild(ok);
