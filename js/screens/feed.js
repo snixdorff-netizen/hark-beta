@@ -42,7 +42,15 @@ export function mount(host, app) {
     ? [todayCreature, ...baseList.filter((c) => c.id !== todayCreature.id)]
     : baseList;
 
-  let cards = orderedList.map((c, i) => buildCard(c, app, i === 0, dailyDone, i === 0 ? dailyTip : null));
+  // Keyed by DOM node instead of an ever-growing array + .find() scan — a
+  // long session that loops through the feed many times used to accumulate
+  // every card from every pass into one array, making each IntersectionObserver
+  // callback progressively slower to look up its card. A WeakMap is O(1) per
+  // lookup and never needs pruning (entries vanish once a card node is GC'd).
+  const nodeToCard = new WeakMap();
+  function registerCard(c) { nodeToCard.set(c.node, c); return c; }
+
+  const cards = orderedList.map((c, i) => registerCard(buildCard(c, app, i === 0, dailyDone, i === 0 ? dailyTip : null)));
   const _lastDate = s.lastPlayed ? new Date(s.lastPlayed) : null;
   const _daysAway = _lastDate ? Math.round((Date.now() - _lastDate) / 86400000) : 0;
   const showWelcomeBack = _daysAway >= 3 && Object.keys(s.discovered).length >= 3;
@@ -78,9 +86,14 @@ export function mount(host, app) {
     feed.insertBefore(sep, sentinel);
     const seed = loopPass * 7919;
     const shuffled = seededShuffle(orderedList.filter((c) => !c.isNoise), seed);
-    const newCards = shuffled.map((c) => buildCard(c, app, false, dailyDone, null));
-    newCards.forEach((c) => { feed.insertBefore(c.node, sentinel); io.observe(c.node); });
-    cards = cards.concat(newCards);
+    const newCards = shuffled.map((c) => registerCard(buildCard(c, app, false, dailyDone, null)));
+    newCards.forEach((c, i) => {
+      feed.insertBefore(c.node, sentinel);
+      io.observe(c.node);
+      // Field Log never reappeared after the first pass, making a long
+      // session feel repetitive — surface a different entry each loop.
+      if (i === 6) feed.insertBefore(buildFieldLog(dayN + loopPass), c.node);
+    });
   }
 
   // Lazy: only render a card's spectrogram (and decode its clip) when it nears
@@ -89,7 +102,7 @@ export function mount(host, app) {
   const io = new IntersectionObserver((entries) => {
     entries.forEach((e) => {
       if (e.target === sentinel && e.isIntersecting) { appendLoop(); return; }
-      const card = cards.find((c) => c.node === e.target);
+      const card = nodeToCard.get(e.target);
       if (!card) return;
       if (e.isIntersecting && !card.rendered) {
         card.rendered = true;

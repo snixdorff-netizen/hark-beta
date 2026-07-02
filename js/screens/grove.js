@@ -348,7 +348,7 @@ function showCreatureDetail(c, s, app) {
 
   // Play sound row
   const playRow = el('div', { style: 'display:flex;align-items:center;gap:12px;background:var(--panel);border-radius:12px;padding:10px 14px;margin-bottom:14px;border:.5px solid var(--line)' });
-  const pb = el('button', { class: 'playbtn', style: 'width:38px;height:38px;flex-shrink:0', html: icon('play', 18) });
+  const pb = el('button', { class: 'playbtn', 'aria-label': 'Play', style: 'width:38px;height:38px;flex-shrink:0', html: icon('play', 18) });
   pb.addEventListener('click', () => { audio.unlock(); audio.play(c); });
   playRow.appendChild(pb);
   playRow.appendChild(el('div', { style: 'font-size:13px;color:var(--muted)', text: 'Play the real field recording' }));
