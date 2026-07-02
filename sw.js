@@ -1,5 +1,5 @@
 // Hark — service worker. Offline-first cache for the app shell.
-const CACHE = 'hark-v63';
+const CACHE = 'hark-v64';
 const ASSETS = [
   './', './index.html', './css/styles.css', './manifest.webmanifest',
   './js/app.js', './js/ui.js', './js/state.js', './js/audio.js',
@@ -7,6 +7,7 @@ const ASSETS = [
   './js/analytics.js', './js/probes.js', './js/rank.js', './js/sharecard.js', './js/notifications.js',
   './js/screens/feed.js', './js/screens/snap.js', './js/screens/noiseornature.js',
   './js/screens/haul.js', './js/screens/grove.js', './js/screens/coldopen.js', './js/screens/ambient.js',
+  './assets/img/icon.svg', './assets/img/icon-192.png', './assets/img/icon-512.png', './assets/img/apple-touch-icon.png',
 ];
 self.addEventListener('install', (e) => {
   self.skipWaiting();
