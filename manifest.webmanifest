@@ -1,4 +1,5 @@
 {
+  "id": "/hark-beta/",
   "name": "Hark — hear what you've been missing",
   "short_name": "Hark",
   "description": "A calm little game that teaches your ears the secret language of the wild.",
@@ -8,6 +9,8 @@
   "orientation": "portrait",
   "background_color": "#0d1110",
   "theme_color": "#0d1f1b",
+  "lang": "en",
+  "dir": "ltr",
   "categories": ["games", "education", "lifestyle"],
   "icons": [
     { "src": "assets/img/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
