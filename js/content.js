@@ -136,10 +136,17 @@ export const CREATURES = [
 // Patch in real licensed clips from the ingestion manifest (assets/audio/manifest.json).
 // Sets clip:true so the audio engine plays the real recording and the spectrogram
 // renderer computes a true STFT image. Carries license + attribution for credits.
-export async function loadManifest() {
+// A brand-new user's very first launch is the highest-stakes network request
+// in the whole app: without this manifest, CREATURES stays at its 10-entry
+// synth-only seed instead of the full 93-creature real-recording roster, with
+// no error shown anywhere — a flaky connection on first open silently turns
+// "93 wild sounds" into a much smaller, all-synthesized experience. A single
+// retry covers the realistic failure mode (a slow/dropped first request),
+// without adding retry-storm risk for a genuinely offline device.
+export async function loadManifest(attempt = 0) {
   try {
     const res = await fetch('assets/audio/manifest.json', { cache: 'no-cache' });
-    if (!res.ok) return;
+    if (!res.ok) throw new Error('manifest fetch not ok: ' + res.status);
     const m = await res.json();
     for (const [id, meta] of Object.entries(m)) {
       let c = CREATURES.find((x) => x.id === id);
@@ -151,7 +158,10 @@ export async function loadManifest() {
       const groupLabel = ((GROUPS[c.group] || {}).label || c.group || 'sound').toLowerCase();
       c.fact = c.fact || meta.fact || `A ${groupLabel} recorded in ${meta.region}. Listen for what makes its voice unmistakable.`;
     }
-  } catch (e) {}
+  } catch (e) {
+    if (attempt < 1) return loadManifest(attempt + 1);
+    console.warn('[content] manifest failed to load after retry — running with the 10-creature synth-only seed set', e);
+  }
 }
 
 const EMOJI_MAP = {
