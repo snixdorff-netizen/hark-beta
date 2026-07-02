@@ -178,7 +178,7 @@ export function mount(host, app) {
 
 function buildCard(c, app, isDaily, dailyDone, dailyTip) {
   const g = GROUPS[c.group];
-  const node = el('div', { class: 'card', style: `background:radial-gradient(120% 80% at 50% 35%, ${hex(g.color, .22)} 0%, #0d1110 70%)` });
+  const node = el('div', { class: 'card', style: `background:radial-gradient(120% 80% at 50% 35%, ${hex(g.color, .22)} 0%, var(--bg) 70%)` });
 
   node.appendChild(el('div', { class: 'grp', html: `<span style="width:8px;height:8px;border-radius:50%;background:${g.color};display:inline-block"></span> ${g.label} · ${c.region}` }));
 
@@ -258,7 +258,7 @@ function buildCard(c, app, isDaily, dailyDone, dailyTip) {
 
 function buildMysteryCard(creature, app) {
   const g = GROUPS[creature.group];
-  const node = el('div', { class: 'card', style: `background:radial-gradient(120% 80% at 50% 35%, rgba(111,139,255,.15) 0%, #0d1110 70%);border:.5px solid rgba(111,139,255,.25)` });
+  const node = el('div', { class: 'card', style: `background:radial-gradient(120% 80% at 50% 35%, rgba(111,139,255,.15) 0%, var(--bg) 70%);border:.5px solid rgba(111,139,255,.25)` });
 
   node.appendChild(el('div', { class: 'grp', html: `<span style="width:8px;height:8px;border-radius:50%;background:${g.color};display:inline-block"></span> ${g.label} · ???` }));
 
@@ -311,7 +311,7 @@ const FIELD_LOG = [
 
 function buildFieldLog(dayN) {
   const entry = FIELD_LOG[dayN % FIELD_LOG.length];
-  const node = el('div', { class: 'card', style: 'background:radial-gradient(120% 80% at 50% 35%, rgba(62,201,159,.05) 0%, #0d1110 70%);border:.5px solid rgba(62,201,159,.15);padding:22px 20px' });
+  const node = el('div', { class: 'card', style: 'background:radial-gradient(120% 80% at 50% 35%, rgba(62,201,159,.05) 0%, var(--bg) 70%);border:.5px solid rgba(62,201,159,.15);padding:22px 20px' });
   node.appendChild(el('div', { style: 'font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--teal);margin-bottom:10px', text: 'WREN\'S FIELD LOG · #' + (dayN % FIELD_LOG.length + 1) }));
   node.appendChild(el('div', { style: 'font-size:16px;font-weight:600;color:var(--ink);margin-bottom:8px', text: entry.title }));
   node.appendChild(el('div', { style: 'font-size:13px;color:rgba(238,243,240,.75);line-height:1.7;font-style:italic', text: entry.body }));
@@ -334,7 +334,7 @@ function buildWelcomeBack(app, s, daysAway) {
   ];
   const line = lines[daysAway % lines.length];
 
-  const node = el('div', { class: 'card', style: 'background:radial-gradient(120% 80% at 50% 35%, rgba(62,201,159,.08) 0%, #0d1110 70%);border:.5px solid rgba(62,201,159,.2);display:flex;flex-direction:column;align-items:center;padding:28px 20px;gap:8px' });
+  const node = el('div', { class: 'card', style: 'background:radial-gradient(120% 80% at 50% 35%, rgba(62,201,159,.08) 0%, var(--bg) 70%);border:.5px solid rgba(62,201,159,.2);display:flex;flex-direction:column;align-items:center;padding:28px 20px;gap:8px' });
   node.appendChild(el('div', { style: 'font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--teal)', text: 'WELCOME BACK' }));
   const emo = el('div', { style: 'font-size:48px;line-height:1;margin:4px 0' });
   emo.textContent = '🌿';
@@ -364,7 +364,7 @@ function buildWelcomeBack(app, s, daysAway) {
 }
 
 function buildSnapPullCard(app) {
-  const node = el('div', { class: 'card', style: 'background:radial-gradient(120% 80% at 50% 35%, rgba(62,201,159,.08) 0%, #0d1110 70%);border:.5px solid rgba(62,201,159,.2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:40px 24px;min-height:220px' });
+  const node = el('div', { class: 'card', style: 'background:radial-gradient(120% 80% at 50% 35%, rgba(62,201,159,.08) 0%, var(--bg) 70%);border:.5px solid rgba(62,201,159,.2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:40px 24px;min-height:220px' });
   const emo = el('div', { style: 'font-size:52px;line-height:1' });
   emo.textContent = '👂';
   node.appendChild(emo);
