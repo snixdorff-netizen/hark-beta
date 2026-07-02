@@ -199,7 +199,15 @@ export function getQuest() {
   // not yet reset) for a different day.
   const localDayN = Math.floor(new Date(today()).getTime() / 86400000);
   const types = ['snap', 'discover', 'challenge'];
-  const type = types[localDayN % types.length];
+  // Found by actually playing through onboarding: a brand-new player (only
+  // the tutorial creature discovered) could land on "Challenge a friend" as
+  // their very first mission — asking someone to invite people before
+  // they've built any confidence in the app, or have anyone to invite.
+  // Give day-one players the lowest-friction quest instead; the rotation
+  // resumes normally once they've discovered a couple more sounds on
+  // their own.
+  const isBrandNew = Object.keys(state.discovered).length <= 1;
+  const type = isBrandNew ? 'discover' : types[localDayN % types.length];
   const goal = type === 'snap' ? 3 : type === 'discover' ? 5 : 1;
   const progress = type === 'snap' ? state.questSnap : type === 'discover' ? state.questDiscover : (state.challengeDay === today() ? 1 : 0);
   return { type, goal, progress, done: state.questDone };

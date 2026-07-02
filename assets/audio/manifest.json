@@ -50,7 +50,7 @@
     "viral": true,
     "file": "assets/audio/commonloon.mp3",
     "license": "Public domain",
-    "author": "NPS &amp; MSU Acoustic Atlas/Jennifer Jerrett",
+    "author": "NPS & MSU Acoustic Atlas/Jennifer Jerrett",
     "source": "https://commons.wikimedia.org/wiki/File:Yellowstone_sound_library_-_Common_Loon_-_001.mp3",
     "sourceName": "Wikimedia Commons",
     "rare": true
@@ -756,8 +756,7 @@
     "viral": false,
     "file": "assets/audio/sandhillcrane.mp3",
     "license": "Public domain",
-    "author": "NPS &amp; MSU Acoustic Atlas / Jennifer Jerrett",
-    "source": "https://commons.wikimedia.org/wiki/File:Yellowstone_sound_library_-_Red-Winged_Blackbird_-_001.mp3",
+    "author": "NPS & MSU Acoustic Atlas / Jennifer Jerrett",
     "sourceName": "Wikimedia Commons"
   },
   "killdeer": {
