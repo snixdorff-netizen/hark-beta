@@ -31,11 +31,48 @@ const DEFAULT = {
 
 let state = load();
 
+// A plain Object.assign trusted every saved field's shape unconditionally —
+// if a single field ever got corrupted to the wrong type (a null where an
+// object was expected, a string where an array was expected: browser storage
+// corruption, a third-party extension touching localStorage, a partial write
+// on tab close, a bug in an older save-format version), the very next
+// Object.keys()/.filter()/.map() call on that field throws, and since it
+// happens during render rather than inside load()'s own try/catch, the
+// result is a permanent white screen with no recovery path. Every
+// object/array-shaped field is now validated against DEFAULT's shape on
+// load; anything that doesn't match falls back to that field's default
+// instead of corrupting the whole app.
+function safeMerge(defaults, loaded) {
+  const result = structuredClone(defaults);
+  if (!loaded || typeof loaded !== 'object') return result;
+  for (const key of Object.keys(defaults)) {
+    if (!(key in loaded)) continue;
+    const defVal = defaults[key];
+    const loadedVal = loaded[key];
+    if (Array.isArray(defVal)) {
+      if (Array.isArray(loadedVal)) result[key] = loadedVal;
+    } else if (defVal !== null && typeof defVal === 'object') {
+      if (loadedVal !== null && typeof loadedVal === 'object' && !Array.isArray(loadedVal)) result[key] = loadedVal;
+    } else if (typeof defVal === 'boolean') {
+      if (typeof loadedVal === 'boolean') result[key] = loadedVal;
+    } else if (typeof defVal === 'number') {
+      if (typeof loadedVal === 'number' && !Number.isNaN(loadedVal)) result[key] = loadedVal;
+    } else {
+      // defVal is null or a string (lastPlayed, haul, challengeDay, questDate)
+      // — these are already read defensively everywhere (truthiness checks,
+      // === comparisons that just return false on a type mismatch), so pass
+      // the loaded value through as before.
+      result[key] = loadedVal;
+    }
+  }
+  return result;
+}
+
 function load() {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return structuredClone(DEFAULT);
-    return Object.assign(structuredClone(DEFAULT), JSON.parse(raw));
+    return safeMerge(DEFAULT, JSON.parse(raw));
   } catch (e) {
     return structuredClone(DEFAULT);
   }
