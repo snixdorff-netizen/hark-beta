@@ -3,7 +3,7 @@ import { el, clear, icon, iconEl, sparkleBurst, haptic } from '../ui.js';
 import { mountSpectrogram } from '../spectrogram.js';
 import * as audio from '../audio.js';
 import { byId, creatureEmoji, CREATURES } from '../content.js';
-import { get, save, discover } from '../state.js';
+import { get, save, discover, addXp, checkRankUp } from '../state.js';
 import { track, shareUrl } from '../analytics.js';
 import { showPrivacyNotice } from '../probes.js';
 import { shareCreature } from '../sharecard.js';
@@ -75,6 +75,12 @@ export function mount(host, app) {
       haptic(14);
       sparkleBurst(card);
       discover(target.id);
+      // Every other discovery in the game pays out XP and can trigger a rank
+      // announcement — this exact moment, the player's first ever success,
+      // did neither. Not a crash, but the single highest-leverage beat in
+      // the whole app to under-reward: it teaches "this is what winning
+      // feels like here" right before the real game asks them to keep going.
+      addXp(10);
       app.setTimeout(win, 700);
     } else {
       card.classList.add('wrong');
@@ -97,6 +103,19 @@ export function mount(host, app) {
     const nameSpan = el('span', { text: target.name });
     nameSpan.style.color = 'var(--teal)';
     cold.appendChild(nameSpan);
+
+    // First discovery crosses the first rank threshold — announce it right
+    // here, attributed to the actual moment it happened, instead of letting
+    // it silently attach to whatever the player's second discovery turns
+    // out to be.
+    const rankHit = checkRankUp();
+    if (rankHit) {
+      const rankBadge = el('div', { style: 'display:flex;align-items:center;gap:8px;justify-content:center;margin:6px 0;padding:8px 16px;border-radius:20px;background:rgba(224,164,77,.12);border:.5px solid rgba(224,164,77,.3)' });
+      rankBadge.appendChild(el('span', { style: 'font-size:18px;line-height:1', text: rankHit.emoji }));
+      rankBadge.appendChild(el('span', { style: 'font-size:13px;font-weight:600;color:var(--amber)', text: 'Rank up — ' + rankHit.title }));
+      cold.appendChild(rankBadge);
+    }
+    cold.appendChild(el('div', { style: 'font-size:12px;color:var(--amber);font-weight:500;margin-top:-4px', text: '+10 XP' }));
 
     const sgLabel = el('div', { text: 'This is what it looks like as sound:' });
     cold.appendChild(sgLabel);
