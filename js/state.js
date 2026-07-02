@@ -11,6 +11,7 @@ const DEFAULT = {
   lastPlayed: null,        // YYYY-MM-DD
   crowns: {},              // creatureId -> 0..3 (bronze/silver/gold mastery)
   discovered: {},          // creatureId -> true
+  liked: {},               // creatureId -> true (feed "like" button)
   grove: 0,                // 0..100 restoration %
   rehomed: 0,              // count of sounds added to the Grove
   haul: null,              // { deployedAt, readyAt, sorted, items:[ids], unknownSeen }
@@ -23,6 +24,8 @@ const DEFAULT = {
   milestones: [],          // creature-count thresholds already celebrated
   collectionsComplete: [], // group keys where every creature has been found
   endgameSeen: false,
+  ranksReached: [],        // rank thresholds already celebrated (see checkRankUp)
+  everDeployed: false,     // has the player ever deployed a Haul recorder
   settings: { sound: true, captions: true, highContrast: false },
 };
 
@@ -73,7 +76,19 @@ export function discover(id) {
   }
 }
 
-// Bump mastery toward gold. Returns { level, isNew } — isNew when crossing a threshold.
+export function toggleLike(id) {
+  const liked = !state.liked[id];
+  if (liked) state.liked[id] = true; else delete state.liked[id];
+  save();
+  return liked;
+}
+
+export function isLiked(id) { return !!state.liked[id]; }
+
+// Bump mastery toward gold. Returns { level, isNew } — isNew is true on every
+// award while level < 3 (bronze, silver, AND gold), not just the final
+// crossing into "mastered." Callers that want to react only to the mastered
+// crossing must additionally check `level === 3`.
 export function awardCrown(id) {
   const cur = state.crowns[id] || 0;
   if (cur < 3) { state.crowns[id] = cur + 1; save(); return { level: state.crowns[id], isNew: true }; }
@@ -125,11 +140,29 @@ export function markQuestDone() {
   save();
 }
 
+// Sets today's Daily Field Challenge as completed, and marks the daily quest
+// done if today's quest happens to be the "challenge" type (~1 day in 3) —
+// previously nothing ever called markQuestDone() for that quest type, so its
+// mission strip could never show complete even after the only action
+// available that day was taken.
+export function completeChallengeQuest() {
+  ensureQuestDay();
+  state.challengeDay = today();
+  const q = getQuest();
+  if (q.type === 'challenge' && !state.questDone) state.questDone = true;
+  save();
+}
+
 export function getQuest() {
   ensureQuestDay();
-  const dayN = Math.floor(Date.now() / 86400000);
+  // Derived from today()'s local calendar date (not Date.now()'s UTC day) so
+  // the quest type flips in lockstep with ensureQuestDay()'s reset — otherwise
+  // the two disagreed for several hours around each UTC/local midnight offset,
+  // showing a quest type whose progress counters had already been reset (or
+  // not yet reset) for a different day.
+  const localDayN = Math.floor(new Date(today()).getTime() / 86400000);
   const types = ['snap', 'discover', 'challenge'];
-  const type = types[dayN % types.length];
+  const type = types[localDayN % types.length];
   const goal = type === 'snap' ? 3 : type === 'discover' ? 5 : 1;
   const progress = type === 'snap' ? state.questSnap : type === 'discover' ? state.questDiscover : (state.challengeDay === today() ? 1 : 0);
   return { type, goal, progress, done: state.questDone };

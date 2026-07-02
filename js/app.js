@@ -32,6 +32,27 @@ let mentorTimer = null;
 let brandTaps = 0;
 let brandTapTimer = null;
 
+// ── Scoped timers ────────────────────────────────────────────────────────
+// Screens schedule delayed mentor/overlay/state-mutation callbacks (e.g. "show
+// a rare-find toast 800ms after discovery"). If the user navigates away before
+// a timer fires, the callback would otherwise still run against a torn-down
+// screen — showing the wrong screen's toast, or double-firing state mutations
+// like touchStreak()/growGrove(). scopedTimeout() tracks every pending timer;
+// go() clears them all before mounting the next screen.
+let pendingTimers = [];
+function scopedTimeout(fn, ms) {
+  const id = setTimeout(() => {
+    pendingTimers = pendingTimers.filter((x) => x !== id);
+    fn();
+  }, ms);
+  pendingTimers.push(id);
+  return id;
+}
+function clearPendingTimers() {
+  pendingTimers.forEach((id) => clearTimeout(id));
+  pendingTimers = [];
+}
+
 // ── Theme system ──────────────────────────────────────────────────────────
 const THEMES = ['nightwood', 'daylight', 'instrument'];
 const THEME_ICONS = { nightwood: 'moon', daylight: 'sun', instrument: 'wave' };
@@ -64,19 +85,21 @@ function cycleTheme() {
 
 function checkThemeUnlock() {
   const disc = Object.keys(get().discovered).length;
-  const unlocked = JSON.parse(localStorage.getItem('hark.themesUnlocked') || '["nightwood"]');
+  let unlocked;
+  try { unlocked = JSON.parse(localStorage.getItem('hark.themesUnlocked') || '["nightwood"]'); } catch (e) { unlocked = ['nightwood']; }
+  if (!Array.isArray(unlocked)) unlocked = ['nightwood'];
   for (const t of THEMES) {
     if (disc >= THEME_UNLOCK[t] && !unlocked.includes(t)) {
       unlocked.push(t);
       localStorage.setItem('hark.themesUnlocked', JSON.stringify(unlocked));
-      setTimeout(() => mentor('<b>Wren:</b> New look unlocked — <b>' + THEME_LABELS[t] + '</b>. Tap the theme button in the top bar to try it.', 8000), 3500);
+      scopedTimeout(() => mentor('<b>Wren:</b> New look unlocked — <b>' + THEME_LABELS[t] + '</b>. Tap the theme button in the top bar to try it.', 8000), 3500);
       track('theme_unlock', { theme: t });
       return;
     }
   }
 }
 
-const app = { go, mentor, toast, milestone: showMilestone, collection: showCollection, checkThemeUnlock };
+const app = { go, mentor, toast, milestone: showMilestone, collection: showCollection, checkThemeUnlock, setTimeout: scopedTimeout, pulseRankBadge };
 
 function buildShell() {
   if (shell) return shell;
@@ -152,23 +175,24 @@ function updateChrome(active) {
   }
 }
 
-let _lastRankTitle = null;
 let _timeGreetShown = false;
 
-function checkRankUp(s) {
-  const rp = rankProgress(Object.keys(s.discovered).length);
-  if (_lastRankTitle && _lastRankTitle !== rp.rank.title) {
-    setTimeout(() => {
-      mentor(`<b>Rank up!</b> You're now a ${rp.rank.emoji} <b>${rp.rank.title}</b>. Your ears are sharpening.`, 8000);
-      const badge = appRoot.querySelector('.rank-badge');
-      if (badge) { badge.classList.add('rankup'); setTimeout(() => badge.classList.remove('rankup'), 1400); }
-    }, 600);
-  }
-  _lastRankTitle = rp.rank.title;
+// The authoritative rank-up detection (persisted, flavorful per-rank Wren
+// lines) lives in state.js's checkRankUp() and is called from feed.js's
+// discovery handler. This used to duplicate that with its own in-memory
+// tracker that fired a second, generic "Rank up!" toast on the next
+// navigation — now it's just the visual badge-pulse, triggered by the real
+// detection instead of a second independent one.
+function pulseRankBadge() {
+  const badge = appRoot.querySelector('.rank-badge');
+  if (badge) { badge.classList.add('rankup'); scopedTimeout(() => badge.classList.remove('rankup'), 1400); }
 }
 
 function go(name, params = {}) {
   if (cleanup) { try { cleanup(); } catch (e) {} cleanup = null; }
+  clearPendingTimers();
+  clearMentorQueue();
+  clearOverlayQueue();
   audio.stopAll();
 
   if (name === 'coldopen') {
@@ -184,16 +208,15 @@ function go(name, params = {}) {
   cleanup = SCREENS[name](shell.body, app, params);
   updateChrome(name);
   track('screen_view', { screen: name });
-  checkRankUp(s);
   // Streak break — returning after >2 days absent; streak is still the old value (reset happens on next touchStreak)
   const _lastP = s.lastPlayed ? new Date(s.lastPlayed) : null;
   const _daysGone = _lastP ? Math.round((Date.now() - _lastP) / 86400000) : 0;
   if (name === 'feed' && _daysGone > 2 && s.streak > 1) {
-    setTimeout(() => mentor(`<b>Wren:</b> Your ${s.streak}-day streak ended. The field is still here — start again.`, 8000), 1000);
+    scopedTimeout(() => mentor(`<b>Wren:</b> Your ${s.streak}-day streak ended. The field is still here — start again.`, 8000), 1000);
   }
   // Streak urgency — user hasn't played today yet (streak still alive)
   else if (name === 'feed' && s.streak >= 1 && s.lastPlayed !== today() && _daysGone <= 2) {
-    setTimeout(() => mentor(`<b>🔥 Day ${s.streak} streak.</b> Play a round to keep it alive — or it resets at midnight.`, 7000), 1000);
+    scopedTimeout(() => mentor(`<b>🔥 Day ${s.streak} streak.</b> Play a round to keep it alive — or it resets at midnight.`, 7000), 1000);
   }
   // Welcome-back message for streak players who already played today
   else if (name === 'feed' && s.streak >= 3 && s.lastPlayed === today()) {
@@ -203,19 +226,19 @@ function go(name, params = {}) {
       : s.streak === 60 ? '<b>Wren:</b> Sixty days. I don\'t have anything left to teach you. The field is yours now.'
       : null;
     if (streakMsg) {
-      setTimeout(() => mentor(streakMsg, 10000), 900);
+      scopedTimeout(() => mentor(streakMsg, 10000), 900);
     } else {
       const msgs = [
         `<b>Day ${s.streak}.</b> The forest is glad you're back.`,
         `<b>Wren:</b> ${s.streak} days straight. Most people don't make it this far.`,
         `<b>Wren:</b> Back again. Your ear remembers more than you think.`,
       ];
-      setTimeout(() => mentor(msgs[s.streak % msgs.length], 5000), 900);
+      scopedTimeout(() => mentor(msgs[s.streak % msgs.length], 5000), 900);
     }
   }
   // Notification opt-in — asked once, after the streak is real enough to be worth protecting
   if (name === 'feed' && s.streak >= 3 && isNotificationSupported() && !hasAskedPermission()) {
-    setTimeout(() => promptNotifications(), 2600);
+    scopedTimeout(() => promptNotifications(), 2600);
   }
   // Time-aware atmospheric greeting — once per session for listeners who've found things
   else if (name === 'feed' && !_timeGreetShown && Object.keys(s.discovered).length >= 1) {
@@ -232,7 +255,7 @@ function go(name, params = {}) {
       : h >= 20 && h < 23
       ? '<b>Wren:</b> Dusk. Night shift taking over. Owls are warming up — listen for the first hoot.'
       : '<b>Wren:</b> Deep night. This is when I do my best listening. Foxes, owls, nighthawks. The world quiets and what\'s left is wild.';
-    setTimeout(() => mentor(greet, 7000), 800);
+    scopedTimeout(() => mentor(greet, 7000), 800);
   }
 
   if (name === 'feed') {
@@ -240,7 +263,7 @@ function go(name, params = {}) {
     if (s.haul && Date.now() > s.haul.readyAt) {
       const unsorted = s.haul.items.filter((id) => !s.haul.sorted.includes(id)).length;
       if (unsorted > 0) {
-        setTimeout(() => mentor('<b>Wren:</b> Your overnight haul is ready — something unusual showed up. Check the Haul tab. 🌙', 7000), 1800);
+        scopedTimeout(() => mentor('<b>Wren:</b> Your overnight haul is ready — something unusual showed up. Check the Haul tab. 🌙', 7000), 1800);
       }
     }
     // Progressive feature discovery tips (shown once each)
@@ -250,7 +273,7 @@ function go(name, params = {}) {
       if (shownTips.includes(key)) return;
       shownTips.push(key);
       localStorage.setItem('hark.tips', JSON.stringify(shownTips));
-      setTimeout(() => mentor(html, 8000), delay);
+      scopedTimeout(() => mentor(html, 8000), delay);
     };
     if (discovered >= 3 && discovered < 8) tip('snap_tip', '<b>Wren:</b> You\'ve found a few. Now test yourself — try <b>Snap</b> and see if you can ID them by spectrogram alone.', 2500);
     else if (discovered >= 8 && discovered < 15) tip('grove_tip', '<b>Wren:</b> Your Grove is growing. Tap the <b>Grove</b> tab to see every sound you\'ve collected.', 2500);
@@ -266,16 +289,72 @@ function go(name, params = {}) {
   }
 }
 
+// Queued rather than clobbering: a rare-find quote, a milestone, and a rank-up
+// can all fire within seconds of one discovery. Instantly replacing the toast
+// meant only the last-to-fire message was ever actually readable — the rest
+// vanished before anyone saw them. Each message now gets its full duration
+// (or a tap to skip ahead) before the next one shows.
+let mentorQueue = [];
+let mentorShowing = false;
+const MENTOR_QUEUE_CAP = 4;
+
 function mentor(html, ms = 6500) {
+  mentorQueue.push({ html, ms });
+  if (mentorQueue.length > MENTOR_QUEUE_CAP) mentorQueue.shift();
+  if (!mentorShowing) advanceMentorQueue();
+}
+
+function advanceMentorQueue() {
+  if (mentorTimer) { clearTimeout(mentorTimer); mentorTimer = null; }
+  if (mentorQueue.length === 0) { mentorShowing = false; return; }
+  mentorShowing = true;
+  const { html, ms } = mentorQueue.shift();
   const old = appRoot.querySelector('.mentor');
   if (old) old.remove();
-  if (mentorTimer) clearTimeout(mentorTimer);
   const m = el('div', { class: 'mentor' });
   m.appendChild(el('div', { class: 'who', html: icon('ear', 18) }));
   m.appendChild(el('div', { class: 'msg', html }));
-  m.addEventListener('click', () => m.remove());
+  m.addEventListener('click', () => { m.remove(); advanceMentorQueue(); });
   appRoot.appendChild(m);
-  mentorTimer = setTimeout(() => m.remove(), ms);
+  mentorTimer = setTimeout(() => { m.remove(); advanceMentorQueue(); }, ms);
+}
+
+function clearMentorQueue() {
+  mentorQueue = [];
+  mentorShowing = false;
+  if (mentorTimer) { clearTimeout(mentorTimer); mentorTimer = null; }
+  const old = appRoot.querySelector('.mentor');
+  if (old) old.remove();
+}
+
+// Same problem as the mentor toast, for full-screen milestone/collection
+// overlays: scrolling past several milestone-crossing discoveries in one pass
+// could previously stack multiple '.milestone-ovl' divs on top of each other.
+let overlayQueue = [];
+let overlayShowing = false;
+
+function queueOverlay(renderFn) {
+  if (overlayShowing) { overlayQueue.push(renderFn); return; }
+  overlayShowing = true;
+  renderFn();
+}
+
+function dismissOverlay(ovl) {
+  ovl.remove();
+  updateChrome(shell?.nav?.querySelector('.active')?.dataset?.name);
+  overlayShowing = false;
+  if (overlayQueue.length) {
+    const next = overlayQueue.shift();
+    overlayShowing = true;
+    next();
+  }
+}
+
+function clearOverlayQueue() {
+  overlayQueue = [];
+  overlayShowing = false;
+  const old = appRoot.querySelector('.milestone-ovl');
+  if (old) old.remove();
 }
 
 function toast(text, ms = 2500) {
@@ -352,21 +431,19 @@ function showCollection(hit) {
     const s2 = get();
     const disc = Object.keys(s2.discovered).map(byId).filter(Boolean);
     await shareGrove(disc, s2, app);
-    ovl.remove();
-    updateChrome(shell?.nav?.querySelector('.active')?.dataset?.name);
+    dismissOverlay(ovl);
   });
   ovl.appendChild(shareBtn);
 
   const skip = el('button', { class: 'ghost', text: 'Keep listening →' });
-  skip.addEventListener('click', () => {
-    ovl.remove();
-    updateChrome(shell?.nav?.querySelector('.active')?.dataset?.name);
-  });
+  skip.addEventListener('click', () => dismissOverlay(ovl));
   ovl.appendChild(skip);
 
-  appRoot.appendChild(ovl);
-  track('collection_complete', { group: hit.group });
-  updateChrome(shell?.nav?.querySelector('.active')?.dataset?.name);
+  queueOverlay(() => {
+    appRoot.appendChild(ovl);
+    track('collection_complete', { group: hit.group });
+    updateChrome(shell?.nav?.querySelector('.active')?.dataset?.name);
+  });
 }
 
 function showMilestone(n) {
@@ -401,21 +478,19 @@ function showMilestone(n) {
     const s2 = get();
     const disc = Object.keys(s2.discovered).map(byId).filter(Boolean);
     await shareGrove(disc, s2, app);
-    ovl.remove();
-    updateChrome(shell?.nav?.querySelector('.active')?.dataset?.name);
+    dismissOverlay(ovl);
   });
   ovl.appendChild(shareBtn);
 
   const skip = el('button', { class: 'ghost', text: 'Keep listening →' });
-  skip.addEventListener('click', () => {
-    ovl.remove();
-    updateChrome(shell?.nav?.querySelector('.active')?.dataset?.name);
-  });
+  skip.addEventListener('click', () => dismissOverlay(ovl));
   ovl.appendChild(skip);
 
-  appRoot.appendChild(ovl);
-  track('milestone', { n });
-  updateChrome(shell?.nav?.querySelector('.active')?.dataset?.name);
+  queueOverlay(() => {
+    appRoot.appendChild(ovl);
+    track('milestone', { n });
+    updateChrome(shell?.nav?.querySelector('.active')?.dataset?.name);
+  });
 }
 
 // PWA install prompt — stored and shown once after 2nd play

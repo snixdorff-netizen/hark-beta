@@ -36,7 +36,7 @@ export function mount(host, app) {
     play.addEventListener('click', () => {
       audio.unlock();
       audio.play(target).catch(() => {});
-      setTimeout(stepGuess, 900);
+      app.setTimeout(stepGuess, 900);
     });
     cold.appendChild(play);
 
@@ -75,12 +75,12 @@ export function mount(host, app) {
       haptic(14);
       sparkleBurst(card);
       discover(target.id);
-      setTimeout(win, 700);
+      app.setTimeout(win, 700);
     } else {
       card.classList.add('wrong');
       haptic(20);
       audio.play(target).catch(() => {});
-      setTimeout(() => card.classList.remove('wrong'), 500);
+      app.setTimeout(() => card.classList.remove('wrong'), 500);
     }
   }
 

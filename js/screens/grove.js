@@ -282,10 +282,17 @@ export function mount(host, app) {
       } else if (Notification.permission === 'denied') {
         app.mentor('<b>Wren:</b> Notifications are blocked in your browser settings. Enable them there to turn this on.', 6000);
       } else {
+        toggle.disabled = true;
         const result = await requestPermission();
+        toggle.disabled = false;
         if (result === 'granted') {
           toggle.style.background = 'var(--teal)';
           knob.style.left = '21px';
+        } else {
+          // 'default' means the user dismissed the native prompt without
+          // choosing — previously the toggle just silently stayed off with
+          // no explanation at all, a dead-end tap.
+          app.mentor('<b>Wren:</b> No worries — tap the toggle again anytime to turn on streak reminders.', 5000);
         }
         track('notify_opt_in', { result, source: 'grove_toggle' });
       }

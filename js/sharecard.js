@@ -4,6 +4,19 @@ import { get } from './state.js';
 import { shareUrl, challengeUrl, track } from './analytics.js';
 import { creatureEmoji, byId, rarityPct } from './content.js';
 
+// Draws text centered at (x, y), shrinking the font until it fits maxWidth.
+// Plain fillText() doesn't wrap or clip — a long creature name would silently
+// overflow the 480px card, off the edge or into the text below it.
+function fitText(ctx, text, x, y, maxWidth, size, weight, family) {
+  let fs = size;
+  while (fs > size * 0.55) {
+    ctx.font = `${weight} ${fs}px ${family}`;
+    if (ctx.measureText(text).width <= maxWidth) break;
+    fs -= 1;
+  }
+  ctx.fillText(text, x, y);
+}
+
 export async function shareCreature(creature, app) {
   const s = get();
   const discovered = Object.keys(s.discovered).length;
@@ -47,9 +60,8 @@ export async function shareCreature(creature, app) {
   ctx.fillText(emo, size / 2, 218);
 
   // Creature name
-  ctx.font = '600 26px -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif';
   ctx.fillStyle = '#eef3f0';
-  ctx.fillText(creature.name, size / 2, 284);
+  fitText(ctx, creature.name, size / 2, 284, size - 64, 26, 600, '-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif');
 
   // Region / group
   ctx.font = '13px -apple-system, Helvetica, Arial, sans-serif';
@@ -291,9 +303,8 @@ export async function shareSnap(results, daily, streak, app) {
   if (daily) {
     ctx.font = '80px serif';
     ctx.fillText(creatureEmoji(daily), size / 2, 186);
-    ctx.font = '600 22px -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif';
     ctx.fillStyle = '#eef3f0';
-    ctx.fillText(daily.name, size / 2, 228);
+    fitText(ctx, daily.name, size / 2, 228, size - 64, 22, 600, '-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif');
   }
 
   const dotSize = 36;
@@ -417,9 +428,8 @@ export async function shareWrapped(app) {
     ctx.fillText('RAREST FIND', size / 2, 318);
     ctx.font = '44px serif';
     ctx.fillText(creatureEmoji(rarestCreature), size / 2, 370);
-    ctx.font = '500 16px -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif';
     ctx.fillStyle = '#eef3f0';
-    ctx.fillText(rarestCreature.name, size / 2, 400);
+    fitText(ctx, rarestCreature.name, size / 2, 400, size - 64, 16, 500, '-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif');
     ctx.font = '11px -apple-system, Helvetica, Arial, sans-serif';
     ctx.fillStyle = 'rgba(111,139,255,0.7)';
     ctx.fillText('Only ' + Math.round(rarityPct(rarestCreature)) + '% of listeners find this', size / 2, 420);

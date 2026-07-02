@@ -4,7 +4,7 @@ import { el, clear, icon, haptic } from '../ui.js';
 import { mountSpectrogram } from '../spectrogram.js';
 import * as audio from '../audio.js';
 import { viralFeed, CREATURES, GROUPS, creatureEmoji, rarityPct, seededShuffle, WREN_QUOTES } from '../content.js';
-import { get, discover, addXp, save, today, getQuest, bumpQuestDiscover, markQuestDone, checkMilestone, checkCollectionComplete, checkRankUp } from '../state.js';
+import { get, discover, addXp, save, today, getQuest, bumpQuestDiscover, markQuestDone, checkMilestone, checkCollectionComplete, checkRankUp, completeChallengeQuest, toggleLike, isLiked } from '../state.js';
 import { track, challengeUrl } from '../analytics.js';
 import { shareCreature } from '../sharecard.js';
 
@@ -48,7 +48,9 @@ export function mount(host, app) {
   const showWelcomeBack = _daysAway >= 3 && Object.keys(s.discovered).length >= 3;
 
   const weekN = Math.floor(dayN / 7);
-  const undiscovered = CREATURES.filter((c) => !c.isNoise && !s.discovered[c.id]);
+  // Exclude whatever's already revealed as today's Sound of the Day — showing
+  // the same creature as both "???" and a fully-named card is a contradiction.
+  const undiscovered = CREATURES.filter((c) => !c.isNoise && !s.discovered[c.id] && (!todayCreature || c.id !== todayCreature.id));
   const mysteryCreature = undiscovered.length > 0 ? undiscovered[(weekN * 7919) % undiscovered.length] : null;
 
   cards.forEach((c, i) => {
@@ -70,7 +72,7 @@ export function mount(host, app) {
     sep.textContent = '— back at the top —';
     if (loopPass === 1) {
       const disc = Object.keys(get().discovered).length;
-      setTimeout(() => app.mentor(`<b>Wren:</b> You've heard them all. Now see if you can name them — try <b>Snap</b> and find out how much your ear has learned. 🎧`, 8000), 600);
+      app.setTimeout(() => app.mentor(`<b>Wren:</b> You've heard them all. Now see if you can name them — try <b>Snap</b> and find out how much your ear has learned. 🎧`, 8000), 600);
       track('feed_loop_complete', { discovered: disc });
     }
     feed.insertBefore(sep, sentinel);
@@ -83,6 +85,7 @@ export function mount(host, app) {
 
   // Lazy: only render a card's spectrogram (and decode its clip) when it nears
   // view — so 100+ clips don't all decode at once. Autoplay the centered card.
+  let lastAutoplayedNode = null;
   const io = new IntersectionObserver((entries) => {
     entries.forEach((e) => {
       if (e.target === sentinel && e.isIntersecting) { appendLoop(); return; }
@@ -102,17 +105,17 @@ export function mount(host, app) {
           const wrQ = WREN_QUOTES[card.creature.id];
           const isDaily = todayCreature && card.creature.id === todayCreature.id;
           if (wrQ) {
-            setTimeout(() => app.mentor('<b>Wren:</b> ' + wrQ, 9000), 900);
+            app.setTimeout(() => app.mentor('<b>Wren:</b> ' + wrQ, 9000), 900);
           } else if (card.creature.rare) {
-            setTimeout(() => app.mentor('<b>Wren: Rare find.</b> ' + creatureEmoji(card.creature) + ' ' + card.creature.name + ' — only ' + Math.round(rarityPct(card.creature)) + '% of listeners ever find this one.', 8000), 800);
+            app.setTimeout(() => app.mentor('<b>Wren: Rare find.</b> ' + creatureEmoji(card.creature) + ' ' + card.creature.name + ' — only ' + Math.round(rarityPct(card.creature)) + '% of listeners ever find this one.', 8000), 800);
           }
           if (isDaily) {
-            setTimeout(() => app.mentor('<b>Wren:</b> That\'s today\'s Sound of the Day. Can you name it blind? Try the <b>Daily Snap Challenge</b> 🎧', 7000), 5500);
+            app.setTimeout(() => app.mentor('<b>Wren:</b> That\'s today\'s Sound of the Day. Can you name it blind? Try the <b>Daily Snap Challenge</b> 🎧', 7000), 5500);
           }
           const hit = checkMilestone();
-          if (hit) setTimeout(() => app.milestone(hit), 1400);
+          if (hit) app.setTimeout(() => app.milestone(hit), 1400);
           const colHit = checkCollectionComplete(CREATURES);
-          if (colHit) setTimeout(() => app.collection(colHit), hit ? 5000 : 1800);
+          if (colHit) app.setTimeout(() => app.collection(colHit), hit ? 5000 : 1800);
           const rankHit = checkRankUp();
           if (rankHit) {
             const RANK_LINES = {
@@ -125,7 +128,7 @@ export function mount(host, app) {
             };
             const delay = (hit ? 8000 : colHit ? 8000 : 2200);
             const line = RANK_LINES[rankHit.title] || ('<b>' + rankHit.title + '</b>. Keep going.');
-            setTimeout(() => app.mentor('<b>Wren:</b> ' + line, 10000), delay);
+            app.setTimeout(() => { app.mentor('<b>Wren:</b> ' + line, 10000); app.pulseRankBadge(); }, delay);
             track('rank_up', { rank: rankHit.title });
           }
           const q = getQuest();
@@ -139,12 +142,18 @@ export function mount(host, app) {
           if (found2 >= total2 && !s3.endgameSeen) {
             s3.endgameSeen = true; save(); addXp(500);
             const endDelay = (hit || colHit || rankHit) ? 10000 : 2000;
-            setTimeout(() => app.mentor('<b>Wren:</b> Every creature. Every continent. You\'ve archived the living world. But that 67 kHz signal is still out there — nobody\'s been able to name it. Keep the haul running.', 14000), endDelay);
+            app.setTimeout(() => app.mentor('<b>Wren:</b> Every creature. Every continent. You\'ve archived the living world. But that 67 kHz signal is still out there — nobody\'s been able to name it. Keep the haul running.', 14000), endDelay);
             track('endgame_complete', { total: total2 });
           }
           if (app.checkThemeUnlock) app.checkThemeUnlock();
         }
-        audio.play(card.creature).catch(() => {});
+        // Only replay audio when the centered card actually changed — scrolling
+        // lets intersectionRatio oscillate around the 0.6 threshold on the same
+        // card, which used to restart the clip on every crossing.
+        if (lastAutoplayedNode !== e.target) {
+          lastAutoplayedNode = e.target;
+          audio.play(card.creature).catch(() => {});
+        }
       }
     });
   }, { threshold: [0, 0.5, 0.6, 1] });
@@ -181,12 +190,12 @@ function buildCard(c, app, isDaily, dailyDone, dailyTip) {
   // action rail
   const rail = el('div', { class: 'rail' });
   const like = el('button', { 'aria-label': 'Like', html: icon('heart', 26) + '<span>like</span>' });
-  like.addEventListener('click', () => { like.classList.toggle('liked'); haptic(); track('feed_like', { id: c.id }); });
+  if (isLiked(c.id)) like.classList.add('liked');
+  like.addEventListener('click', () => { const on = toggleLike(c.id); like.classList.toggle('liked', on); haptic(); track('feed_like', { id: c.id, liked: on }); });
   const share = el('button', { 'aria-label': 'Share', html: icon('share', 24) + '<span>share</span>' });
   share.addEventListener('click', async () => {
     if (isDaily && !dailyDone) {
-      const s = get();
-      s.challengeDay = today(); save();
+      completeChallengeQuest();
       addXp(25);
       app.mentor('<b>Daily Challenge!</b> +25 XP for sharing today\'s Sound of the Day 🌿', 6000);
       track('daily_challenge_complete', { id: c.id });

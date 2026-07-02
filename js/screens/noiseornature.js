@@ -80,7 +80,7 @@ export function mount(host, app) {
     }
     stamp.appendChild(verdict);
     pad.appendChild(stamp);
-    setTimeout(() => { i++; if (i < deck.length) renderCard(); else finish(); }, 950);
+    app.setTimeout(() => { i++; if (i < deck.length) renderCard(); else finish(); }, 950);
   }
 
   function answer(saidNoise, card) {
@@ -93,7 +93,7 @@ export function mount(host, app) {
     card.style.transition = 'transform .25s,opacity .25s';
     card.style.transform = `translateX(${saidNoise ? -120 : 120}px) rotate(${saidNoise ? -8 : 8}deg)`;
     card.style.opacity = '0';
-    setTimeout(() => showReveal(item, correct), 260);
+    app.setTimeout(() => showReveal(item, correct), 260);
   }
 
   function finish() {

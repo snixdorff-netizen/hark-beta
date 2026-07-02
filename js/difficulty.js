@@ -41,7 +41,12 @@ export function buildRound(target, skill, seed) {
 // dailyFirst: inject as round 0 if not already in targets and no preferIds override
 export function sessionTargets(seed, preferIds, dailyFirst) {
   if (preferIds && preferIds.length) {
-    return preferIds.map(byId).filter(Boolean).slice(0, 5);
+    const resolved = preferIds.map(byId).filter(Boolean).slice(0, 5);
+    // preferIds can reference a stale/removed creature (e.g. an old bookmarked
+    // challenge link, or a mystery-card id from before content changed) — fall
+    // back to a normal random session rather than handing back an empty list,
+    // which would otherwise crash the caller's very first round.
+    if (resolved.length) return resolved;
   }
   let base = seededShuffle(CREATURES.filter((c) => !c.isNoise), seed).slice(0, 5);
   if (dailyFirst && !base.find((c) => c.id === dailyFirst.id)) {

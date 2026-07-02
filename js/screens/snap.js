@@ -71,8 +71,12 @@ export function mount(host, app, params = {}) {
   function renderRound() {
     clear(pad);
     const s = get();
-    // last round is a "stretch": one notch harder
-    const stretch = i === targets.length - 1;
+    // last round is a "stretch": one notch harder — but only meaningful in a
+    // multi-round session. A single-target "Tap to ID"/mystery-card launch
+    // has targets.length === 1, so i === targets.length - 1 was always true,
+    // silently applying stretch difficulty to a round the player has zero
+    // warmup for.
+    const stretch = targets.length > 1 && i === targets.length - 1;
     const dailySession = !!dailyCreature && !params.preferIds;
     const skill = dailySession ? 1.5 : (stretch ? s.skill + 0.7 : s.skill);
     const target = targets[i];
@@ -97,16 +101,17 @@ export function mount(host, app, params = {}) {
     pad.appendChild(replay);
     audio.unlock(); audio.play(target);
 
-    const cols = round.options.length <= 2 ? '1fr 1fr' : (round.options.length === 3 ? '1fr 1fr' : '1fr 1fr');
-    const opts = el('div', { class: 'opts', style: `grid-template-columns:${cols}` });
+    const opts = el('div', { class: 'opts', style: 'grid-template-columns:1fr 1fr' });
+    const optionCards = [];
     round.options.forEach((c, idx) => {
       const card = el('button', { class: 'opt' });
       const sg = el('div', { class: 'specwrap', style: 'width:100%' });
       card.appendChild(sg);
       card.appendChild(el('div', { class: 'lab', text: String.fromCharCode(65 + idx) }));
       requestAnimationFrame(() => mountSpectrogram(sg, c, sg.clientWidth || 150, 64));
-      card.addEventListener('click', () => choose(c, card, target));
+      card.addEventListener('click', () => choose(c, card, target, optionCards));
       opts.appendChild(card);
+      optionCards.push(card);
     });
     pad.appendChild(opts);
 
@@ -115,9 +120,15 @@ export function mount(host, app, params = {}) {
     pad.appendChild(foot);
   }
 
-  function choose(c, card, target) {
+  function choose(c, card, target, optionCards) {
     if (card.dataset.done) return;
+    // Once the correct answer is found, lock every option in the round —
+    // previously only the tapped card was marked done, so a fast second tap
+    // on a different option (before the ~950ms advance-to-next-round timer)
+    // could still fire choose() again and double-count adjustSkill/audio.
+    if (optionCards && optionCards.some((o) => o.dataset.locked)) return;
     if (c.id === target.id) {
+      if (optionCards) optionCards.forEach((o) => { o.dataset.locked = '1'; });
       roundResults.push(roundAttempts === 0);
       roundAttempts = 0;
       card.dataset.done = '1';
@@ -128,9 +139,9 @@ export function mount(host, app, params = {}) {
       const { level: crownLevel, isNew: crownUp } = awardCrown(target.id);
       discover(target.id); addXp(10);
       const snapMilestone = checkMilestone();
-      if (snapMilestone) setTimeout(() => app.milestone(snapMilestone), 1100);
+      if (snapMilestone) app.setTimeout(() => app.milestone(snapMilestone), 1100);
       const snapColHit = checkCollectionComplete(CREATURES);
-      if (snapColHit) setTimeout(() => app.collection(snapColHit), snapMilestone ? 5000 : 1800);
+      if (snapColHit) app.setTimeout(() => app.collection(snapColHit), snapMilestone ? 5000 : 1800);
       if (app.checkThemeUnlock) app.checkThemeUnlock();
       const reveal = el('div', { style: 'position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:var(--panel);border-radius:13px;pointer-events:none;animation:fade .2s ease' });
       const rEmo = el('div', { style: 'font-size:38px;line-height:1' });
@@ -142,12 +153,12 @@ export function mount(host, app, params = {}) {
       if (isDailyTarget && !dailyNamed) {
         dailyNamed = true;
         reveal.appendChild(el('div', { style: 'font-size:10px;color:var(--amber);font-weight:600;letter-spacing:.04em;margin-top:2px', text: '⭐ DAILY SOUND' }));
-        setTimeout(async () => {
+        app.setTimeout(async () => {
           track('daily_snap_named', { id: target.id });
           const url = challengeUrl(target.id);
           const text = 'Named today\'s wild sound on Hark 🎧 Can you? ' + url;
           app.mentor('<b>Daily sound named!</b> ' + creatureEmoji(target) + ' Challenge someone to beat you. 🎧', 8000);
-          setTimeout(async () => {
+          app.setTimeout(async () => {
             try {
               if (navigator.share) await navigator.share({ title: 'Hark Daily Sound', text, url });
               else await navigator.clipboard.writeText(text);
@@ -156,7 +167,7 @@ export function mount(host, app, params = {}) {
         }, 1000);
       } else if (target.rare) {
         reveal.appendChild(el('div', { style: 'font-size:10px;color:#6f8bff;font-weight:600;letter-spacing:.04em;margin-top:2px', text: '✨ RARE' }));
-        setTimeout(() => {
+        app.setTimeout(() => {
           track('rare_found', { id: target.id });
           const wrQ = WREN_QUOTES[target.id];
           if (wrQ) app.mentor('<b>Wren:</b> ' + wrQ, 9000);
@@ -164,19 +175,19 @@ export function mount(host, app, params = {}) {
         }, 1200);
       } else if (crownUp && crownLevel === 3) {
         reveal.appendChild(el('div', { style: 'font-size:10px;color:var(--amber);font-weight:600;letter-spacing:.04em;margin-top:2px', text: '👑 MASTERED' }));
-        setTimeout(() => {
+        app.setTimeout(() => {
           app.mentor('<b>Mastered!</b> ' + target.name + ' — you know this one cold. ' + rarityPct(target) + '% of listeners ever get here.', 7000);
         }, 800);
       }
       card.style.position = 'relative';
       card.appendChild(reveal);
-      setTimeout(next, (target.rare || (crownUp && crownLevel === 3)) ? 1800 : 950);
+      app.setTimeout(next, (target.rare || (crownUp && crownLevel === 3)) ? 1800 : 950);
     } else {
       roundAttempts++;
       card.classList.add('wrong'); haptic(20); adjustSkill(false);
       audio.play(target);
       if (dailyCreature && target.id === dailyCreature.id) dailyWrongCount++;
-      setTimeout(() => card.classList.remove('wrong'), 450);
+      app.setTimeout(() => card.classList.remove('wrong'), 450);
     }
   }
 
@@ -197,7 +208,7 @@ export function mount(host, app, params = {}) {
       const q = getQuest();
       if (q.type === 'snap' && !q.done) {
         const n = bumpQuestSnap();
-        if (n >= q.goal) { markQuestDone(); addXp(75); setTimeout(() => app.mentor('<b>Quest complete!</b> +75 XP. Three rounds down. The wild is starting to sound familiar. 🌿', 7000), 600); track('quest_complete', { type: 'snap' }); }
+        if (n >= q.goal) { markQuestDone(); addXp(75); app.setTimeout(() => app.mentor('<b>Quest complete!</b> +75 XP. Three rounds down. The wild is starting to sound familiar. 🌿', 7000), 600); track('quest_complete', { type: 'snap' }); }
       }
     }
     const isMilestone = STREAK_MILESTONES.includes(newStreak);
@@ -274,7 +285,7 @@ export function mount(host, app, params = {}) {
       const NEXT_MILESTONES = [3, 7, 14, 30];
       const nextM = NEXT_MILESTONES.find((n) => n > newStreak);
       if (nextM && nextM - newStreak === 1) {
-        setTimeout(() => app.mentor('<b>Wren:</b> Day ' + newStreak + '. One more day and you hit ' + nextM + ' — a milestone most listeners never reach. Come back tomorrow.', 8000), 1400);
+        app.setTimeout(() => app.mentor('<b>Wren:</b> Day ' + newStreak + '. One more day and you hit ' + nextM + ' — a milestone most listeners never reach. Come back tomorrow.', 8000), 1400);
       }
     } else if (isMilestone) {
       const milestoneDiv = el('div', { style: 'background:rgba(224,164,77,.12);border:.5px solid rgba(224,164,77,.4);border-radius:14px;padding:14px 18px;text-align:center;width:100%' });
@@ -320,8 +331,8 @@ export function mount(host, app, params = {}) {
       `<b>Wren:</b> ${total - discovered2} sounds still out there. Some only come at dawn. Check back tomorrow.`,
     ];
     const msgIdx = s2.xp % comebackMsgs.length;
-    setTimeout(() => app.mentor(comebackMsgs[msgIdx], 8000), 1200);
-    if (s2.xp > 60) setTimeout(() => maybeShowWtp(app, 'snap_finish'), 2600);
+    app.setTimeout(() => app.mentor(comebackMsgs[msgIdx], 8000), 1200);
+    if (s2.xp > 60) app.setTimeout(() => maybeShowWtp(app, 'snap_finish'), 2600);
   }
 
   return () => { audio.stopAll(); root.remove(); };

@@ -125,6 +125,11 @@ function scheduleEvent(ev, t0) {
 async function loadClip(creature) {
   if (buffers[creature.id]) return buffers[creature.id];
   const res = await fetch(`assets/audio/${creature.id}.mp3`);
+  // A missing/renamed mp3 (404) still resolves successfully from fetch() —
+  // only decodeAudioData() would eventually reject on the garbage/HTML body,
+  // with no trace of why. Fail fast and log it so a broken asset is
+  // diagnosable instead of just producing silence.
+  if (!res.ok) { console.warn('[audio] failed to fetch clip for', creature.id, res.status); throw new Error('clip fetch failed: ' + res.status); }
   const arr = await res.arrayBuffer();
   const buf = await ctx.decodeAudioData(arr);
   buffers[creature.id] = buf;

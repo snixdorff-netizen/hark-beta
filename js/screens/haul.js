@@ -119,7 +119,16 @@ export function mount(host, app) {
         track('unknown_share');
         const url = (await import('../analytics.js')).shareUrl();
         const text = 'We found an unidentified 67 kHz signal on Hark. Nobody knows what it is. 👀 ' + url;
-        try { if (navigator.share) await navigator.share({ title: 'Hark — 67 kHz mystery', text, url }); else await navigator.clipboard.writeText(text); } catch (e) {}
+        try {
+          if (navigator.share) { await navigator.share({ title: 'Hark — 67 kHz mystery', text, url }); }
+          else if (navigator.clipboard) { await navigator.clipboard.writeText(text); app.toast('✓ Copied to clipboard', 2500); }
+          else { app.mentor('<b>Copy this:</b> ' + text, 8000); }
+        } catch (e) {
+          // AbortError just means the user cancelled the native share sheet —
+          // no feedback needed there. Anything else means both Web Share and
+          // Clipboard failed, so surface something rather than doing nothing.
+          if (e.name !== 'AbortError') app.mentor('<b>Copy this:</b> ' + text, 8000);
+        }
       });
       pad.appendChild(u);
       pad.appendChild(shareUnknown);
@@ -131,7 +140,7 @@ export function mount(host, app) {
     again.addEventListener('click', () => {
       if (allSorted) { growGrove(6); track('haul_complete'); }
       get().haul = null; save(); render();
-      if (allSorted && get().xp > 60) setTimeout(() => maybeShowWtp(app, 'haul_complete'), 1800);
+      if (allSorted && get().xp > 60) app.setTimeout(() => maybeShowWtp(app, 'haul_complete'), 1800);
     });
     row.appendChild(sortBtn); row.appendChild(again);
     pad.appendChild(row);

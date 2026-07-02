@@ -14,7 +14,10 @@ const PRESETS = [
 export function showAmbient(app) {
   const s = get();
   const discovered = Object.keys(s.discovered).map(byId).filter(Boolean);
-  if (discovered.length < 3) return;
+  if (discovered.length < 3) {
+    app.mentor('<b>Wren:</b> Find a few more sounds first — Ambient Listen needs at least 3 discovered creatures to draw from.', 6000);
+    return;
+  }
 
   const ovl = el('div', { class: 'ovl' });
   const sheet = el('div', { class: 'sheet', style: 'text-align:center;padding:22px 20px calc(env(safe-area-inset-bottom,0px) + 22px);max-height:85vh;overflow-y:auto' });
@@ -83,7 +86,9 @@ export function showAmbient(app) {
   PRESETS.forEach((p) => {
     const validCreatures = discovered.filter((c) => c.clip && p.filter(c, s));
     const count = validCreatures.length;
-    const disabled = count < 2;
+    // Below 3, playback degenerates into an A-B-A-B loop for the entire timer
+    // duration — require enough variety for it to feel like ambience.
+    const disabled = count < 3;
     const card = el('div', {
       style: `padding:14px 12px;border-radius:12px;cursor:${disabled ? 'default' : 'pointer'};opacity:${disabled ? '.4' : '1'};background:var(--panel);border:.5px solid var(--line);text-align:center`,
     });
@@ -143,9 +148,16 @@ export function showAmbient(app) {
       npName.textContent = c.name;
       try {
         const dur = await audio.playAmbient(c);
+        // stopFlag can flip true while the fetch/decode above was in flight —
+        // the Stop/Close handler's audio.stopAll() ran before this clip's
+        // source existed, so it wasn't caught. Recheck and kill it now,
+        // otherwise this one clip plays to completion after the sheet closes
+        // and the loop silently re-arms itself for another round.
+        if (stopFlag) { audio.stopAll(); return; }
         const gap = Math.max(2, dur) + 1.5;
         timerHandle = setTimeout(playNext, gap * 1000);
       } catch (e) {
+        if (stopFlag) return;
         timerHandle = setTimeout(playNext, 3000);
       }
     }
