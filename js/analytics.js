@@ -20,6 +20,7 @@ export const CONFIG = {
 const LS = {
   did: 'hark.did', cohort: 'hark.cohort', days: 'hark.days',
   events: 'hark.events', ref: 'hark.ref', wtp: 'hark.wtp', notice: 'hark.notice',
+  satisfaction: 'hark.satisfaction',
 };
 
 let sid = null;
@@ -145,6 +146,7 @@ export function exportData() {
     did: deviceId(), cohort: cohortDay(),
     days: JSON.parse(localStorage.getItem(LS.days) || '[]'),
     wtp: JSON.parse(localStorage.getItem(LS.wtp) || 'null'),
+    satisfaction: JSON.parse(localStorage.getItem(LS.satisfaction) || 'null'),
     events: JSON.parse(localStorage.getItem(LS.events) || '[]'),
   };
 }
@@ -154,6 +156,18 @@ export function recordWtp(answer) {
   track('wtp_answer', answer);
 }
 export function wtpAnswered() { return !!localStorage.getItem(LS.wtp); }
+
+// A real satisfaction signal — the one thing every "make this a 4.5-star
+// game" push was missing: an actual measurement to point at. Fires once,
+// at a genuinely positive moment (see probes.js), beacons to the same
+// Supabase collector as every other event, and is visible in the owner
+// dashboard so it's not just write-only telemetry.
+export function recordSatisfaction(rating, feedback) {
+  const answer = { rating, feedback: feedback || null, ts: Date.now() };
+  localStorage.setItem(LS.satisfaction, JSON.stringify(answer));
+  track('satisfaction_rating', { rating, hasFeedback: !!feedback });
+}
+export function satisfactionAnswered() { return !!localStorage.getItem(LS.satisfaction); }
 export function noticeSeen() { return !!localStorage.getItem(LS.notice); }
 export function markNotice() { localStorage.setItem(LS.notice, '1'); }
 

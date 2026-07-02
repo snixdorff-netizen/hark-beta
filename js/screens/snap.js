@@ -5,8 +5,8 @@ import { mountSpectrogram } from '../spectrogram.js';
 import * as audio from '../audio.js';
 import { buildRound, sessionTargets } from '../difficulty.js';
 import { get, addXp, adjustSkill, awardCrown, discover, growGrove, touchStreak, getQuest, bumpQuestSnap, markQuestDone, checkMilestone, checkCollectionComplete } from '../state.js';
-import { track, challengeUrl } from '../analytics.js';
-import { maybeShowWtp } from '../probes.js';
+import { track, challengeUrl, satisfactionAnswered } from '../analytics.js';
+import { maybeShowWtp, maybeShowSatisfaction } from '../probes.js';
 import { creatureEmoji, rarityPct, byId, CREATURES, WREN_QUOTES, viralFeed } from '../content.js';
 import { shareCreature, shareStreak, shareSnap } from '../sharecard.js';
 import { mirrorState } from '../notifications.js';
@@ -333,7 +333,14 @@ export function mount(host, app, params = {}) {
     ];
     const msgIdx = s2.xp % comebackMsgs.length;
     app.setTimeout(() => app.mentor(comebackMsgs[msgIdx], 8000), 1200);
-    if (s2.xp > 60) app.setTimeout(() => maybeShowWtp(app, 'snap_finish'), 2600);
+    // A streak milestone is a far better-earned moment to ask "enjoying
+    // this?" than a generic round finish — prefer it over the WTP probe so
+    // the two don't stack and fatigue the same celebratory moment.
+    if (isMilestone && !satisfactionAnswered()) {
+      app.setTimeout(() => maybeShowSatisfaction(app, 'streak_milestone_' + newStreak), 3200);
+    } else if (s2.xp > 60) {
+      app.setTimeout(() => maybeShowWtp(app, 'snap_finish'), 2600);
+    }
   }
 
   return () => { audio.stopAll(); root.remove(); };

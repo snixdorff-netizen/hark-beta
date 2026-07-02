@@ -1,6 +1,6 @@
 // Hark — beta probes: privacy notice, priced WTP probe, feedback link, owner dashboard, credits.
-import { el, icon, haptic } from './ui.js';
-import { track, recordWtp, wtpAnswered, exportData, shareUrl, CONFIG, noticeSeen, markNotice } from './analytics.js';
+import { el, icon, haptic, clear } from './ui.js';
+import { track, recordWtp, wtpAnswered, recordSatisfaction, satisfactionAnswered, exportData, shareUrl, CONFIG, noticeSeen, markNotice } from './analytics.js';
 import { CREATURES } from './content.js';
 
 function overlay(child, { dismissable = true } = {}) {
@@ -53,6 +53,63 @@ export function maybeShowWtp(app, reason = 'unknown') {
     opts.appendChild(b);
   });
   card.appendChild(opts);
+  const back = overlay(card, { dismissable: true });
+}
+
+// The one real, growing measurement behind "make this a 4.5-star game" —
+// fires once, at a genuinely positive moment the caller chooses (a streak
+// milestone, a collection complete), never right after onboarding or on a
+// cold session. Low ratings route to direct feedback instead of a public
+// review, since there's no real app-store listing for this to manipulate;
+// it's just an honest channel back to whoever's building this.
+export function maybeShowSatisfaction(app, reason = 'unknown') {
+  if (satisfactionAnswered()) return;
+  track('satisfaction_prompt_shown', { reason });
+  const card = el('div', { class: 'sheet' });
+  card.appendChild(el('div', { class: 'sheet-h', text: 'Enjoying Hark so far?' }));
+  card.appendChild(el('p', { class: 'sheet-p', text: 'One tap — helps us know if this is actually working for you.' }));
+
+  const stars = el('div', { style: 'display:flex;justify-content:center;gap:10px;margin-bottom:6px' });
+  for (let n = 1; n <= 5; n++) {
+    const s = el('button', { 'aria-label': n + ' star' + (n > 1 ? 's' : ''), style: 'font-size:32px;line-height:1;padding:4px', text: '☆' });
+    s.dataset.n = n;
+    s.addEventListener('mouseenter', () => paintStars(n));
+    s.addEventListener('click', () => choose(n));
+    stars.appendChild(s);
+  }
+  card.appendChild(stars);
+
+  function paintStars(upTo) {
+    [...stars.children].forEach((s, i) => { s.textContent = i < upTo ? '★' : '☆'; });
+  }
+
+  function choose(n) {
+    paintStars(n);
+    haptic(10);
+    recordSatisfaction(n);
+    clear(card);
+    card.appendChild(el('div', { style: 'font-size:32px;line-height:1;margin-bottom:8px', text: n >= 4 ? '🌿' : '👂' }));
+    if (n >= 4) {
+      card.appendChild(el('div', { class: 'sheet-h', text: 'That means a lot.' }));
+      card.appendChild(el('p', { class: 'sheet-p', text: 'If you know someone who\'d like this, sending it their way is the best thing you could do for us.' }));
+      const share = el('button', { class: 'sheet-opt', style: 'width:100%', text: '🎧 Tell a friend about Hark' });
+      share.addEventListener('click', () => { shareInvite(); back.remove(); });
+      card.appendChild(share);
+      const close = el('button', { class: 'lnk', style: 'margin-top:12px', text: 'Close' });
+      close.addEventListener('click', () => back.remove());
+      card.appendChild(close);
+    } else {
+      card.appendChild(el('div', { class: 'sheet-h', text: 'Thanks for being honest.' }));
+      card.appendChild(el('p', { class: 'sheet-p', text: 'What would make it better? A real reply goes straight to the person building this — not a support queue.' }));
+      const fb = el('button', { class: 'sheet-opt', style: 'width:100%', text: '✉️ Tell us what\'s missing' });
+      fb.addEventListener('click', () => { track('feedback_click', { source: 'satisfaction_low' }); try { window.location.href = CONFIG.FEEDBACK_URL; } catch (e) {} back.remove(); });
+      card.appendChild(fb);
+      const close = el('button', { class: 'lnk', style: 'margin-top:12px', text: 'Not now' });
+      close.addEventListener('click', () => back.remove());
+      card.appendChild(close);
+    }
+  }
+
   const back = overlay(card, { dismissable: true });
 }
 
@@ -133,10 +190,16 @@ export function showOwnerDashboard() {
   card.appendChild(kv('device', d.did.slice(0, 8)));
   card.appendChild(kv('cohort', d.cohort));
   card.appendChild(kv('active days', d.days.length));
-  card.appendChild(kv('beacon', CONFIG.BEACON_URL ? 'live' : 'local-only'));
+  // beacon() checks Supabase before the generic BEACON_URL fallback — this
+  // used to only check BEACON_URL (always empty), so the dashboard told the
+  // owner data wasn't beaconing live even while it was actively flowing to
+  // Supabase.
+  const beaconLive = (CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY) ? 'live (Supabase)' : (CONFIG.BEACON_URL ? 'live (custom)' : 'local-only');
+  card.appendChild(kv('beacon', beaconLive));
   card.appendChild(kv('shares', shares));
   card.appendChild(kv('arrived via ref', d.events.find((e) => e.ref) ? 'yes' : 'no'));
   card.appendChild(kv('WTP answer', d.wtp ? `$${d.wtp.price}/mo` : '—'));
+  card.appendChild(kv('satisfaction', d.satisfaction ? `${'★'.repeat(d.satisfaction.rating)}${'☆'.repeat(5 - d.satisfaction.rating)}` : '—'));
   card.appendChild(el('div', { class: 'sheet-p', style: 'margin-top:10px', text: 'Event counts' }));
   Object.entries(counts).sort((a, b) => b[1] - a[1]).forEach(([k, v]) => card.appendChild(kv(k, v)));
 
