@@ -1,7 +1,7 @@
 // Hark — app shell, router, persistent chrome.
 import { el, clear, icon, iconEl } from './ui.js';
 import { get, save, touchStreak, today, getQuest, addXp } from './state.js';
-import { loadManifest, byId, creatureEmoji, GROUPS } from './content.js';
+import { loadManifest, byId, creatureEmoji, GROUPS, CREATURES } from './content.js';
 import { rankProgress, earScore } from './rank.js';
 import * as audio from './audio.js';
 import { init as initAnalytics, track } from './analytics.js';
@@ -139,7 +139,8 @@ function updateChrome(active) {
   rankBadge.textContent = rp.rank.emoji;
   stats.appendChild(rankBadge);
   const discovered = Object.keys(s.discovered).length;
-  if (discovered > 0) stats.appendChild(el('div', { class: 'stat', style: 'color:var(--teal);font-size:11px;letter-spacing:.03em', html: `<b>${discovered}</b><span style="opacity:.55">/93</span>` }));
+  const totalCreatures = CREATURES.filter((c) => !c.isNoise).length;
+  if (discovered > 0) stats.appendChild(el('div', { class: 'stat', style: 'color:var(--teal);font-size:11px;letter-spacing:.03em', html: `<b>${discovered}</b><span style="opacity:.55">/${totalCreatures}</span>` }));
   stats.appendChild(el('div', { class: 'stat', html: `${icon('flame', 16)} <b>${s.streak}</b>` }));
   stats.appendChild(el('div', { class: 'stat', html: `${icon('sparkle', 15)} <b>${s.xp}</b>` }));
   const themeBtn = el('button', {
@@ -198,14 +199,29 @@ function go(name, params = {}) {
   if (name === 'coldopen') {
     if (shell) { shell.topbar.remove(); shell.body.remove(); shell.nav.remove(); shell = null; }
     clear(appRoot);
-    cleanup = coldopen(appRoot, app);
+    try {
+      cleanup = coldopen(appRoot, app);
+    } catch (err) {
+      showRecoveryScreen(appRoot, name, err);
+    }
     return;
   }
   buildShell();
   clear(shell.body);
   const s = get();
   mirrorState(s);
-  cleanup = SCREENS[name](shell.body, app, params);
+  // Every bug the QA audits found got fixed at its specific source — this is
+  // the backstop for whatever they didn't find. A screen crashing mid-render
+  // used to leave a blank body with no recovery path and no way back to a
+  // working screen short of the user figuring out how to hard-refresh.
+  try {
+    cleanup = SCREENS[name](shell.body, app, params);
+  } catch (err) {
+    console.error('[app] screen crashed:', name, err);
+    track('screen_crash', { screen: name, message: String(err && err.message) });
+    showRecoveryScreen(shell.body, name, err);
+    return;
+  }
   updateChrome(name);
   track('screen_view', { screen: name });
   // Streak break — returning after >2 days absent; streak is still the old value (reset happens on next touchStreak)
@@ -363,6 +379,25 @@ function toast(text, ms = 2500) {
   const t = el('div', { class: 'toast-disc', text });
   appRoot.appendChild(t);
   setTimeout(() => { if (t.isConnected) t.remove(); }, ms);
+}
+
+function showRecoveryScreen(container, failedScreen, err) {
+  clear(container);
+  const wrap = el('div', { class: 'cold', style: 'padding-top:80px' });
+  const emo = el('div', { style: 'font-size:48px;line-height:1' });
+  emo.textContent = '🌙';
+  wrap.appendChild(emo);
+  wrap.appendChild(el('h1', { text: 'Something went sideways.', style: 'font-size:21px;text-align:center' }));
+  wrap.appendChild(el('p', { style: 'color:var(--muted);max-width:280px;text-align:center;line-height:1.6', text: 'That screen hit a snag. Your progress is saved — this is just a rendering hiccup.' }));
+  const reload = el('button', { class: 'cta', text: '↻ Reload Hark' });
+  reload.addEventListener('click', () => window.location.reload());
+  wrap.appendChild(reload);
+  if (failedScreen !== 'feed') {
+    const back = el('button', { class: 'ghost', text: '← Back to the feed' });
+    back.addEventListener('click', () => go('feed'));
+    wrap.appendChild(back);
+  }
+  container.appendChild(wrap);
 }
 
 function promptNotifications() {
@@ -533,25 +568,47 @@ function showInstallBanner() {
   track('pwa_banner_shown');
 }
 
+// Diagnostic-only safety net — go()'s own try/catch is what actually shows
+// recovery UI for a screen crash. These just make sure nothing else that
+// throws (an event handler, an async callback outside go()) vanishes
+// silently with zero trace, so a bug report isn't a total guessing game.
+window.addEventListener('error', (e) => {
+  console.error('[app] uncaught error:', e.message, e.filename, e.lineno);
+  track('uncaught_error', { message: String(e.message), source: String(e.filename) });
+});
+window.addEventListener('unhandledrejection', (e) => {
+  console.error('[app] unhandled rejection:', e.reason);
+  track('unhandled_rejection', { message: String(e.reason && e.reason.message || e.reason) });
+});
+
 // boot
 async function boot() {
-  applyTheme(currentTheme);
-  initAnalytics();
-  await loadManifest();
+  try {
+    applyTheme(currentTheme);
+    initAnalytics();
+    await loadManifest();
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const challengeId = urlParams.get('challenge');
-  if (challengeId) {
-    track('challenge_accepted', { id: challengeId });
+    const urlParams = new URLSearchParams(window.location.search);
+    const challengeId = urlParams.get('challenge');
+    if (challengeId) {
+      track('challenge_accepted', { id: challengeId });
+      const s = get();
+      if (!s.onboarded) { s.onboarded = true; save(); }
+      go('snap', { challenge: challengeId });
+      return;
+    }
+
     const s = get();
-    if (!s.onboarded) { s.onboarded = true; save(); }
-    go('snap', { challenge: challengeId });
-    return;
+    if (!s.onboarded) go('coldopen');
+    else { go('feed'); showPrivacyNotice(); }
+  } catch (err) {
+    // go()'s own try/catch covers a screen crashing mid-render; this is the
+    // backstop for anything that throws before a screen even exists — the
+    // very first thing every user sees, so it's the highest-stakes place in
+    // the whole app for a silent failure to happen.
+    console.error('[app] boot failed:', err);
+    showRecoveryScreen(appRoot, 'boot', err);
   }
-
-  const s = get();
-  if (!s.onboarded) go('coldopen');
-  else { go('feed'); showPrivacyNotice(); }
 }
 boot();
 

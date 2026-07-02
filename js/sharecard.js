@@ -2,7 +2,9 @@
 import { getRank, earScore } from './rank.js';
 import { get } from './state.js';
 import { shareUrl, challengeUrl, track } from './analytics.js';
-import { creatureEmoji, byId, rarityPct } from './content.js';
+import { creatureEmoji, byId, rarityPct, CREATURES } from './content.js';
+
+function totalCreatures() { return CREATURES.filter((c) => !c.isNoise).length; }
 
 // Draws text centered at (x, y), shrinking the font until it fits maxWidth.
 // Plain fillText() doesn't wrap or clip — a long creature name would silently
@@ -242,7 +244,7 @@ export async function shareGrove(discovered, s, app) {
   ctx.textAlign = 'center';
   ctx.font = '13px -apple-system, Helvetica, Arial, sans-serif';
   ctx.fillStyle = 'rgba(159,178,170,0.75)';
-  ctx.fillText(discovered.length + '/93 sounds found · 🔥 ' + s.streak + '-day streak', size / 2, 440);
+  ctx.fillText(discovered.length + '/' + totalCreatures() + ' sounds found · 🔥 ' + s.streak + '-day streak', size / 2, 440);
 
   ctx.font = '11px -apple-system, Helvetica, Arial, sans-serif';
   ctx.fillStyle = 'rgba(159,178,170,0.4)';
@@ -254,7 +256,7 @@ export async function shareGrove(discovered, s, app) {
     const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
     const file = new File([blob], 'hark-grove.png', { type: 'image/png' });
     const url = shareUrl();
-    const text = 'I\'ve found ' + discovered.length + '/93 wild sounds on Hark 🌿 ' + url;
+    const text = 'I\'ve found ' + discovered.length + '/' + totalCreatures() + ' wild sounds on Hark 🌿 ' + url;
     if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
       await navigator.share({ title: 'My Hark Grove', text, files: [file] });
     } else if (navigator.share) {
@@ -326,7 +328,7 @@ export async function shareSnap(results, daily, streak, app) {
 
   ctx.font = '13px -apple-system, Helvetica, Arial, sans-serif';
   ctx.fillStyle = 'rgba(224,164,77,0.8)';
-  ctx.fillText('🔥 Day ' + streak + ' · ' + discovered + '/93 sounds found', size / 2, 378);
+  ctx.fillText('🔥 Day ' + streak + ' · ' + discovered + '/' + totalCreatures() + ' sounds found', size / 2, 378);
 
   ctx.fillStyle = 'rgba(159,178,170,0.5)'; ctx.font = '12px -apple-system, Helvetica, Arial, sans-serif';
   ctx.fillText('Can you beat my score? → hark-beta', size / 2, 420);

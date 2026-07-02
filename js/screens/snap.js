@@ -242,7 +242,8 @@ export function mount(host, app, params = {}) {
     if (newStreak >= 1) {
       wrap.appendChild(el('div', { style: 'font-size:12px;color:var(--amber);font-weight:500;margin-top:-8px', text: `🔥 Day ${newStreak} in the wild` }));
     }
-    wrap.appendChild(el('p', { text: challengeCreature ? '92 more wild sounds are out there. Can you find them all?' : 'Each one you name makes the next easier to hear. Your Grove grew a little.' }));
+    const remainingCount = CREATURES.filter((c) => !c.isNoise).length - 1;
+    wrap.appendChild(el('p', { text: challengeCreature ? (remainingCount + ' more wild sounds are out there. Can you find them all?') : 'Each one you name makes the next easier to hear. Your Grove grew a little.' }));
     if (challengeCreature) {
       const challengeBack = el('button', { class: 'cta', text: '🎧 Challenge someone back' });
       challengeBack.addEventListener('click', async () => {
@@ -323,7 +324,7 @@ export function mount(host, app, params = {}) {
     sparkleBurst(wrap);
     const s2 = get();
     const discovered2 = Object.keys(s2.discovered).length;
-    const total = 93;
+    const total = CREATURES.filter((c) => !c.isNoise).length;
     const pctFound = Math.round((discovered2 / total) * 100);
     const comebackMsgs = [
       `<b>Wren:</b> ${pctFound}% of wild sounds found. The rarest ones only show up in the haul. Come back tonight.`,
